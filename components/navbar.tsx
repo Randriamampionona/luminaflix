@@ -2,18 +2,22 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { Menu, Search, X, Zap } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import NavbarActions from "./navbar-actions";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-
   const MENUS = ["Home", "Movies", "TV Shows", "New & Popular"];
 
-  // Handle scroll effect for glassmorphism
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -23,11 +27,10 @@ export default function Navbar() {
       className={`fixed top-0 w-full z-100 transition-all duration-500 ${
         isScrolled
           ? "py-4 bg-black/80 backdrop-blur-xl border-b border-white/5"
-          : "py-8 bg-transparent"
+          : "py-6 bg-transparent"
       }`}
     >
-      <div className="max-w-450 mx-auto px-8 md:px-16 flex items-center justify-between">
-        {/* Left: Logo & Menu */}
+      <div className="max-w-450 mx-auto px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-2">
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
@@ -41,7 +44,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden xl:flex items-center gap-8">
             {MENUS.map((item) => (
               <Link
                 key={item}
@@ -50,7 +53,7 @@ export default function Navbar() {
                     ? "/"
                     : `/${item.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
                 }
-                className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-cyan-500 transition-colors"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-cyan-500 transition-colors"
               >
                 {item}
               </Link>
@@ -58,8 +61,81 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Right: Search & Auth */}
-        <NavbarActions />
+        <div className="flex items-center gap-4">
+          <NavbarActions />
+
+          {/* PRO MOBILE MENU */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="xl:hidden p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all">
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+
+            <SheetContent
+              side="right"
+              className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100"
+            >
+              {/* MAKE THE CLOSE BUTTON FUNCTIONAL */}
+              <SheetClose asChild>
+                <button className="absolute top-4 right-4 p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all outline-none">
+                  <X className="w-5 h-5" />
+                </button>
+              </SheetClose>
+
+              <div className="p-8 pt-24 h-full flex flex-col">
+                <div className="relative mb-12 group">
+                  <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-within:opacity-50 transition duration-1000"></div>
+                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 group-within:border-cyan-500/50 transition-all">
+                    <Search className="ml-4 w-5 h-5 text-zinc-500 group-within:text-cyan-400 transition-colors" />
+                    <input
+                      type="text"
+                      placeholder="Search Lumina..."
+                      className="w-full bg-transparent border-none outline-none py-5 px-4 text-sm font-bold uppercase tracking-widest text-white placeholder:text-zinc-700"
+                    />
+                  </div>
+                </div>
+                <SheetTitle className="text-3xl font-black uppercase italic tracking-tighter text-white mb-12">
+                  Navigation<span className="text-cyan-500">.</span>
+                </SheetTitle>
+
+                <div className="flex flex-col gap-6">
+                  {MENUS.map((item) => (
+                    /* Wrap Links in SheetClose so the menu closes when a page is selected */
+                    <SheetClose key={item} asChild>
+                      <Link
+                        href={
+                          item === "Home"
+                            ? "/"
+                            : `/${item.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
+                        }
+                        className="group flex items-center justify-between font-black uppercase italic tracking-tighter text-zinc-500 hover:text-white transition-all"
+                      >
+                        <span className="group-hover:translate-x-2 transition-transform duration-300">
+                          {item}
+                        </span>
+                        <Zap className="w-6 h-6 text-cyan-500 opacity-0 group-hover:opacity-100 transition-all" />
+                      </Link>
+                    </SheetClose>
+                  ))}
+                </div>
+
+                {/* Bottom Section */}
+                <div className="mt-auto pb-12 space-y-6">
+                  <div className="h-px w-full bg-white/5" />
+                  <div className="flex flex-col gap-4">
+                    <button className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
+                      Sign In
+                    </button>
+                    <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all">
+                      Join Lumina Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </nav>
   );

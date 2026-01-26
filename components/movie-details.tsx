@@ -21,7 +21,7 @@ export default function MovieDetails({ movie, children }: MovieDetailsProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-175 bg-zinc-950/95 border-zinc-800 text-white backdrop-blur-2xl font-geist rounded-[2.5rem] overflow-hidden">
+      <DialogContent className="sm:max-w-175 bg-zinc-950/95 border-zinc-800 text-white backdrop-blur-2xl font-geist rounded-md overflow-hidden z-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
           {/* Poster Section with Play Overlay */}
           <div className="relative group aspect-2/3 rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_40px_rgba(6,182,212,0.15)]">
@@ -61,7 +61,7 @@ export default function MovieDetails({ movie, children }: MovieDetailsProps) {
                 </div>
               </div>
 
-              <p className="text-zinc-400 leading-relaxed text-sm mb-8 italic font-medium">
+              <p className="text-zinc-400 h-auto max-h-20 md:max-h-36 leading-relaxed text-sm mb-8 italic font-medium overflow-y-auto">
                 &ldquo;{movie.overview}&rdquo;
               </p>
             </div>
