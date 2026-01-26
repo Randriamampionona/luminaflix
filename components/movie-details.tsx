@@ -32,7 +32,7 @@ export default function MovieDetails({ movie, children }: MovieDetailsProps) {
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
               <Link
-                href={`/movies/${movie.id}`}
+                href={`/movies/${movie.id}?fallback=${movie.title || movie.name?.toLocaleLowerCase().replaceAll(" ", "+")}`}
                 className="w-16 h-16 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.5)] active:scale-90 transition-all"
               >
                 <Play className="w-8 h-8 text-black fill-current ml-1" />
@@ -45,7 +45,7 @@ export default function MovieDetails({ movie, children }: MovieDetailsProps) {
             <div>
               <DialogHeader>
                 <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-4 line-clamp-3">
-                  {movie.title}
+                  {movie.title || movie.name}
                   <span className="text-cyan-500 not-italic">.</span>
                 </DialogTitle>
               </DialogHeader>
@@ -68,7 +68,7 @@ export default function MovieDetails({ movie, children }: MovieDetailsProps) {
 
             <div className="space-y-4">
               <Link
-                href={`/movies/${movie.id}`}
+                href={`/movies/${movie.id}?fallback=${movie.title || movie.name?.toLocaleLowerCase().replaceAll(" ", "+")}`}
                 className="flex items-center justify-center gap-3 w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-xl group"
               >
                 <Play className="w-4 h-4 fill-current transition-transform group-hover:scale-110" />

@@ -27,7 +27,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
         {/* Labels below */}
         <div className="mt-3 space-y-1 px-1">
           <h3 className="text-white font-bold text-xs truncate uppercase tracking-tight">
-            {movie.title}
+            {movie.title || movie.name}
           </h3>
           <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-medium">
             <span>{movie.release_date?.split("-")[0]}</span>
