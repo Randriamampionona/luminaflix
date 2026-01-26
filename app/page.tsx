@@ -10,6 +10,7 @@ import HomeCTA from "@/components/home-cta";
 import MovieDetails from "@/components/movie-details";
 import MovieRow from "@/components/movie-row";
 import { Info, Play } from "lucide-react";
+import Link from "next/link";
 
 export default async function HomePage() {
   const genres = await getGenres();
@@ -62,10 +63,12 @@ export default async function HomePage() {
 
           {/* Action Buttons with Lucide Icons */}
           <div className="flex flex-wrap gap-4">
-            <button className="group flex items-center gap-3 bg-white text-black px-10 py-4 rounded-full font-black uppercase text-sm hover:bg-cyan-500 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer">
-              <Play className="w-5 h-5 fill-current" />
-              Play Now
-            </button>
+            <Link href={`/movies/${heroMovie.id}`} prefetch={false}>
+              <button className="group flex items-center gap-3 bg-white text-black px-10 py-4 rounded-full font-black uppercase text-sm hover:bg-cyan-500 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer">
+                <Play className="w-5 h-5 fill-current" />
+                Play Now
+              </button>
+            </Link>
 
             <MovieDetails movie={heroMovie}>
               <button className="group flex items-center gap-3 bg-white/10 text-white px-10 py-4 rounded-full font-black uppercase text-sm backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
