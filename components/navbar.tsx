@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, Search, X, Zap } from "lucide-react";
+import { ArrowRight, Menu, Search, X, Zap, Loader2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -11,9 +11,15 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import NavbarActions from "./navbar-actions";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Controlled state for Sheet
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   const MENUS = ["Home", "Movies", "TV Shows", "New & Popular"];
 
   useEffect(() => {
@@ -21,6 +27,23 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleMobileSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!searchQuery.trim() || isSearching) return;
+
+    setIsSearching(true);
+
+    // 1. Navigate to the search results
+    router.push(`/search/${encodeURIComponent(searchQuery.trim())}`);
+
+    // 2. Small delay to ensure navigation starts before the menu unmounts
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsSearching(false);
+      setSearchQuery(""); // Clear for next time
+    }, 300);
+  };
 
   return (
     <nav
@@ -43,7 +66,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden xl:flex items-center gap-8">
             {MENUS.map((item) => (
               <Link
@@ -64,8 +86,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <NavbarActions />
 
-          {/* PRO MOBILE MENU */}
-          <Sheet>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <button className="xl:hidden p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all">
                 <Menu className="w-5 h-5" />
@@ -76,7 +97,6 @@ export default function Navbar() {
               side="right"
               className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100"
             >
-              {/* MAKE THE CLOSE BUTTON FUNCTIONAL */}
               <SheetClose asChild>
                 <button className="absolute top-4 right-4 p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all outline-none">
                   <X className="w-5 h-5" />
@@ -84,24 +104,48 @@ export default function Navbar() {
               </SheetClose>
 
               <div className="p-8 pt-24 h-full flex flex-col">
-                <div className="relative mb-12 group">
-                  <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-within:opacity-50 transition duration-1000"></div>
-                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 group-within:border-cyan-500/50 transition-all">
-                    <Search className="ml-4 w-5 h-5 text-zinc-500 group-within:text-cyan-400 transition-colors" />
+                <form
+                  onSubmit={handleMobileSearch}
+                  className="relative mb-12 group"
+                >
+                  <div
+                    className={`absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur transition duration-1000 ${searchQuery ? "opacity-40" : "opacity-10"}`}
+                  ></div>
+
+                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 group-within:border-cyan-500/50 transition-all overflow-hidden">
+                    <Search
+                      className={`ml-4 w-5 h-5 transition-colors ${searchQuery ? "text-cyan-400" : "text-zinc-500"}`}
+                    />
+
                     <input
+                      name="mobileSearch"
                       type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Lumina..."
                       className="w-full bg-transparent border-none outline-none py-5 px-4 text-sm font-bold uppercase tracking-widest text-white placeholder:text-zinc-700"
                     />
+
+                    <button
+                      type="submit"
+                      disabled={!searchQuery.trim() || isSearching}
+                      className="mr-2 p-3 bg-white disabled:bg-zinc-800 disabled:text-zinc-600 hover:bg-cyan-500 text-black rounded-xl transition-all active:scale-95 group/btn"
+                    >
+                      {isSearching ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                      )}
+                    </button>
                   </div>
-                </div>
+                </form>
+
                 <SheetTitle className="text-3xl font-black uppercase italic tracking-tighter text-white mb-12">
                   Navigation<span className="text-cyan-500">.</span>
                 </SheetTitle>
 
                 <div className="flex flex-col gap-6">
                   {MENUS.map((item) => (
-                    /* Wrap Links in SheetClose so the menu closes when a page is selected */
                     <SheetClose key={item} asChild>
                       <Link
                         href={
@@ -120,14 +164,13 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                {/* Bottom Section */}
                 <div className="mt-auto pb-12 space-y-6">
                   <div className="h-px w-full bg-white/5" />
                   <div className="flex flex-col gap-4">
                     <button className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
                       Sign In
                     </button>
-                    <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all">
+                    <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                       Join Lumina Now
                     </button>
                   </div>
