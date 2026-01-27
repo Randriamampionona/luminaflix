@@ -19,7 +19,7 @@ export default function HomeCTA() {
         you&apos;re looking for.
       </p>
 
-      <Link href="/movies">
+      <Link href="/library">
         <button className="group flex items-center gap-3 bg-cyan-500 text-black px-12 py-4 rounded-full font-black uppercase text-sm hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
           Explore the Library
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

@@ -75,7 +75,11 @@ export default function Footer() {
                 {section.links.map((link) => (
                   <li key={link}>
                     <Link
-                      href="#"
+                      href={
+                        link === "Home"
+                          ? "/"
+                          : `/${link.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
+                      }
                       className="text-zinc-500 hover:text-white text-xs font-bold transition-colors uppercase tracking-widest"
                     >
                       {link}
