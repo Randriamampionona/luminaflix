@@ -66,7 +66,7 @@ export default async function WatchPage({
                         alt={item.title}
                         className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
                     </div>
                     <h3 className="text-sm font-black uppercase italic tracking-tight text-left truncate">
                       {item.title}

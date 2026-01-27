@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Tv, Globe, Zap, Play, Loader2, ShieldCheck } from "lucide-react";
+import {
+  Tv,
+  Globe,
+  Zap,
+  Play,
+  Loader2,
+  ShieldCheck,
+  Heart,
+  Plus,
+  HardDrive,
+  Bookmark,
+} from "lucide-react";
 
 const PROVIDERS = [
   {
@@ -28,17 +39,23 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
   const [activeSource, setActiveSource] = useState(PROVIDERS[0]);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const handleSourceChange = (source: (typeof PROVIDERS)[0]) => {
     setActiveSource(source);
-    setIsUnlocked(false); // Relock to keep the design consistent
+    setIsUnlocked(false);
     setIsLoading(true);
+  };
+
+  const toggleFavorite = () => {
+    // No action for now, just visual toggle
+    setIsFavorited(!isFavorited);
   };
 
   return (
     <div className="w-full space-y-6">
-      <div className="relative aspect-video w-full rounded-md overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl ring-1 ring-white/10 group">
-        {/* DESIGN OVERLAY: This keeps the app looking expensive */}
+      {/* MAIN VIDEO TERMINAL */}
+      <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl ring-1 ring-white/10 group">
         {!isUnlocked && (
           <div
             onClick={() => setIsUnlocked(true)}
@@ -58,22 +75,25 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col items-center gap-2">
-              <p className="text-sm font-black uppercase italic tracking-tighter text-white font-geist">
+            <div className="mt-8 text-center">
+              <p className="text-sm font-black uppercase italic tracking-tighter text-white">
                 Start Watching<span className="text-cyan-500">.</span>
               </p>
             </div>
           </div>
         )}
 
-        {/* LOADING SPINNER */}
         {isLoading && isUnlocked && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950">
-            <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 animate-pulse">
+                Initializing Buffer...
+              </span>
+            </div>
           </div>
         )}
 
-        {/* THE PLAYER: No Sandbox = No "Unavailable" errors */}
         {isUnlocked && (
           <iframe
             src={activeSource.url(movieId)}
@@ -85,16 +105,9 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
         )}
       </div>
 
-      {/* PRO SOURCE SELECTOR */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-zinc-900/20 p-3 rounded-[2rem] border border-white/5">
-        <div className="flex items-center gap-3 px-4">
-          <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
-            System Stream
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
+      {/* CONTROLS & FAVORITES */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between bg-zinc-900/20 p-3 rounded-[2.5rem] border border-white/5">
+        <div className="flex flex-wrap gap-2 flex-1">
           {PROVIDERS.map((provider) => {
             const Icon = provider.icon;
             const isActive = activeSource.id === provider.id;
@@ -117,7 +130,65 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
             );
           })}
         </div>
+
+        {/* PRO FAVORITE UNIT (SPLIT BUTTON) */}
+        <div
+          className={`transition-all duration-700 delay-300 flex items-center gap-1 ${
+            isUnlocked && !isLoading
+              ? "opacity-100 translate-x-0"
+              : "opacity-0 translate-x-10 pointer-events-none"
+          }`}
+        >
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={toggleFavorite}
+              className={`group relative flex items-center gap-3 px-8 py-3 rounded-l-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl overflow-hidden ${
+                isFavorited
+                  ? "bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+                  : "bg-white text-black hover:bg-zinc-100"
+              }`}
+            >
+              <Heart
+                className={`w-4 h-4 transition-all duration-300 ${
+                  isFavorited ? "fill-black scale-110" : "group-hover:scale-110"
+                }`}
+              />
+              <span>{isFavorited ? "In Collection" : "Add Favorite"}</span>
+            </button>
+
+            <button
+              className="px-4 py-3 bg-zinc-800 text-white rounded-r-2xl hover:bg-zinc-700 transition-colors border-l border-black/20 group/save"
+              title="Add to Watchlist"
+            >
+              <Bookmark className="w-4 h-4 group-hover/save:fill-white transition-all" />
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* FOOTER STATUS BAR */}
+      {isUnlocked && !isLoading && (
+        <div className="flex items-center justify-between px-8 py-4 bg-zinc-900/10 rounded-2xl border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <HardDrive className="w-3 h-3 text-cyan-500" />
+              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
+                ID: {movieId}
+              </span>
+            </div>
+            <div className="h-4 w-px bg-white/10 hidden md:block" />
+            <div className="hidden md:flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
+                Signal: Encrypted
+              </span>
+            </div>
+          </div>
+          <span className="text-[8px] font-black uppercase text-zinc-700 tracking-[0.4em]">
+            Lumina Cinema v3.2
+          </span>
+        </div>
+      )}
     </div>
   );
 }
