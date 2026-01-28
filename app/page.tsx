@@ -52,7 +52,7 @@ export default async function HomePage() {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter uppercase italic drop-shadow-2xl line-clamp-3">
+          <h1 className="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter uppercase italic drop-shadow-2xl line-clamp-2">
             {heroMovie.title}
             <span className="text-cyan-500 not-italic">.</span>
           </h1>
