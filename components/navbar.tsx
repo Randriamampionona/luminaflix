@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/sheet";
 import NavbarActions from "./navbar-actions";
 import { useRouter } from "next/navigation";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import UserTerminal from "./user-terminal";
 
 export default function Navbar() {
   const router = useRouter();
@@ -97,13 +99,18 @@ export default function Navbar() {
               side="right"
               className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100"
             >
-              <SheetClose asChild>
-                <button className="absolute top-4 right-4 p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all outline-none">
-                  <X className="w-5 h-5" />
-                </button>
-              </SheetClose>
+              <div className="flex items-center justify-between p-6">
+                <SheetClose asChild>
+                  <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all outline-none">
+                    <X className="w-5 h-5" />
+                  </button>
+                </SheetClose>
+                <SignedIn>
+                  <UserButton showName />
+                </SignedIn>
+              </div>
 
-              <div className="p-8 pt-24 h-full flex flex-col">
+              <div className="p-8 h-full flex flex-col">
                 <form
                   onSubmit={handleMobileSearch}
                   className="relative mb-12 group"
@@ -167,12 +174,18 @@ export default function Navbar() {
                 <div className="mt-auto pb-12 space-y-6">
                   <div className="h-px w-full bg-white/5" />
                   <div className="flex flex-col gap-4">
-                    <button className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
-                      Sign In
-                    </button>
-                    <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-                      Join Lumina Now
-                    </button>
+                    <SignedOut>
+                      <Link href="/sign-in">
+                        <button className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
+                          Sign In
+                        </button>
+                      </Link>
+                      <Link href="/sign-up">
+                        <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                          Join Lumina Now
+                        </button>
+                      </Link>
+                    </SignedOut>
                   </div>
                 </div>
               </div>
