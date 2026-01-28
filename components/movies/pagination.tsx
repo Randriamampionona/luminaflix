@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 interface Props {
   currentPage: number;
@@ -9,7 +10,9 @@ interface Props {
 }
 
 export default function Pagination({ currentPage, totalPages }: Props) {
-  // TMDb limits pagination to 500 pages for the free API tier
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const safeTotalPages = Math.min(totalPages, 500);
 
   const getPages = () => {
@@ -20,35 +23,44 @@ export default function Pagination({ currentPage, totalPages }: Props) {
     return pages;
   };
 
+  const createPageUrl = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
+
   return (
     <div className="flex items-center justify-center gap-2 mt-16">
+      {/* PREVIOUS */}
       {currentPage > 1 && (
         <Link
-          href={`/movies?page=${currentPage - 1}`}
-          className="p-3 rounded-lg bg-zinc-900 border border-white/5 hover:bg-cyan-500 hover:text-black transition-all"
+          href={createPageUrl(currentPage - 1)}
+          className="p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
         >
           <ChevronLeft className="w-5 h-5" />
         </Link>
       )}
 
+      {/* PAGE NUMBERS (No Padding) */}
       {getPages().map((p) => (
         <Link
           key={p}
-          href={`/movies?page=${p}`}
-          className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold transition-all ${
+          href={createPageUrl(p)}
+          className={`w-12 h-12 flex items-center justify-center rounded-xl font-bold transition-all duration-300 ${
             p === currentPage
-              ? "bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-              : "bg-zinc-900 text-zinc-400 hover:text-white border border-white/5"
+              ? "bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.3)]"
+              : "bg-zinc-900 text-zinc-500 hover:text-white border border-white/5"
           }`}
         >
           {p}
         </Link>
       ))}
 
+      {/* NEXT */}
       {currentPage < safeTotalPages && (
         <Link
-          href={`/movies?page=${currentPage + 1}`}
-          className="p-3 rounded-lg bg-zinc-900 border border-white/5 hover:bg-cyan-500 hover:text-black transition-all"
+          href={createPageUrl(currentPage + 1)}
+          className="p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
         >
           <ChevronRight className="w-5 h-5" />
         </Link>

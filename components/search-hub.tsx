@@ -56,9 +56,10 @@ export default function SearchHub() {
     executeNavigation(`/search/${encodeURIComponent(query.trim())}`);
   };
 
-  const handleGenreClick = (id: string, name: string) => {
-    // Navigate with genre parameter
-    executeNavigation(`/search/${name.toLowerCase()}?genre=${id}`);
+  // Inside SearchHub.tsx
+  const handleGenreClick = (id: string) => {
+    // Direct navigation to the sector page
+    executeNavigation(`/genres/${id}`);
   };
 
   return (
@@ -111,7 +112,7 @@ export default function SearchHub() {
               {GENRE_FILTERS.map((genre) => (
                 <button
                   key={genre.id}
-                  onClick={() => handleGenreClick(genre.id, genre.name)}
+                  onClick={() => handleGenreClick(genre.id)}
                   className="group/item relative flex flex-col p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden"
                 >
                   <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
