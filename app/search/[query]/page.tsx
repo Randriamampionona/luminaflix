@@ -11,8 +11,6 @@ export default async function SearchPage({
   const decodedQuery = decodeURIComponent(query);
   const results = await getSearchResults(decodedQuery);
 
-  console.log(results);
-
   return (
     <main className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16">
       <div className="max-w-350 mx-auto space-y-12">

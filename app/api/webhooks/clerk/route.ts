@@ -57,8 +57,6 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
 
-  console.log(`Webhook received: ${eventType} for ID: ${id}`);
-
   // --- SYNC LOGIC ---
 
   if (eventType === "user.created" || eventType === "user.updated") {
@@ -84,13 +82,10 @@ export async function POST(req: Request) {
         },
         { merge: true },
       );
-
-    console.log(`User ${id} synchronized to Firebase.`);
   }
 
   if (eventType === "user.deleted") {
     await db.collection("USERS").doc(id!).delete();
-    console.log(`User ${id} purged from Firebase.`);
   }
 
   return new Response("Lumina Sync Handshake Successful", { status: 200 });

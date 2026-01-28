@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  Search,
-  Command,
-  X,
-  Loader2,
-  ArrowRight,
-  Zap,
-  Film,
-} from "lucide-react";
+import { Search, Command, Loader2, ArrowRight, Zap, Film } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import Link from "next/link";
 
 // TMDB Genre IDs mapped to your specific list
 const GENRE_FILTERS = [
@@ -129,6 +122,16 @@ export default function SearchHub() {
                   </div>
                 </button>
               ))}
+              <Link href="/genres">
+                <button className="group/item relative flex flex-col p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden">
+                  <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
+                    See all...
+                  </span>
+                  <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <ArrowRight className="w-3 h-3 text-black" />
+                  </div>
+                </button>
+              </Link>
             </div>
           </div>
 

@@ -33,18 +33,19 @@ export default async function MoviesPage({
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 space-y-20">
         <div className="space-y-2">
           <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
-            Lumina <span className="text-white/20">Library</span>
+            Lumina <span className="text-white/20">Libs</span>
             <span className="text-cyan-500">.</span>
           </h1>
           <div className="flex items-center gap-3">
             <div className="h-px w-8 bg-cyan-500" />
             <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-              {data.total_results.toLocaleString()} Premium Titles
+              {data.total_results.toLocaleString()} Global Series
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 self-start lg:self-end">
+          {/* Note: In a real app, you'd pass a "type" prop to filter if the genre IDs differ */}
           <AdvancedFilter />
           <div className="w-px h-6 bg-white/10 mx-1" />
           <SortDropdown />

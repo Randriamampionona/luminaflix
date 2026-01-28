@@ -9,7 +9,7 @@ interface GenreCardProps {
 
 export default function GenreCard({ genre }: GenreCardProps) {
   return (
-    <Link href={`/genres/${genre.id}`}>
+    <Link href={`/search/${genre.name.toLowerCase()}?genre=${genre.id}`}>
       <div className="group relative h-28 bg-zinc-900/40 rounded-md overflow-hidden border border-white/5 transition-all duration-500 hover:bg-cyan-600">
         {/* Text Content: Title and Count */}
         <div className="p-5 h-full flex flex-col justify-center relative z-10">

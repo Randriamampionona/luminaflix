@@ -9,7 +9,7 @@ import GenreCard from "@/components/genre-card";
 import HomeCTA from "@/components/home-cta";
 import MovieDetails from "@/components/movie-details";
 import MovieRow from "@/components/movie-row";
-import { Info, Play } from "lucide-react";
+import { ArrowRight, Info, Play } from "lucide-react";
 import Link from "next/link";
 
 export default async function HomePage() {
@@ -84,9 +84,37 @@ export default async function HomePage() {
       </section>
 
       <div className="relative">
-        <section className="px-8 md:px-16 my-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {genres.map((genre) => (
+        <section className="px-8 md:px-16 my-20">
+          {/* Header with Title and Link */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3">
+                <div className="h-0.5 w-8 bg-cyan-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-500">
+                  Database Index
+                </span>
+              </div>
+              <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white mt-2">
+                Browse by <span className="text-cyan-500">Category.</span>
+              </h2>
+            </div>
+
+            {/* PRO "VIEW ALL" LINK */}
+            <Link
+              href="/genres"
+              className="group flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:border-cyan-500/50 transition-all duration-300"
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
+                View All Archives
+              </span>
+              <div className="p-2 bg-zinc-900 rounded-lg group-hover:bg-cyan-500 transition-colors">
+                <ArrowRight className="w-3 h-3 text-white group-hover:scale-110 transition-transform" />
+              </div>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {genres.slice(0, 10).map((genre) => (
               <GenreCard key={genre.id} genre={genre} />
             ))}
           </div>
