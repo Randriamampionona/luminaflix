@@ -27,7 +27,7 @@ export default async function AllGenresPage() {
           {genres.map((genre, index) => (
             <Link
               key={genre.id}
-              href={`/search/${genre.name.toLowerCase()}?genre=${genre.id}`}
+              href={`/genres/${genre.id}`}
               className="group relative aspect-video md:aspect-square flex flex-col justify-between p-8 border-r border-b border-white/5 bg-zinc-950 overflow-hidden transition-all duration-700"
             >
               {/* BACKDROP IMAGE */}
