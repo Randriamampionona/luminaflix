@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Tv,
   Globe,
@@ -8,229 +8,246 @@ import {
   Play,
   Loader2,
   ShieldCheck,
-  Heart,
-  Plus,
-  HardDrive,
-  Bookmark,
-  Radio,
-  LucideIcon,
+  ExternalLink,
+  Languages,
+  X,
+  Maximize2,
 } from "lucide-react";
 
 interface Provider {
   name: string;
-  id: string; // The missing ID
+  id: string;
   url: (id: string) => string;
-  icon: LucideIcon;
+  icon: any;
+  isExternal?: boolean;
 }
 
-const PROVIDERS: Provider[] = [
+const FR_PROVIDERS: Provider[] = [
+  // {
+  //   name: "Lumina Vix (FR)",
+  //   id: "vixsrc",
+  //   // Updated path to fix 404 - using the direct mirror path
+  //   url: (id: string) => `https://vixsrc.to/movie/${id}?lang=fra`,
+  //   icon: Zap,
+  //   isExternal: true,
+  // },
   {
-    name: "Lumina Vix",
-    id: "vix",
-    // We call our OWN API route now
-    url: (id: string) =>
-      `/api/proxy?url=${encodeURIComponent(`https://vixsrc.to/embed/movie/${id}?lang=fr`)}`,
+    name: "Lumina 4K (Ultra)",
+    id: "4khub",
+    url: (id: string) => `https://4khdhub.store/watch/${id}`,
+    icon: Globe,
+    isExternal: true,
+  },
+  {
+    name: "Lumina Best (FR)",
+    id: "frembed",
+    url: (id: string) => `https://play.frembed.best/api/film.php?id=${id}`,
+    icon: Tv,
+    isExternal: true,
+  },
+];
+
+const EN_PROVIDERS: Provider[] = [
+  {
+    name: "VidLink.pro",
+    id: "vidlink",
+    url: (id: string) => `https://vidlink.pro/movie/${id}?primaryColor=06b6d4`,
+    icon: Globe,
+  },
+  {
+    name: "VidSrc.to",
+    id: "vidsrc",
+    url: (id: string) => `https://vidsrc.to/embed/movie/${id}`,
     icon: Zap,
   },
   {
-    name: "Lumina 4K",
-    id: "4khub",
-    url: (id: string) =>
-      `/api/proxy?url=${encodeURIComponent(`https://4khdhub.store/watch/${id}`)}`,
-    icon: Globe,
+    name: "vidsrc.me",
+    id: "vidsrcme",
+    url: (id: string) => `https://vidsrc.me/embed/${id}`,
+    icon: Tv,
   },
 ];
 
 export default function VideoPlayer({ movieId }: { movieId: string }) {
-  const [activeSource, setActiveSource] = useState(PROVIDERS[0]);
+  const [activeTab, setActiveTab] = useState<"FR" | "EN">("FR");
+  const [activeSource, setActiveSource] = useState<Provider>(FR_PROVIDERS[0]);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [showTheater, setShowTheater] = useState(false);
 
-  const handleSourceChange = (source: (typeof PROVIDERS)[0]) => {
+  const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
     setIsUnlocked(false);
     setIsLoading(true);
+    setShowTheater(false);
   };
 
-  const toggleFavorite = () => {
-    // No action for now, just visual toggle
-    setIsFavorited(!isFavorited);
+  const handleTabChange = (tab: "FR" | "EN") => {
+    setActiveTab(tab);
+    const firstSource = tab === "FR" ? FR_PROVIDERS[0] : EN_PROVIDERS[0];
+    handleSourceChange(firstSource);
   };
 
   return (
     <div className="w-full space-y-6">
-      {/* MAIN VIDEO TERMINAL */}
+      {/* 1. LANGUAGE SELECTOR */}
+      <div className="flex items-center gap-2 p-1 bg-zinc-950/50 border border-white/5 rounded-2xl w-fit">
+        <button
+          onClick={() => handleTabChange("FR")}
+          className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeTab === "FR"
+              ? "bg-cyan-500 text-black shadow-[0_0_15px_#06b6d4]"
+              : "text-zinc-500 hover:text-white"
+          }`}
+        >
+          Français (Bridge)
+        </button>
+        <button
+          onClick={() => handleTabChange("EN")}
+          className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeTab === "EN"
+              ? "bg-white text-black"
+              : "text-zinc-500 hover:text-white"
+          }`}
+        >
+          English (Player)
+        </button>
+      </div>
+
+      {/* 2. MAIN PLAYER CONTAINER */}
       <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl ring-1 ring-white/10 group">
+        {/* INTERNAL THEATER (Only shows inside the player frame) */}
+        {showTheater && (
+          <div className="absolute inset-0 z-[60] bg-black flex flex-col animate-in slide-in-from-bottom-5 duration-500">
+            {/* Header Mini-Bar */}
+            <div className="flex items-center justify-between px-4 py-2 bg-zinc-950 border-b border-white/5">
+              <span className="text-[8px] font-black uppercase tracking-widest text-cyan-500">
+                Lumina Virtual Browser — {activeSource.name}
+              </span>
+              <button
+                onClick={() => setShowTheater(false)}
+                className="p-1 hover:bg-white/10 rounded-md transition-all text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Iframe for the "Bridge" Link */}
+            <div className="flex-1 bg-black">
+              <iframe
+                src={activeSource.url(movieId)}
+                className="w-full h-full border-none"
+                allowFullScreen
+                allow="autoplay; encrypted-media"
+                onLoad={() => setIsLoading(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NATIVE PLAYER (EN Only) */}
+        {isUnlocked && !activeSource.isExternal && (
+          <div className="absolute inset-0 z-10">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
+                <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+              </div>
+            )}
+            <iframe
+              src={activeSource.url(movieId)}
+              className="w-full h-full"
+              allowFullScreen
+              frameBorder="0"
+              onLoad={() => setIsLoading(false)}
+            />
+          </div>
+        )}
+
+        {/* BRIDGE PRE-LAUNCH (FR Only) */}
+        {isUnlocked && activeSource.isExternal && !showTheater && (
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl px-6">
+            <div className="text-center space-y-6 max-w-sm">
+              <div className="relative w-20 h-20 mx-auto bg-zinc-900 border border-white/10 rounded-full flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-cyan-500" />
+                <div className="absolute inset-0 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-lg font-black uppercase text-white tracking-tighter">
+                  Tunnel Ready:{" "}
+                  <span className="text-cyan-500">{activeSource.name}</span>
+                </h3>
+                <p className="text-zinc-500 text-[9px] uppercase tracking-widest font-bold">
+                  Bypass mode enabled. Open movie inside Lumina?
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsLoading(true);
+                  setShowTheater(true);
+                }}
+                className="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+              >
+                START IN-PLAYER <Maximize2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* INITIAL UNLOCK OVERLAY */}
         {!isUnlocked && (
           <div
             onClick={() => setIsUnlocked(true)}
-            className="absolute inset-0 z-30 cursor-pointer flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl transition-all duration-700"
+            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl group"
           >
-            <div className="absolute top-8 flex items-center gap-2 px-4 py-2 bg-zinc-900/50 rounded-full border border-cyan-500/20">
-              <ShieldCheck className="w-3 h-3 text-cyan-500" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Lumina Cinema Mode
-              </span>
+            <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.3)] group-hover:scale-110 group-hover:bg-cyan-500 transition-all duration-500">
+              <Play className="w-10 h-10 text-black fill-current ml-1" />
             </div>
-
-            <div className="relative group/btn">
-              <div className="absolute -inset-6 bg-cyan-500/20 blur-3xl rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" />
-              <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.3)] group-hover/btn:scale-110 group-hover/btn:bg-cyan-500 transition-all duration-500">
-                <Play className="w-10 h-10 text-black fill-current ml-1" />
-              </div>
-            </div>
-
-            <div className="mt-8 text-center">
-              <p className="text-sm font-black uppercase italic tracking-tighter text-white">
-                Start Watching<span className="text-cyan-500">.</span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {isLoading && isUnlocked && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 animate-pulse">
-                Initializing Buffer...
-              </span>
-            </div>
-          </div>
-        )}
-
-        {isUnlocked && (
-          <div className="relative aspect-video w-full rounded-2xl bg-zinc-950 border border-white/10 overflow-hidden shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-            <iframe
-              // @ts-ignore
-              is="x-frame-bypass"
-              src={activeSource.url(movieId)}
-              className="absolute inset-0 w-full h-full z-10"
-              frameBorder="0"
-              // Permissions ONLY in 'allow' (removes the allowfullscreen warning)
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              // 'no-referrer' is essential when using proxies to hide your ngrok origin
-              referrerPolicy="no-referrer"
-              onLoad={() => setIsLoading(false)}
-            />
-
-            {/* Lumina Theme Branding overlay */}
-            <div className="absolute top-4 left-4 z-20 pointer-events-none">
-              <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-cyan-500/30">
-                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="text-[10px] text-white font-black tracking-widest uppercase">
-                  Lumina Bypass Active
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => window.open(activeSource.url(movieId), "_blank")}
-              className="px-8 py-3 bg-white text-black font-bold rounded-full shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:bg-cyan-400 transition-all"
-            >
-              Lancer le lecteur Lumina (Source {activeSource.name})
-            </button>
-
-            {isLoading && (
-              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950">
-                <div className="relative w-24 h-24 mb-4">
-                  <div className="absolute inset-0 border-4 border-cyan-500/20 rounded-full" />
-                  <div className="absolute inset-0 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-                <p className="text-white font-black tracking-widest text-[10px] uppercase">
-                  Lumina Secure Link Established
-                </p>
-              </div>
-            )}
+            <p className="mt-8 text-sm font-black uppercase italic tracking-tighter text-white">
+              Initialize Lumina{" "}
+              <span className="text-cyan-500">{activeTab}</span>
+            </p>
           </div>
         )}
       </div>
 
-      {/* CONTROLS & FAVORITES */}
-      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between bg-zinc-900/20 p-3 rounded-[2.5rem] border border-white/5">
-        <div className="flex flex-wrap gap-2 flex-1">
-          {PROVIDERS.map((provider) => {
-            const Icon = provider.icon;
-            const isActive = activeSource.id === provider.id;
-
-            return (
-              <button
-                key={provider.id}
-                onClick={() => handleSourceChange(provider)}
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
-                  isActive
-                    ? "bg-white border-white text-black shadow-xl"
-                    : "bg-black/40 border-white/5 text-zinc-500 hover:text-white"
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 ${isActive ? "text-cyan-600" : "text-zinc-500"}`}
-                />
-                {provider.name}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* PRO FAVORITE UNIT (SPLIT BUTTON) */}
-        <div
-          className={`transition-all duration-700 delay-300 flex items-center gap-1 ${
-            isUnlocked && !isLoading
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-10 pointer-events-none"
-          }`}
-        >
-          <div className="flex items-center gap-0.5">
+      {/* 3. PROVIDER SELECTION BAR */}
+      <div className="flex flex-wrap gap-2 bg-zinc-900/20 p-3 rounded-[2rem] border border-white/5">
+        {(activeTab === "FR" ? FR_PROVIDERS : EN_PROVIDERS).map((provider) => {
+          const Icon = provider.icon;
+          return (
             <button
-              onClick={toggleFavorite}
-              className={`group relative flex items-center gap-3 px-8 py-3 rounded-l-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl overflow-hidden ${
-                isFavorited
-                  ? "bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-                  : "bg-white text-black hover:bg-zinc-100"
+              key={provider.id}
+              onClick={() => handleSourceChange(provider)}
+              className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
+                activeSource.id === provider.id
+                  ? "bg-white border-white text-black shadow-lg"
+                  : "bg-black/40 border-white/5 text-zinc-500 hover:text-white hover:border-white/20"
               }`}
             >
-              <Heart
-                className={`w-4 h-4 transition-all duration-300 ${
-                  isFavorited ? "fill-black scale-110" : "group-hover:scale-110"
-                }`}
+              <Icon
+                className={`w-4 h-4 ${activeSource.id === provider.id ? "text-cyan-600" : ""}`}
               />
-              <span>{isFavorited ? "In Collection" : "Add Favorite"}</span>
+              {provider.name}
             </button>
-
-            <button
-              className="px-4 py-3 bg-zinc-800 text-white rounded-r-2xl hover:bg-zinc-700 transition-colors border-l border-black/20 group/save"
-              title="Add to Watchlist"
-            >
-              <Bookmark className="w-4 h-4 group-hover/save:fill-white transition-all" />
-            </button>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* FOOTER STATUS BAR */}
-      {isUnlocked && !isLoading && (
-        <div className="flex items-center justify-between px-8 py-4 bg-zinc-900/10 rounded-2xl border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <HardDrive className="w-3 h-3 text-cyan-500" />
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
-                ID: {movieId}
-              </span>
-            </div>
-            <div className="h-4 w-px bg-white/10 hidden md:block" />
-            <div className="hidden md:flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
-                Signal: Encrypted
-              </span>
-            </div>
-          </div>
-          <span className="text-[8px] font-black uppercase text-zinc-700 tracking-[0.4em]">
-            Lumina Cinema v3.2
+      {/* 4. FOOTER STATUS */}
+      <div className="flex items-center justify-between px-6 py-4 bg-zinc-900/10 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-4 text-zinc-600">
+          <Languages className="w-3 h-3 text-cyan-500" />
+          <span className="text-[9px] font-bold uppercase tracking-widest">
+            {activeTab} Mode
+          </span>
+          <div className="w-1 h-1 bg-zinc-800 rounded-full" />
+          <span className="text-[9px] font-bold uppercase tracking-widest">
+            Cinema v5.2
           </span>
         </div>
-      )}
+      </div>
     </div>
   );
 }

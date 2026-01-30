@@ -2,19 +2,7 @@ import { getFallbackMovie } from "@/action/get-fallback-movies.action";
 import { getMovieData } from "@/action/get-movie-data.action";
 import VideoPlayer from "@/components/movies/video-player";
 import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
-import { Metadata, Viewport } from "next";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Lumina - Watch Movie",
-  // themeColor: '...' <-- REMOVE THIS FROM HERE
-};
-
-export const viewport = {
-  themeColor: "#06b6d4", // Your Cyan
-  width: "device-width",
-  initialScale: 1,
-};
 
 export default async function WatchPage({
   params,
