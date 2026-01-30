@@ -12,26 +12,38 @@ import {
   Plus,
   HardDrive,
   Bookmark,
+  Radio,
 } from "lucide-react";
 
 const PROVIDERS = [
   {
-    name: "VidLink.pro",
-    id: "vidlink",
-    url: (id: string) => `https://vidlink.pro/movie/${id}?primaryColor=06b6d4`,
-    icon: Globe,
-  },
-  {
-    name: "VidSrc.to",
-    id: "vidsrc",
-    url: (id: string) => `https://vidsrc.to/embed/movie/${id}`,
+    name: "Lumina Vix (CORS)",
+    id: "vixsrc_cors",
+    // We use corsproxy.io to strip the 'SAMEORIGIN' header
+    url: (id: string) => {
+      const target = `https://vixsrc.to/embed/movie/${id}?lang=fr`;
+      return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+    },
     icon: Zap,
   },
   {
-    name: "vidsrc.me",
-    id: "vidsrcme",
-    url: (id: string) => `https://vidsrc.me/embed/${id}`,
-    icon: Tv,
+    name: "Lumina 4K (Mirror)",
+    id: "4khdhub_cors",
+    // AllOrigins 'raw' mode is a secondary way to bypass frame blocks
+    url: (id: string) => {
+      const target = `https://4khdhub.store/watch/${id}`;
+      return `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+    },
+    icon: Globe,
+  },
+  {
+    name: "Lumina Best (VF)",
+    id: "frembed_cors",
+    url: (id: string) => {
+      const target = `https://play.frembed.best/api/film.php?id=${id}`;
+      return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+    },
+    icon: Radio,
   },
 ];
 
@@ -95,13 +107,17 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
         )}
 
         {isUnlocked && (
-          <iframe
-            src={activeSource.url(movieId)}
-            className="absolute inset-0 w-full h-full z-10"
-            allowFullScreen
-            frameBorder="0"
-            onLoad={() => setIsLoading(false)}
-          />
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(6,182,212,0.15)] bg-zinc-950">
+            <iframe
+              src={activeSource.url(movieId)}
+              className="absolute inset-0 w-full h-full z-10"
+              frameBorder="0"
+              // Combine all permissions here to stop the warning
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              referrerPolicy="no-referrer"
+              onLoad={() => setIsLoading(false)}
+            />
+          </div>
         )}
       </div>
 

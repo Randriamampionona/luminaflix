@@ -16,10 +16,13 @@ export async function getSearchResults(
     if (query && query.trim() !== "") {
       url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true`;
     } else if (genreId && genreId !== "all") {
-      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`;
+      // url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`;
+      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_original_language=fr&language=fr-FR&region=FR&sort_by=popularity.desc`;
     } else {
       return [];
     }
+
+    console.log({ url });
 
     // Double check url is valid before fetching
     if (!url || url.includes("undefined")) {
@@ -50,6 +53,8 @@ export async function getSearchResults(
     }
 
     return results || [];
+
+    console.log(results);
   } catch (error) {
     console.error("Lumina Search Engine Critical Failure:", error);
     return [];

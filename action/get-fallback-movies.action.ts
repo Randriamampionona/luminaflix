@@ -4,13 +4,13 @@ import { Movie, TMDBResponse } from "@/typing";
 
 export async function getFallbackMovie(query: string): Promise<Movie[]> {
   const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL || "https://api.themoviedb.org/3";
+  const BASE_URL = process.env.BASE_URL;
 
   if (!query) return [];
 
   try {
     const res = await fetch(
-      `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1`,
+      `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`,
       { next: { revalidate: 3600 } },
     );
 
