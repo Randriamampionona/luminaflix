@@ -118,7 +118,7 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
       <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl ring-1 ring-white/10 group">
         {/* INTERNAL THEATER (Only shows inside the player frame) */}
         {showTheater && (
-          <div className="absolute inset-0 z-[60] bg-black flex flex-col animate-in slide-in-from-bottom-5 duration-500">
+          <div className="absolute inset-0 z-60 bg-black flex flex-col animate-in slide-in-from-bottom-5 duration-500">
             {/* Header Mini-Bar */}
             <div className="flex items-center justify-between px-4 py-2 bg-zinc-950 border-b border-white/5">
               <span className="text-[8px] font-black uppercase tracking-widest text-cyan-500">

@@ -22,7 +22,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  const MENUS = ["Home", "Movies", "TV Shows", "New & Popular"];
+  const MENUS = ["Movies", "TV Shows", "New & Popular", "K-Drama"];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);

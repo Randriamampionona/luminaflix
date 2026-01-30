@@ -4,10 +4,12 @@ export type Movie = {
   name?: string;
   backdrop_path: string;
   poster_path: string;
+  first_air_date: string;
   overview: string;
   release_date: string;
   vote_average: number;
   original_language: string;
+  original_name: string;
   adult: boolean;
   genre_ids: number[];
   popularity: number;
