@@ -11,7 +11,7 @@ export async function getFallbackMovie(query: string): Promise<Movie[]> {
   try {
     const res = await fetch(
       `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`,
-      { next: { revalidate: 3600 } },
+      { next: { revalidate: 60 } },
     );
 
     if (!res.ok) return [];

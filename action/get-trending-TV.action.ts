@@ -8,7 +8,7 @@ export async function getTrendingTV(): Promise<Movie[]> {
 
   try {
     const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 60 },
     });
 
     if (!res.ok) throw new Error("Failed to fetch trending TV");

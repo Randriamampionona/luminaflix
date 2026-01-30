@@ -30,7 +30,7 @@ export async function getSearchResults(
       return [];
     }
 
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetch(url, { next: { revalidate: 60 } });
 
     if (!res.ok) {
       const errorData = await res.json();

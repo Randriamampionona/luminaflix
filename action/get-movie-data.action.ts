@@ -8,7 +8,7 @@ export async function getMovieData(id: string) {
     const res = await fetch(
       `${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos`,
       {
-        next: { revalidate: 3600 },
+        next: { revalidate: 60 },
       },
     );
     if (!res.ok) return null;
