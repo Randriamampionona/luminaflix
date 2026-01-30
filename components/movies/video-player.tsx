@@ -13,37 +13,31 @@ import {
   HardDrive,
   Bookmark,
   Radio,
+  LucideIcon,
 } from "lucide-react";
 
-const PROVIDERS = [
+interface Provider {
+  name: string;
+  id: string; // The missing ID
+  url: (id: string) => string;
+  icon: LucideIcon;
+}
+
+const PROVIDERS: Provider[] = [
   {
-    name: "Lumina Vix (CORS)",
-    id: "vixsrc_cors",
-    // We use corsproxy.io to strip the 'SAMEORIGIN' header
-    url: (id: string) => {
-      const target = `https://vixsrc.to/embed/movie/${id}?lang=fr`;
-      return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-    },
+    name: "Lumina Vix",
+    id: "vix",
+    // We call our OWN API route now
+    url: (id: string) =>
+      `/api/proxy?url=${encodeURIComponent(`https://vixsrc.to/embed/movie/${id}?lang=fr`)}`,
     icon: Zap,
   },
   {
-    name: "Lumina 4K (Mirror)",
-    id: "4khdhub_cors",
-    // AllOrigins 'raw' mode is a secondary way to bypass frame blocks
-    url: (id: string) => {
-      const target = `https://4khdhub.store/watch/${id}`;
-      return `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
-    },
+    name: "Lumina 4K",
+    id: "4khub",
+    url: (id: string) =>
+      `/api/proxy?url=${encodeURIComponent(`https://4khdhub.store/watch/${id}`)}`,
     icon: Globe,
-  },
-  {
-    name: "Lumina Best (VF)",
-    id: "frembed_cors",
-    url: (id: string) => {
-      const target = `https://play.frembed.best/api/film.php?id=${id}`;
-      return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-    },
-    icon: Radio,
   },
 ];
 
@@ -107,16 +101,48 @@ export default function VideoPlayer({ movieId }: { movieId: string }) {
         )}
 
         {isUnlocked && (
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(6,182,212,0.15)] bg-zinc-950">
+          <div className="relative aspect-video w-full rounded-2xl bg-zinc-950 border border-white/10 overflow-hidden shadow-[0_0_20px_rgba(6,182,212,0.2)]">
             <iframe
+              // @ts-ignore
+              is="x-frame-bypass"
               src={activeSource.url(movieId)}
               className="absolute inset-0 w-full h-full z-10"
               frameBorder="0"
-              // Combine all permissions here to stop the warning
+              // Permissions ONLY in 'allow' (removes the allowfullscreen warning)
               allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              // 'no-referrer' is essential when using proxies to hide your ngrok origin
               referrerPolicy="no-referrer"
               onLoad={() => setIsLoading(false)}
             />
+
+            {/* Lumina Theme Branding overlay */}
+            <div className="absolute top-4 left-4 z-20 pointer-events-none">
+              <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-cyan-500/30">
+                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                <span className="text-[10px] text-white font-black tracking-widest uppercase">
+                  Lumina Bypass Active
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => window.open(activeSource.url(movieId), "_blank")}
+              className="px-8 py-3 bg-white text-black font-bold rounded-full shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:bg-cyan-400 transition-all"
+            >
+              Lancer le lecteur Lumina (Source {activeSource.name})
+            </button>
+
+            {isLoading && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950">
+                <div className="relative w-24 h-24 mb-4">
+                  <div className="absolute inset-0 border-4 border-cyan-500/20 rounded-full" />
+                  <div className="absolute inset-0 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+                <p className="text-white font-black tracking-widest text-[10px] uppercase">
+                  Lumina Secure Link Established
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

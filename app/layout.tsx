@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,6 +74,18 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          {/* Use the crossorigin attribute to match the credential mode */}
+          <Script
+            src="https://unpkg.com/@ungap/custom-elements-builtin"
+            strategy="beforeInteractive"
+            crossOrigin="anonymous"
+          />
+          <Script
+            src="https://unpkg.com/x-frame-bypass"
+            type="module"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
           <Navbar />
           {children}
           <Footer />
