@@ -15,7 +15,7 @@ import Link from "next/link";
 interface MovieDetailsProps {
   movie: Movie;
   children: React.ReactNode;
-  type?: "movie" | "tv"; // Added to handle routing
+  type?: "movie" | "tv" | "anime"; // Added to handle routing
 }
 
 export default function MovieDetails({
@@ -25,17 +25,21 @@ export default function MovieDetails({
 }: MovieDetailsProps) {
   const displayName = movie.title || movie.name;
   const displayDate = (movie.release_date || movie.first_air_date)?.split(
-    "-",
+    "-"
   )[0];
 
   // Dynamic Route Construction
-  const baseRoute = type === "tv" ? "/k-drama" : "/movies";
-  const playLink = `${baseRoute}/${movie.id}?fallback=${displayName?.toLocaleLowerCase().replaceAll(" ", "+")}`;
+  const baseRoute =
+    type === "anime" ? "/anime" : type === "tv" ? "/k-drama" : "/movies";
+
+  const playLink = `${baseRoute}/${movie.id}?fallback=${displayName
+    ?.toLocaleLowerCase()
+    .replaceAll(" ", "+")}`;
 
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-175 bg-zinc-950/95 border-white/5 text-white backdrop-blur-2xl font-geist rounded-[2rem] overflow-hidden z-[100] p-0 border-white/5">
+      <DialogContent className="sm:max-w-175 bg-zinc-950/95 border-white/5 text-white backdrop-blur-2xl font-geist rounded-[2rem] overflow-hidden z-100 p-0 border-white/5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
           {/* Poster Section with Play Overlay */}
           <div className="relative group aspect-2/3 rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_40px_rgba(6,182,212,0.15)]">

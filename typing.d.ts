@@ -32,3 +32,30 @@ export type Genre = {
 export type GenreResponse = {
   genres: Genre[];
 };
+
+export type AnimeEpisode = {
+  id: number;
+  episode_number: number;
+  name: string;
+  overview: string;
+  still_path: string;
+  air_date: string;
+};
+
+export type AnimeSeason = {
+  id: number;
+  season_number: number;
+  name: string;
+  episode_count: number;
+  poster_path: string;
+  episodes?: AnimeEpisode[]; // Loaded when a season is selected
+};
+
+export type AnimeDetail = {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string;
+  backdrop_path: string;
+  seasons: AnimeSeason[];
+};

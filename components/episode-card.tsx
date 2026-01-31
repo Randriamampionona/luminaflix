@@ -8,12 +8,14 @@ interface EpisodeCardProps {
   ep: any;
   seriesId: string; // Added this
   seasonNumber: number; // Added this
+  path: string;
 }
 
 export default function EpisodeCard({
   ep,
   seriesId,
   seasonNumber,
+  path,
 }: EpisodeCardProps) {
   return (
     <div className="group relative aspect-video bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all cursor-pointer">
@@ -46,7 +48,7 @@ export default function EpisodeCard({
 
       {/* Now these variables are accessible via props */}
       <Link
-        href={`/k-drama/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
+        href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
       >
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_20px_#06b6d4]">

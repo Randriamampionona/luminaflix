@@ -5,14 +5,13 @@ import MovieDetails from "./movie-details";
 
 interface MovieCardProps {
   movie: Movie;
-  type?: "movie" | "tv"; // Added type prop
+  type?: "movie" | "tv" | "anime";
 }
 
 export default function MovieCard({ movie, type = "movie" }: MovieCardProps) {
-  // TMDB uses 'name' for TV and 'title' for Movies
   const displayName = movie.title || movie.name;
   const displayDate = (movie.release_date || movie.first_air_date)?.split(
-    "-",
+    "-"
   )[0];
 
   return (
@@ -26,9 +25,9 @@ export default function MovieCard({ movie, type = "movie" }: MovieCardProps) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
 
-          {/* Quality/Type Tag */}
+          {/* Quality/Type Tag - Updated logic */}
           <div className="absolute top-2 right-2 bg-cyan-500 px-2 py-0.5 rounded text-[8px] font-black text-black uppercase tracking-tighter">
-            {type === "tv" ? "Series" : "4K"}
+            {type === "anime" ? "Anime" : type === "tv" ? "Series" : "4K"}
           </div>
 
           {/* Language Tag */}

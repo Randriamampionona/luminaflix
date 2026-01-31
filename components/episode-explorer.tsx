@@ -9,6 +9,7 @@ export default function EpisodeExplorer({
   seriesId,
   initialEpisodes,
   seasons,
+  path,
 }: any) {
   const [activeSeason, setActiveSeason] = useState(1);
   const [episodes, setEpisodes] = useState(initialEpisodes);
@@ -67,6 +68,7 @@ export default function EpisodeExplorer({
               ep={ep}
               seriesId={seriesId}
               seasonNumber={activeSeason}
+              path={path}
             />
           ))}
         </div>
