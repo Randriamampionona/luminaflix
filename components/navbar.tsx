@@ -36,7 +36,6 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Define All Menus - Add as many as you want here
   const MENUS = [
     "Movies",
     "New & Popular",
@@ -47,7 +46,6 @@ export default function Navbar() {
     "TV Shows",
   ];
 
-  // Logic: Show first 3, hide the rest
   const visibleMenus = MENUS.slice(0, 3);
   const hiddenMenus = MENUS.slice(3);
 
@@ -82,7 +80,7 @@ export default function Navbar() {
           : "py-6 bg-transparent"
       }`}
     >
-      <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex items-center justify-between">
+      <div className="max-w-360 mx-auto px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-2">
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
@@ -100,7 +98,6 @@ export default function Navbar() {
             {visibleMenus.map((item) => {
               const href = getHref(item);
               const active = isActive(href);
-
               return (
                 <Link
                   key={item}
@@ -114,14 +111,13 @@ export default function Navbar() {
               );
             })}
 
-            {/* Collapsible 'More' Sector */}
             {hiddenMenus.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-cyan-500 outline-none transition-colors group">
                   More
                   <ChevronDown className="w-3 h-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-[180px] rounded-2xl">
+                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-45 rounded-2xl">
                   {hiddenMenus.map((item) => {
                     const href = getHref(item);
                     const active = isActive(href);
@@ -150,6 +146,12 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <NavbarActions />
 
+          {/* Mobile */}
+          <div className="xl:hidden flex items-center justify-center">
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <button className="xl:hidden p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all">
@@ -159,23 +161,20 @@ export default function Navbar() {
 
             <SheetContent
               side="right"
-              className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100"
+              className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100 flex flex-col"
             >
-              <div className="flex items-center justify-between p-6">
+              <div className="flex items-center justify-start p-6 shrink-0">
                 <SheetClose asChild>
                   <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white outline-none">
                     <X className="w-5 h-5" />
                   </button>
                 </SheetClose>
-                <SignedIn>
-                  <UserButton showName />
-                </SignedIn>
               </div>
 
-              <div className="p-8 h-full flex flex-col">
+              <div className="p-8 flex-1 overflow-y-auto no-scrollbar flex flex-col">
                 <form
                   onSubmit={handleMobileSearch}
-                  className="relative mb-12 group"
+                  className="relative mb-12 group shrink-0"
                 >
                   <div
                     className={`absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur transition duration-1000 ${
@@ -212,19 +211,17 @@ export default function Navbar() {
                   Navigation<span className="text-cyan-500">.</span>
                 </SheetTitle>
 
-                {/* Mobile Links - Show ALL here since we have vertical space */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 mb-12">
                   {MENUS.map((item) => {
                     const href = getHref(item);
                     const active = isActive(href);
-
                     return (
                       <SheetClose key={item} asChild>
                         <Link
                           href={href}
                           className={`group flex items-center justify-between font-black uppercase italic tracking-tighter transition-all ${
                             active
-                              ? "text-white text-4xl"
+                              ? "text-white text-2xl"
                               : "text-zinc-500 hover:text-white"
                           }`}
                         >
@@ -240,6 +237,34 @@ export default function Navbar() {
                       </SheetClose>
                     );
                   })}
+                </div>
+
+                {/* --- RESTORED FOOTER ACTIONS --- */}
+                <div className="mt-auto pb-12 space-y-6 shrink-0">
+                  <div className="h-px w-full bg-white/5" />
+                  <SignedOut>
+                    <div className="flex flex-col gap-4">
+                      {/* Wrap Sign In Link */}
+                      <SheetClose asChild>
+                        <Link
+                          href="/sign-in"
+                          className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white text-center"
+                        >
+                          Sign In
+                        </Link>
+                      </SheetClose>
+
+                      {/* Wrap Join Lumina Link */}
+                      <SheetClose asChild>
+                        <Link
+                          href="/sign-up"
+                          className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all text-center"
+                        >
+                          Join Lumina Now
+                        </Link>
+                      </SheetClose>
+                    </div>
+                  </SignedOut>
                 </div>
               </div>
             </SheetContent>
