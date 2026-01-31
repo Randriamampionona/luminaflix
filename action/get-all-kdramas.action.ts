@@ -6,7 +6,7 @@ export async function getAllKDramas(
   page: number = 1,
   sortBy: string = "popularity.desc",
   genreId: string = "all",
-  year: string = "All",
+  year: string = "All"
 ) {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
@@ -17,8 +17,8 @@ export async function getAllKDramas(
 
   try {
     const res = await fetch(
-      `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=en-US&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_original_language=ko&with_origin_country=KR`,
-      { next: { revalidate: 60 } }, // 1-minute cache as requested
+      `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_original_language=ko&with_origin_country=KR`,
+      { next: { revalidate: 60 } } // 1-minute cache as requested
     );
 
     if (!res.ok) throw new Error("Failed to fetch K-Dramas");

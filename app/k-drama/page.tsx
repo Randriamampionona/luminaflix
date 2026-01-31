@@ -1,36 +1,24 @@
 import { getAllKDramas } from "@/action/get-all-kdramas.action";
+import KDramaSearch from "@/components/kdrama-search";
 import MovieCard from "@/components/movie-card";
-import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
-import SortDropdown from "@/components/movies/sort-dropdown";
 
 export default async function KDramaPage({
   searchParams,
 }: {
   searchParams: Promise<{
     page?: string;
-    sort?: string;
-    genre?: string;
-    year?: string;
   }>;
 }) {
-  // 1. Unwrap search parameters (Next.js 15 Async API)
-  const {
-    page: rawPage,
-    sort: sortBy = "popularity.desc",
-    genre: genreId = "all",
-    year = "All",
-  } = await searchParams;
+  const { page: rawPage } = await searchParams;
 
   const page = Number(rawPage) || 1;
-
-  // 2. Fetch data specifically for Korean Series
-  const data = await getAllKDramas(page, sortBy, genreId, year);
+  const data = await getAllKDramas(page, "popularity.desc", "all", "All");
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 space-y-20">
+      {/* Header Section - Mirrored from Movies Page */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-20">
         <div className="space-y-2">
           <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
             Lumina <span className="text-white/20">K-Drama</span>
@@ -44,15 +32,13 @@ export default async function KDramaPage({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-start lg:self-end">
-          {/* Note: Ensure AdvancedFilter handles TV genre IDs if they differ from Movie IDs */}
-          <AdvancedFilter />
-          <div className="w-px h-6 bg-white/10 mx-1" />
-          <SortDropdown />
+        {/* The Search Replacement */}
+        <div className="w-full max-w-sm self-start lg:self-end">
+          <KDramaSearch />
         </div>
       </div>
 
-      {/* Results Grid */}
+      {/* Results Grid - Clean 6-Column Layout */}
       {data.results.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12">
           {data.results.map((drama) => (
@@ -60,7 +46,6 @@ export default async function KDramaPage({
               key={drama.id}
               movie={{
                 ...drama,
-                // Remap 'name' to 'title' for your MovieCard component if it only expects 'title'
                 title:
                   drama.name +
                   (drama.original_name ? ` (${drama.original_name})` : ""),
@@ -72,11 +57,8 @@ export default async function KDramaPage({
       ) : (
         <div className="flex flex-col items-center justify-center py-40 border border-dashed border-white/10 rounded-3xl">
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
-            No Korean series found matching these filters
+            No Korean series found
           </p>
-          <button className="mt-4 text-cyan-500 font-black uppercase italic text-xs hover:underline">
-            Reset Filters
-          </button>
         </div>
       )}
 
