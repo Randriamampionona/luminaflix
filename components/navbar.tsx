@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, Menu, Search, X, Zap, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  Menu,
+  Search,
+  X,
+  Zap,
+  Loader2,
+  ChevronDown,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sheet,
   SheetContent,
@@ -10,19 +19,37 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import NavbarActions from "./navbar-actions";
-import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import UserTerminal from "./user-terminal";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Controlled state for Sheet
+  const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  const MENUS = ["Movies", "TV Shows", "New & Popular", "K-Drama"];
+  // Define All Menus - Add as many as you want here
+  const MENUS = [
+    "Movies",
+    "New & Popular",
+    "K-Drama",
+    "Library",
+    "Genres",
+    "Anime",
+    "TV Shows",
+  ];
+
+  // Logic: Show first 3, hide the rest
+  const visibleMenus = MENUS.slice(0, 3);
+  const hiddenMenus = MENUS.slice(3);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -30,20 +57,20 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isActive = (path: string) => pathname === path;
+
+  const getHref = (item: string) =>
+    `/${item.toLowerCase().replace(" & ", "-").replace(" ", "-")}`;
+
   const handleMobileSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!searchQuery.trim() || isSearching) return;
-
     setIsSearching(true);
-
-    // 1. Navigate to the search results
     router.push(`/search/${encodeURIComponent(searchQuery.trim())}`);
-
-    // 2. Small delay to ensure navigation starts before the menu unmounts
     setTimeout(() => {
       setIsOpen(false);
       setIsSearching(false);
-      setSearchQuery(""); // Clear for next time
+      setSearchQuery("");
     }, 300);
   };
 
@@ -55,7 +82,7 @@ export default function Navbar() {
           : "py-6 bg-transparent"
       }`}
     >
-      <div className="max-w-450 mx-auto px-6 md:px-12 flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <Link href="/" className="group flex items-center gap-2">
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
@@ -68,20 +95,55 @@ export default function Navbar() {
             </span>
           </Link>
 
+          {/* Desktop Menu */}
           <div className="hidden xl:flex items-center gap-8">
-            {MENUS.map((item) => (
-              <Link
-                key={item}
-                href={
-                  item === "Home"
-                    ? "/"
-                    : `/${item.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
-                }
-                className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 hover:text-cyan-500 transition-colors"
-              >
-                {item}
-              </Link>
-            ))}
+            {visibleMenus.map((item) => {
+              const href = getHref(item);
+              const active = isActive(href);
+
+              return (
+                <Link
+                  key={item}
+                  href={href}
+                  className={`relative text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 hover:text-cyan-500 ${
+                    active ? "text-cyan-500" : "text-zinc-500"
+                  }`}
+                >
+                  {item}
+                </Link>
+              );
+            })}
+
+            {/* Collapsible 'More' Sector */}
+            {hiddenMenus.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-cyan-500 outline-none transition-colors group">
+                  More
+                  <ChevronDown className="w-3 h-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-[180px] rounded-2xl">
+                  {hiddenMenus.map((item) => {
+                    const href = getHref(item);
+                    const active = isActive(href);
+                    return (
+                      <DropdownMenuItem key={item} asChild>
+                        <Link
+                          href={href}
+                          className={`flex items-center justify-between px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all focus:bg-cyan-500 focus:text-black ${
+                            active
+                              ? "text-cyan-500 bg-white/5"
+                              : "text-zinc-400"
+                          }`}
+                        >
+                          {item}
+                          {active && <Zap className="w-3 h-3 fill-current" />}
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
@@ -101,7 +163,7 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between p-6">
                 <SheetClose asChild>
-                  <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all outline-none">
+                  <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white outline-none">
                     <X className="w-5 h-5" />
                   </button>
                 </SheetClose>
@@ -116,32 +178,31 @@ export default function Navbar() {
                   className="relative mb-12 group"
                 >
                   <div
-                    className={`absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur transition duration-1000 ${searchQuery ? "opacity-40" : "opacity-10"}`}
-                  ></div>
-
-                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 group-within:border-cyan-500/50 transition-all overflow-hidden">
+                    className={`absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur transition duration-1000 ${
+                      searchQuery ? "opacity-40" : "opacity-10"
+                    }`}
+                  />
+                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 transition-all overflow-hidden">
                     <Search
-                      className={`ml-4 w-5 h-5 transition-colors ${searchQuery ? "text-cyan-400" : "text-zinc-500"}`}
+                      className={`ml-4 w-5 h-5 ${
+                        searchQuery ? "text-cyan-400" : "text-zinc-500"
+                      }`}
                     />
-
                     <input
-                      name="mobileSearch"
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Lumina..."
                       className="w-full bg-transparent border-none outline-none py-5 px-4 text-sm font-bold uppercase tracking-widest text-white placeholder:text-zinc-700"
                     />
-
                     <button
                       type="submit"
-                      disabled={!searchQuery.trim() || isSearching}
-                      className="mr-2 p-3 bg-white disabled:bg-zinc-800 disabled:text-zinc-600 hover:bg-cyan-500 text-black rounded-xl transition-all active:scale-95 group/btn"
+                      className="mr-2 p-3 bg-white text-black rounded-xl"
                     >
                       {isSearching ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                        <ArrowRight className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -151,42 +212,34 @@ export default function Navbar() {
                   Navigation<span className="text-cyan-500">.</span>
                 </SheetTitle>
 
+                {/* Mobile Links - Show ALL here since we have vertical space */}
                 <div className="flex flex-col gap-6">
-                  {MENUS.map((item) => (
-                    <SheetClose key={item} asChild>
-                      <Link
-                        href={
-                          item === "Home"
-                            ? "/"
-                            : `/${item.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
-                        }
-                        className="group flex items-center justify-between font-black uppercase italic tracking-tighter text-zinc-500 hover:text-white transition-all"
-                      >
-                        <span className="group-hover:translate-x-2 transition-transform duration-300">
-                          {item}
-                        </span>
-                        <Zap className="w-6 h-6 text-cyan-500 opacity-0 group-hover:opacity-100 transition-all" />
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </div>
+                  {MENUS.map((item) => {
+                    const href = getHref(item);
+                    const active = isActive(href);
 
-                <div className="mt-auto pb-12 space-y-6">
-                  <div className="h-px w-full bg-white/5" />
-                  <div className="flex flex-col gap-4">
-                    <SignedOut>
-                      <Link href="/sign-in">
-                        <button className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
-                          Sign In
-                        </button>
-                      </Link>
-                      <Link href="/sign-up">
-                        <button className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-                          Join Lumina Now
-                        </button>
-                      </Link>
-                    </SignedOut>
-                  </div>
+                    return (
+                      <SheetClose key={item} asChild>
+                        <Link
+                          href={href}
+                          className={`group flex items-center justify-between font-black uppercase italic tracking-tighter transition-all ${
+                            active
+                              ? "text-white text-4xl"
+                              : "text-zinc-500 hover:text-white"
+                          }`}
+                        >
+                          <span>{item}</span>
+                          <Zap
+                            className={`w-6 h-6 text-cyan-500 ${
+                              active
+                                ? "opacity-100 scale-125 shadow-cyan-500"
+                                : "opacity-0 group-hover:opacity-100"
+                            }`}
+                          />
+                        </Link>
+                      </SheetClose>
+                    );
+                  })}
                 </div>
               </div>
             </SheetContent>
