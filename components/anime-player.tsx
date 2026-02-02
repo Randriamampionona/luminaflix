@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, Globe, Tv, Play } from "lucide-react";
+import { Zap, Globe, Tv, Play, FastForward } from "lucide-react";
 
 interface Provider {
   name: string;
@@ -30,6 +30,24 @@ const FR_PROVIDERS: Provider[] = [
 ];
 
 const EN_PROVIDERS: Provider[] = [
+  {
+    name: "VidFast (Speed)",
+    id: "vidfast",
+    url: (id, s, e) => `https://vidfast.pro/tv/${id}/${s}/${e}?autoPlay=true`,
+    icon: FastForward,
+  },
+  {
+    name: "Videasy (Alternative)",
+    id: "videasy",
+    url: (id, s, e) => `https://player.videasy.net/tv/${id}/${s}/${e}`,
+    icon: FastForward,
+  },
+  {
+    name: "111movies.com",
+    id: "111movies",
+    url: (id, s, e) => `https://111movies.com/tv/${id}/${s}/${e}`,
+    icon: FastForward,
+  },
   {
     name: "VidLink.pro",
     id: "vidlink",

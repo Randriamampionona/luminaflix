@@ -12,6 +12,7 @@ import {
   Languages,
   X,
   Maximize2,
+  FastForward,
 } from "lucide-react";
 
 interface Provider {
@@ -48,6 +49,24 @@ const FR_PROVIDERS: Provider[] = [
 ];
 
 const EN_PROVIDERS: Provider[] = [
+  {
+    name: "VidFast (Speed)",
+    id: "vidfast",
+    url: (id) => `https://vidfast.pro/movie/${id}?autoPlay=true`,
+    icon: FastForward,
+  },
+  {
+    name: "Videasy (Alternative)",
+    id: "videasy",
+    url: (id) => `https://player.videasy.net/movie/${id}`,
+    icon: FastForward,
+  },
+  {
+    name: "111movies.com",
+    id: "111movies",
+    url: (id) => `https://111movies.com/movie/${id}`,
+    icon: FastForward,
+  },
   {
     name: "VidLink.pro",
     id: "vidlink",
