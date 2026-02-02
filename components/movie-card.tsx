@@ -11,12 +11,12 @@ interface MovieCardProps {
 export default function MovieCard({ movie, type = "movie" }: MovieCardProps) {
   const displayName = movie.title || movie.name;
   const displayDate = (movie.release_date || movie.first_air_date)?.split(
-    "-"
+    "-",
   )[0];
 
   return (
     <MovieDetails movie={movie} type={type}>
-      <div className="relative flex-none group cursor-pointer w-full">
+      <div className="relative flex-none group cursor-pointer w-37.5 md:w-50">
         {/* Poster Container */}
         <div className="relative aspect-2/3 rounded-md overflow-hidden bg-zinc-900 border border-white/5 shadow-lg">
           <img

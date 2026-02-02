@@ -58,7 +58,7 @@ export default function AdvancedFilter() {
       </DialogTrigger>
 
       {/* Styled to match your exact spec */}
-      <DialogContent className="sm:max-w-100 bg-zinc-950/95 border-white/10 p-8 backdrop-blur-2xl rounded-md ring-1 ring-white/5 shadow-2xl">
+      <DialogContent className="sm:max-w-100 bg-zinc-950/95 border-white/10 p-8 backdrop-blur-2xl rounded-md ring-1 ring-white/5 shadow-2xl z-100">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-8">
           <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter text-white">
             Refine<span className="text-cyan-500">.</span>

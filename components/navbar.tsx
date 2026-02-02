@@ -117,7 +117,7 @@ export default function Navbar() {
                   More
                   <ChevronDown className="w-3 h-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-45 rounded-2xl">
+                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-45 rounded-md z-100">
                   {hiddenMenus.map((item) => {
                     const href = getHref(item);
                     const active = isActive(href);

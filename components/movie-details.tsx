@@ -25,7 +25,7 @@ export default function MovieDetails({
 }: MovieDetailsProps) {
   const displayName = movie.title || movie.name;
   const displayDate = (movie.release_date || movie.first_air_date)?.split(
-    "-"
+    "-",
   )[0];
 
   // Dynamic Route Construction
