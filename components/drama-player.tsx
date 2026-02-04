@@ -6,9 +6,14 @@ import {
   Play,
   ShieldCheck,
   Loader2,
-  Globe,
+  Globe2,
   Settings,
   FastForward,
+  Layers,
+  Activity,
+  Cpu,
+  X,
+  Maximize2,
 } from "lucide-react";
 
 interface Provider {
@@ -20,35 +25,35 @@ interface Provider {
 
 const PROVIDERS: Provider[] = [
   {
-    name: "VidFast (Speed)",
+    name: "VidFast (Flash)",
     id: "vidfast",
     url: (id, s, e) => `https://vidfast.pro/tv/${id}/${s}/${e}?autoPlay=true`,
     icon: FastForward,
   },
   {
-    name: "Videasy (Alternative)",
+    name: "Videasy (Legacy)",
     id: "videasy",
     url: (id, s, e) => `https://player.videasy.net/tv/${id}/${s}/${e}`,
-    icon: FastForward,
+    icon: Layers,
   },
   {
-    name: "111movies.com",
-    id: "111movies",
-    url: (id, s, e) => `https://111movies.com/tv/${id}/${s}/${e}`,
-    icon: FastForward,
+    name: "VidNest (Mirror)",
+    id: "vidnest",
+    url: (id, s, e) => `https://vidnest.fun/tv/${id}/${s}/${e}`,
+    icon: Globe2,
   },
   {
-    name: "VidLink (Primary)",
+    name: "VidLink (Direct)",
     id: "vidlink",
     url: (id, s, e) =>
       `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=06b6d4`,
     icon: Zap,
   },
   {
-    name: "VidSrc (Mirror)",
+    name: "VidSrc (Global)",
     id: "vidsrc",
     url: (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
-    icon: Globe,
+    icon: Globe2,
   },
 ];
 
@@ -68,21 +73,20 @@ export default function LuminaDramaPlayer({
   const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
     setIsLoading(true);
-    // Keep isUnlocked true once they've started the session
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* NATIVE VIEWPORT */}
-      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden border border-white/10 bg-zinc-950 shadow-2xl ring-1 ring-white/5">
+    <div className="w-full space-y-8 animate-in fade-in duration-1000">
+      {/* 2. MAIN CINEMA VIEWPORT */}
+      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/5 group">
         {/* THE STREAM ENGINE */}
         {isUnlocked && (
           <div className="absolute inset-0 z-10 bg-black animate-in fade-in duration-700">
-            {/* Loading State Overlay */}
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
-                <div className="flex flex-col items-center gap-4">
-                  <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+                <div className="relative flex flex-col items-center gap-4">
+                  <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                  <div className="absolute inset-0 blur-xl bg-cyan-500/20 animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
                     Handshaking {activeSource.id}...
                   </span>
@@ -90,10 +94,9 @@ export default function LuminaDramaPlayer({
               </div>
             )}
 
-            {/* Actual Embed */}
             <iframe
               src={activeSource.url(id, season, episode)}
-              className="w-full h-full"
+              className="w-full h-full grayscale-[0.05] contrast-[1.05]"
               allowFullScreen
               allow="autoplay; encrypted-media; picture-in-picture"
               onLoad={() => setIsLoading(false)}
@@ -101,64 +104,99 @@ export default function LuminaDramaPlayer({
           </div>
         )}
 
-        {/* INITIAL UNLOCK OVERLAY (Only shows once per session) */}
+        {/* INITIAL UNLOCK SPLASH */}
         {!isUnlocked && (
           <div
             onClick={() => setIsUnlocked(true)}
-            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl group"
+            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
           >
-            <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.4)] group-hover:scale-110 group-hover:bg-cyan-500 transition-all duration-700">
-              <Play className="w-10 h-10 text-black fill-current ml-1" />
+            <div className="absolute inset-0 bg-gradient-to-t from-cyan-950/20 to-transparent" />
+            <div className="relative">
+              <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
+              <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
+                <Play className="w-12 h-12 text-black fill-current ml-1.5" />
+              </div>
             </div>
-            <p className="mt-8 text-[11px] font-black uppercase italic tracking-[0.4em] text-white">
+            <p className="mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
               Launch Lumina <span className="text-cyan-500">Theater</span>
             </p>
           </div>
         )}
       </div>
 
-      {/* PROVIDER SWITCHER BAR */}
-      <div className="flex flex-wrap items-center gap-4 justify-center bg-zinc-900/20 p-3 rounded-[2rem] border border-white/5 w-fit mx-auto">
+      {/* 3. PROVIDER SELECTION ENGINE */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {PROVIDERS.map((provider) => {
           const Icon = provider.icon;
+          const isActive = activeSource.id === provider.id;
           return (
             <button
               key={provider.id}
               onClick={() => handleSourceChange(provider)}
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
-                activeSource.id === provider.id
-                  ? "bg-white border-white text-black shadow-lg"
-                  : "bg-black/40 border-white/5 text-zinc-500 hover:text-white hover:border-white/20"
+              className={`relative flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-500 border group ${
+                isActive
+                  ? "bg-white border-white shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)]"
+                  : "bg-zinc-900/40 border-white/5 hover:border-white/20"
               }`}
             >
-              <Icon
-                className={`w-3.5 h-3.5 ${activeSource.id === provider.id ? "text-cyan-600" : ""}`}
-              />
-              {provider.name}
+              <div
+                className={`p-3 rounded-xl transition-colors duration-500 ${
+                  isActive
+                    ? "bg-black text-cyan-500"
+                    : "bg-white/5 text-zinc-500 group-hover:text-white"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <span
+                  className={`text-[11px] font-black uppercase tracking-widest ${isActive ? "text-black" : "text-white"}`}
+                >
+                  {provider.name}
+                </span>
+                <span
+                  className={`text-[8px] font-bold uppercase tracking-[0.1em] ${isActive ? "text-zinc-500" : "text-zinc-600"}`}
+                >
+                  {isActive ? "Currently Active" : "Available Source"}
+                </span>
+              </div>
+              {isActive && (
+                <div className="absolute right-6 w-1.5 h-1.5 rounded-full bg-cyan-600 animate-pulse" />
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* STATUS FOOTER */}
-      <div className="flex items-center justify-between px-8 py-4 bg-zinc-900/10 rounded-3xl border border-white/5 max-w-2xl mx-auto">
-        <div className="flex items-center gap-6 text-zinc-600">
-          <div className="flex items-center gap-2">
-            <Settings className="w-3 h-3 text-cyan-500" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-              Direct Link:{" "}
-              <span className="text-cyan-500">{activeSource.id}</span>
+      {/* 4. SYSTEM STATUS FOOTER */}
+      <div className="flex flex-wrap items-center justify-between gap-4 px-8 py-5 bg-zinc-950 rounded-[2rem] border border-white/5 shadow-2xl">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <Cpu className="w-4 h-4 text-cyan-500/50" />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">
+                Processor
+              </span>
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter text-left">
+                Lumina Core TV
+              </span>
+            </div>
+          </div>
+          <div className="h-8 w-px bg-white/5 hidden sm:block" />
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest text-left">
+              Resource Hash
+            </span>
+            <span className="text-[10px] font-bold text-cyan-500/80 uppercase tracking-tighter">
+              ID: {id}
             </span>
           </div>
-          <div className="w-1 h-1 bg-zinc-800 rounded-full" />
-          <span className="text-[9px] font-bold uppercase tracking-widest">
-            S{season} : E{episode}
-          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-3 h-3 text-cyan-500/50" />
-          <span className="text-[8px] font-black text-cyan-500/70 uppercase">
-            Encrypted
+
+        <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+          <ShieldCheck className="w-3.5 h-3.5 text-cyan-500/50" />
+          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+            Protocol: Encrypted Direct Link
           </span>
         </div>
       </div>

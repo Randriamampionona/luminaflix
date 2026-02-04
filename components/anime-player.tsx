@@ -1,22 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, Globe, Tv, Play, FastForward } from "lucide-react";
+import {
+  Zap,
+  Play,
+  ShieldCheck,
+  Loader2,
+  Globe2,
+  Settings,
+  FastForward,
+  Layers,
+  Activity,
+  Cpu,
+  X,
+  Maximize2,
+  CloudLightning,
+  Languages,
+  Tv2,
+} from "lucide-react";
 
 interface Provider {
   name: string;
   id: string;
-  url: (id: string, s: number, e: number) => string;
+  url: (id: string, s: number, e: number, imdbId?: string) => string;
   icon: any;
   isExternal?: boolean;
 }
 
+// 🇫🇷 ALL FRENCH PROVIDERS KEPT
 const FR_PROVIDERS: Provider[] = [
   {
     name: "Lumina 4K (Ultra)",
     id: "4khub",
-    url: (id, s, e) => `https://4khdhub.store/watch/tv/${id}/${s}/${e}`, // Adjusted for TV path
-    icon: Globe,
+    url: (id, s, e) => `https://4khdhub.store/watch/tv/${id}/${s}/${e}`,
+    icon: Layers,
     isExternal: true,
   },
   {
@@ -24,12 +41,13 @@ const FR_PROVIDERS: Provider[] = [
     id: "frembed",
     url: (id, s, e) =>
       `https://play.frembed.best/api/serie.php?id=${id}&sa=${s}&epi=${e}`,
-    icon: Tv,
+    icon: Tv2,
     isExternal: true,
   },
 ];
 
-const EN_PROVIDERS: Provider[] = [
+// 🌍 ALL VO PROVIDERS KEPT
+const VO_PROVIDERS: Provider[] = [
   {
     name: "VidFast (Speed)",
     id: "vidfast",
@@ -40,26 +58,32 @@ const EN_PROVIDERS: Provider[] = [
     name: "Videasy (Alternative)",
     id: "videasy",
     url: (id, s, e) => `https://player.videasy.net/tv/${id}/${s}/${e}`,
-    icon: FastForward,
+    icon: Activity,
+  },
+  {
+    name: "vidnest.fun (Alt)",
+    id: "vidnest",
+    url: (id, s, e) => `https://vidnest.fun/tv/${id}/${s}/${e}`,
+    icon: Globe2,
   },
   {
     name: "111movies.com",
     id: "111movies",
     url: (id, s, e) => `https://111movies.com/tv/${id}/${s}/${e}`,
-    icon: FastForward,
+    icon: Layers,
   },
   {
     name: "VidLink.pro",
     id: "vidlink",
     url: (id, s, e) =>
       `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=06b6d4`,
-    icon: Globe,
+    icon: Zap,
   },
   {
     name: "VidSrc.to",
     id: "vidsrc",
     url: (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
-    icon: Zap,
+    icon: Globe2,
   },
 ];
 
@@ -72,43 +96,207 @@ export default function LuminaAnimePlayer({
   season: number;
   episode: number;
 }) {
-  const [activeProvider, setActiveProvider] = useState(EN_PROVIDERS[0]);
+  const [activeTab, setActiveTab] = useState<"VO" | "FR">("VO");
+  const [activeSource, setActiveSource] = useState<Provider>(VO_PROVIDERS[0]);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showTheater, setShowTheater] = useState(false);
+
+  const handleSourceChange = (source: Provider) => {
+    setActiveSource(source);
+    setIsUnlocked(false);
+    setIsLoading(true);
+    setShowTheater(false);
+  };
+
+  const handleTabChange = (tab: "VO" | "FR") => {
+    setActiveTab(tab);
+    const firstSource = tab === "VO" ? VO_PROVIDERS[0] : FR_PROVIDERS[0];
+    handleSourceChange(firstSource);
+  };
 
   return (
-    <div className="w-full flex flex-col gap-6">
-      {/* The Iframe Bridge */}
-      <div className="relative aspect-video w-full bg-zinc-950 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
-        <iframe
-          src={activeProvider.url(id, season, episode)}
-          className="w-full h-full"
-          allowFullScreen
-          scrolling="no"
-        />
-      </div>
-
-      {/* Provider Switching Station */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[...EN_PROVIDERS, ...FR_PROVIDERS].map((provider) => (
+    <div className="w-full space-y-8 animate-in fade-in duration-1000">
+      {/* 1. LANGUAGE SELECTOR */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-2">
+        <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-inner">
           <button
-            key={provider.id}
-            onClick={() => setActiveProvider(provider)}
-            className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
-              activeProvider.id === provider.id
-                ? "bg-cyan-500 border-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-                : "bg-zinc-900/50 border-white/5 text-zinc-400 hover:border-cyan-500/50 hover:text-white"
+            onClick={() => handleTabChange("VO")}
+            className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
+              activeTab === "VO"
+                ? "bg-white text-black shadow-lg"
+                : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <provider.icon className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                {provider.name}
+            Original (VO)
+          </button>
+          <button
+            onClick={() => handleTabChange("FR")}
+            className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
+              activeTab === "FR"
+                ? "bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            French (VF)
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 px-6 py-3 bg-zinc-900/20 rounded-2xl border border-white/5">
+          <Activity className="w-3.5 h-3.5 text-cyan-500 animate-pulse" />
+          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+            S{season} E{episode} • Active Signal
+          </span>
+        </div>
+      </div>
+
+      {/* 2. VIEWPORT */}
+      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
+        {/* EXTERNAL/BRIDGE THEATER */}
+        {showTheater && (
+          <div className="absolute inset-0 z-50 bg-black flex flex-col animate-in zoom-in-95 duration-500">
+            <div className="flex items-center justify-between px-6 py-3 bg-zinc-950/90 border-b border-white/5">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-500">
+                Lumina Virtual Console — {activeSource.name}
+              </span>
+              <button
+                onClick={() => setShowTheater(false)}
+                className="p-1.5 bg-white/5 hover:bg-white/10 rounded-full text-white/50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <iframe
+              src={activeSource.url(id, season, episode)}
+              className="flex-1 w-full h-full"
+              allowFullScreen
+              onLoad={() => setIsLoading(false)}
+            />
+          </div>
+        )}
+
+        {/* NATIVE PLAYER */}
+        {isUnlocked && !activeSource.isExternal && (
+          <div className="absolute inset-0 z-10">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
+                <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+              </div>
+            )}
+            <iframe
+              src={activeSource.url(id, season, episode)}
+              className="w-full h-full"
+              allowFullScreen
+              onLoad={() => setIsLoading(false)}
+            />
+          </div>
+        )}
+
+        {/* BRIDGE LAUNCHER */}
+        {isUnlocked && activeSource.isExternal && !showTheater && (
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950 px-6">
+            <div className="text-center space-y-8">
+              <div className="w-24 h-24 mx-auto bg-black border border-white/10 rounded-3xl flex items-center justify-center shadow-2xl">
+                <ShieldCheck className="w-10 h-10 text-cyan-500" />
+              </div>
+              <h3 className="text-xl font-black uppercase text-white italic">
+                Protocol Initialized
+              </h3>
+              <button
+                onClick={() => {
+                  setIsLoading(true);
+                  setShowTheater(true);
+                }}
+                className="px-12 py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 hover:scale-105 transition-all"
+              >
+                START VIRTUAL STREAM
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* UNLOCK SPLASH */}
+        {!isUnlocked && (
+          <div
+            onClick={() => setIsUnlocked(true)}
+            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all"
+          >
+            <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] hover:scale-110 transition-all duration-700">
+              <Play className="w-12 h-12 text-black fill-current ml-1.5" />
+            </div>
+            <p className="mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80">
+              Launch Lumina <span className="text-cyan-500">Anime</span>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 3. PROVIDER GRID (All providers from your list) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {(activeTab === "VO" ? VO_PROVIDERS : FR_PROVIDERS).map((provider) => {
+          const Icon = provider.icon;
+          const isActive = activeSource.id === provider.id;
+          return (
+            <button
+              key={provider.id}
+              onClick={() => handleSourceChange(provider)}
+              className={`relative flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-500 border ${
+                isActive
+                  ? "bg-white border-white shadow-xl"
+                  : "bg-zinc-900/40 border-white/5 hover:border-white/20"
+              }`}
+            >
+              <div
+                className={`p-3 rounded-xl ${isActive ? "bg-black text-cyan-500" : "bg-white/5 text-zinc-500"}`}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <span
+                  className={`text-[11px] font-black uppercase tracking-widest ${isActive ? "text-black" : "text-white"}`}
+                >
+                  {provider.name}
+                </span>
+                <span
+                  className={`text-[8px] font-bold uppercase tracking-widest ${isActive ? "text-zinc-500" : "text-zinc-600"}`}
+                >
+                  {provider.isExternal ? "Tunnel Mode" : "Native Mode"}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 4. FOOTER */}
+      <div className="flex flex-wrap items-center justify-between gap-4 px-8 py-5 bg-zinc-950 rounded-[2rem] border border-white/5 shadow-2xl">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <Cpu className="w-4 h-4 text-cyan-500/50" />
+            <div className="flex flex-col text-left">
+              <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">
+                Engine
+              </span>
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
+                Lumina Anime-X
               </span>
             </div>
-            {activeProvider.id === provider.id && (
-              <Play className="w-3 h-3 fill-current" />
-            )}
-          </button>
-        ))}
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">
+              Metadata
+            </span>
+            <span className="text-[10px] font-bold text-cyan-500/80 uppercase tracking-tighter">
+              ID: {id}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+          <Languages className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+            Signal: {activeTab} Ready
+          </span>
+        </div>
       </div>
     </div>
   );

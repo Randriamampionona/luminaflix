@@ -15,6 +15,13 @@ export type Movie = {
   popularity: number;
   video: boolean;
   vote_count: number;
+  external_ids?: {
+    imdb_id: string | null;
+    wikidata_id: string | null;
+    facebook_id: string | null;
+    instagram_id: string | null;
+    twitter_id: string | null;
+  };
 };
 
 export type TMDBResponse = {

@@ -22,8 +22,6 @@ export async function getSearchResults(
       return [];
     }
 
-    console.log({ url });
-
     // Double check url is valid before fetching
     if (!url || url.includes("undefined")) {
       console.error("Lumina Auth Error: API Key or Base URL is missing.");
@@ -53,8 +51,6 @@ export async function getSearchResults(
     }
 
     return results || [];
-
-    console.log(results);
   } catch (error) {
     console.error("Lumina Search Engine Critical Failure:", error);
     return [];

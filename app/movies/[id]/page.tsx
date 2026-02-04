@@ -118,7 +118,10 @@ export default async function WatchPage({
         </div>
 
         {/* The Advanced Player Component */}
-        <VideoPlayer movieId={id} />
+        <VideoPlayer
+          movieId={movie.id.toString()}
+          imdbId={movie.external_ids?.imdb_id}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t border-white/5">
           <div className="lg:col-span-2 space-y-6">
