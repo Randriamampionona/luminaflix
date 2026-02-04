@@ -7,9 +7,9 @@ export async function getSearchKDramas(query: string, page: number = 1) {
   try {
     const res = await fetch(
       `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(
-        query
+        query,
       )}&language=en-US&page=${page}&include_adult=true`,
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 3600 } },
     );
 
     const data = await res.json();
@@ -17,7 +17,7 @@ export async function getSearchKDramas(query: string, page: number = 1) {
     // Filter results to ensure they are Korean to maintain the "K-Drama" section integrity
     const filteredResults = data.results.filter(
       (item: any) =>
-        item.origin_country?.includes("KR") || item.original_language === "ko"
+        item.origin_country?.includes("KR") || item.original_language === "ko",
     );
 
     return {

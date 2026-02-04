@@ -110,7 +110,7 @@ export default function LuminaDramaPlayer({
             onClick={() => setIsUnlocked(true)}
             className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-cyan-950/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
             <div className="relative">
               <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
               <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
@@ -155,7 +155,7 @@ export default function LuminaDramaPlayer({
                   {provider.name}
                 </span>
                 <span
-                  className={`text-[8px] font-bold uppercase tracking-[0.1em] ${isActive ? "text-zinc-500" : "text-zinc-600"}`}
+                  className={`text-[8px] font-bold uppercase tracking-widest ${isActive ? "text-zinc-500" : "text-zinc-600"}`}
                 >
                   {isActive ? "Currently Active" : "Available Source"}
                 </span>
