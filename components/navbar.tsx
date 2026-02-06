@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import NavbarActions from "./navbar-actions";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import LanguageSelector from "./language-selector";
 
 export default function Navbar() {
   const router = useRouter();
@@ -145,6 +146,9 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <NavbarActions />
+          <div className="hidden xl:flex items-center justify-center">
+            <LanguageSelector />
+          </div>
 
           {/* Mobile */}
           <div className="xl:hidden flex items-center justify-center">
@@ -163,12 +167,15 @@ export default function Navbar() {
               side="right"
               className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100 flex flex-col"
             >
-              <div className="flex items-center justify-start p-6 shrink-0">
+              <div className="flex items-center justify-between w-full p-6 shrink-0">
                 <SheetClose asChild>
                   <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white outline-none">
                     <X className="w-5 h-5" />
                   </button>
                 </SheetClose>
+                <div className="flex xl:hidden items-center justify-center">
+                  <LanguageSelector />
+                </div>
               </div>
 
               <div className="p-8 flex-1 overflow-y-auto no-scrollbar flex flex-col">

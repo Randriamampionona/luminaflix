@@ -66,15 +66,12 @@ export default function SearchHub() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group relative flex items-center gap-4 px-4 py-2 bg-zinc-900/40 border border-white/5 rounded-2xl hover:border-cyan-500/50 hover:bg-zinc-900 transition-all duration-500"
+        className="relative flex items-center gap-4 px-4 py-3 border rounded-2xl border-cyan-500/50 bg-zinc-900 transition-all duration-500 cursor-pointer"
       >
-        <Search className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 transition-colors" />
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 group-hover:text-zinc-400">
-          Search Archives
+        <Search className="w-4 h-4  text-cyan-400 transition-colors" />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+          SEARCH...
         </span>
-        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/40 border border-white/5 text-[9px] font-bold text-zinc-700 group-hover:text-cyan-500 transition-colors">
-          <Command className="w-2.5 h-2.5" /> K
-        </div>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
