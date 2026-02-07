@@ -6,7 +6,7 @@ import { ShieldCheck, Activity, Terminal } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; display_lang?: string }>;
 }
 
 export default async function GenreSectorPage({ params, searchParams }: Props) {
@@ -19,7 +19,7 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
   // 1. Fetch movies and genre list in parallel for maximum speed
   const [data, allGenres] = await Promise.all([
     getMoviesByGenre(id, page),
-    getAllGenres(),
+    getAllGenres({ display_lang: resolvedSearchParams.display_lang }),
   ]);
 
   // 2. Find the current genre name based on the ID
