@@ -8,13 +8,15 @@ import Image from "next/image";
 
 export default async function KDramaDetailsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ display_lang?: string }>;
 }) {
   const { id } = await params;
-  const drama = await getKDramaDetails(id);
-  const initialEpisodes = await getSeasonEpisodes(id, 1);
-
+  const { display_lang } = await searchParams;
+  const drama = await getKDramaDetails(id, display_lang);
+  const initialEpisodes = await getSeasonEpisodes(id, 1, display_lang);
   if (!drama)
     return (
       <div className="text-white pt-40 text-center uppercase font-black">

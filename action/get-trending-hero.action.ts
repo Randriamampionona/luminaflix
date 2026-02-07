@@ -1,12 +1,16 @@
 "use server";
 
-export async function getTrendingHero() {
+export async function getTrendingHero({
+  display_lang,
+}: {
+  display_lang?: string;
+}) {
   const API_KEY = process.env.TMDB_API_KEY!;
   const BASE_URL = process.env.BASE_URL!;
 
   try {
     const res = await fetch(
-      `${BASE_URL}/trending/movie/day?api_key=${API_KEY}`,
+      `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
       { next: { revalidate: 60 } },
     );
 

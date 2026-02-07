@@ -2,6 +2,7 @@ import {
   getKDramaDetails,
   getSeasonEpisodes,
 } from "@/action/get-kdrama-details.action";
+import CustomLink from "@/components/custom-link";
 import LuminaDramaPlayer from "@/components/drama-player";
 import {
   ChevronLeft,
@@ -17,18 +18,18 @@ export default async function KDramaPlayPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ s?: string; e?: string }>;
+  searchParams: Promise<{ s?: string; e?: string; display_lang?: string }>;
 }) {
   const { id } = await params;
-  const { s, e } = await searchParams;
+  const { s, e, display_lang } = await searchParams;
 
   const seasonNum = Number(s) || 1;
   const episodeNum = Number(e) || 1;
 
   // Parallel fetch for speed
   const [drama, episodes] = await Promise.all([
-    getKDramaDetails(id),
-    getSeasonEpisodes(id, seasonNum),
+    getKDramaDetails(id, display_lang),
+    getSeasonEpisodes(id, seasonNum, display_lang),
   ]);
 
   // Find the specific episode title from the list
@@ -55,7 +56,7 @@ export default async function KDramaPlayPage({
       <div className="max-w-7xl mx-auto mb-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-6">
-            <Link
+            <CustomLink
               href={`/k-drama/${id}`}
               className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-all group"
             >
@@ -65,7 +66,7 @@ export default async function KDramaPlayPage({
               <span className="text-[10px] font-black uppercase tracking-[0.2em]">
                 Abort Mission / Back to Library
               </span>
-            </Link>
+            </CustomLink>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">

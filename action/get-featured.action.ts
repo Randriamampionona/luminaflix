@@ -2,13 +2,17 @@
 
 import { Movie, TMDBResponse } from "@/typing";
 
-export async function getFeatured(): Promise<Movie | null> {
+export async function getFeatured({
+  display_lang,
+}: {
+  display_lang?: string;
+}): Promise<Movie | null> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   try {
     const res = await fetch(
-      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`,
+      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=${display_lang || "en-US"}&page=1`,
       { next: { revalidate: 60 } },
     );
 

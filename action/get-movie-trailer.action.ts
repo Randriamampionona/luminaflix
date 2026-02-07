@@ -3,7 +3,8 @@
 export async function getMovieTrailer(
   id: string,
   requestedLang?: string,
-  type?: string, // Added the 3rd argument here
+  type?: string,
+  display_lang?: string,
 ) {
   const TMDB_API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
@@ -15,7 +16,7 @@ export async function getMovieTrailer(
 
   const fetchFromTMDB = async (tmdbType: "movie" | "tv", lang: string) => {
     try {
-      const url = `${BASE_URL}/${tmdbType}/${id}/videos?api_key=${TMDB_API_KEY}&language=${lang}`;
+      const url = `${BASE_URL}/${tmdbType}/${id}/videos?api_key=${TMDB_API_KEY}&language=${lang}${display_lang ? `&language=${display_lang}` : ""}`;
       const response = await fetch(url);
       const data = await response.json();
 

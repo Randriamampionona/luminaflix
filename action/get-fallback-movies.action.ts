@@ -2,7 +2,10 @@
 
 import { Movie, TMDBResponse } from "@/typing";
 
-export async function getFallbackMovie(query: string): Promise<Movie[]> {
+export async function getFallbackMovie(
+  query: string,
+  display_lang?: string,
+): Promise<Movie[]> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
@@ -10,7 +13,7 @@ export async function getFallbackMovie(query: string): Promise<Movie[]> {
 
   try {
     const res = await fetch(
-      `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`,
+      `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1&language=${display_lang || "en-US"}`,
       { next: { revalidate: 60 } },
     );
 

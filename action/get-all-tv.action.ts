@@ -7,12 +7,13 @@ export async function getAllTVShows(
   sortBy: string = "first_air_date.desc",
   genreId?: string,
   year?: string,
+  display_lang?: string,
 ): Promise<TMDBResponse> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   // TMDb TV Sort keys: first_air_date.desc, popularity.desc, vote_average.desc
-  let url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&&sort_by=${sortBy}&page=${page}&include_adult=true&vote_count.gte=50`;
+  let url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&&sort_by=${sortBy}&page=${page}&include_adult=true&vote_count.gte=50&language=${display_lang || "en-US"}`;
 
   if (genreId && genreId !== "all") {
     url += `&with_genres=${genreId}`;

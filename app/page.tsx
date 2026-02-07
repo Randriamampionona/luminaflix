@@ -4,21 +4,27 @@ import { getLatestMovies } from "@/action/get-latest-movies.action";
 import { getTopRatedMovies } from "@/action/get-top-rated-movies.action";
 import { getTrendingHero } from "@/action/get-trending-hero.action";
 import { getTrendingTV } from "@/action/get-trending-TV.action";
+import CustomLink from "@/components/custom-link";
 import FeaturedBanner from "@/components/featured-banner";
 import GenreCard from "@/components/genre-card";
 import HomeCTA from "@/components/home-cta";
 import MovieDetails from "@/components/movie-details";
 import MovieRow from "@/components/movie-row";
 import { ArrowRight, Info, Play } from "lucide-react";
-import Link from "next/link";
 
-export default async function HomePage() {
-  const genres = await getGenres();
-  const heroMovie = await getTrendingHero();
-  const topMovies = await getTopRatedMovies();
-  const topTV = await getTrendingTV();
-  const featured = await getFeatured();
-  const latestMovies = await getLatestMovies();
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ display_lang?: string }>;
+}) {
+  const { display_lang } = await searchParams;
+
+  const heroMovie = await getTrendingHero({ display_lang });
+  const topMovies = await getTopRatedMovies({ display_lang });
+  const genres = await getGenres({ display_lang });
+  const topTV = await getTrendingTV({ display_lang });
+  const featured = await getFeatured({ display_lang });
+  const latestMovies = await getLatestMovies({ display_lang });
 
   if (!heroMovie)
     return (
@@ -63,12 +69,12 @@ export default async function HomePage() {
 
           {/* Action Buttons with Lucide Icons */}
           <div className="flex flex-wrap gap-4">
-            <Link href={`/movies/${heroMovie.id}`} prefetch={false}>
+            <CustomLink href={`/movies/${heroMovie.id}`} prefetch={false}>
               <button className="group flex items-center gap-3 bg-white text-black px-10 py-4 rounded-full font-black uppercase text-sm hover:bg-cyan-500 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer">
                 <Play className="w-5 h-5 fill-current" />
                 Play Now
               </button>
-            </Link>
+            </CustomLink>
 
             <MovieDetails movie={heroMovie}>
               <button className="group flex items-center gap-3 bg-white/10 text-white px-10 py-4 rounded-full font-black uppercase text-sm backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
@@ -102,7 +108,7 @@ export default async function HomePage() {
             </div>
 
             {/* PRO "VIEW ALL" LINK */}
-            <Link
+            <CustomLink
               href="/genres"
               className="group flex items-center justify-between gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:border-cyan-500/50 transition-all duration-300"
             >
@@ -112,7 +118,7 @@ export default async function HomePage() {
               <div className="p-2 bg-zinc-900 rounded-lg group-hover:bg-cyan-500 transition-colors">
                 <ArrowRight className="w-3 h-3 text-white group-hover:scale-110 transition-transform" />
               </div>
-            </Link>
+            </CustomLink>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-6">

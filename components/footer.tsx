@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Youtube, Github } from "lucide-react";
+import CustomLink from "./custom-link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -37,14 +38,14 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-20">
           {/* Brand Column */}
           <div className="col-span-2 space-y-6">
-            <Link href="/" className="flex items-center gap-2 group">
+            <CustomLink href="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform">
                 <span className="text-black font-black italic">L</span>
               </div>
               <span className="text-2xl font-black uppercase italic tracking-tighter text-white">
                 Lumina<span className="text-cyan-500">Flix</span>
               </span>
-            </Link>
+            </CustomLink>
             <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-sm">
               The ultimate destination for cinema lovers. Experience
               high-definition storytelling and exclusive premieres in the
@@ -53,13 +54,13 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               {[Facebook, Twitter, Instagram, Youtube, Github].map(
                 (Icon, i) => (
-                  <Link
+                  <CustomLink
                     key={i}
                     href="#"
                     className="p-2.5 rounded-full bg-zinc-900 border border-white/5 text-zinc-500 hover:text-cyan-500 hover:border-cyan-500/30 transition-all"
                   >
                     <Icon className="w-4 h-4" />
-                  </Link>
+                  </CustomLink>
                 ),
               )}
             </div>
@@ -74,7 +75,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {section.links.map((link) => (
                   <li key={link}>
-                    <Link
+                    <CustomLink
                       href={
                         link === "Home"
                           ? "/"
@@ -83,7 +84,7 @@ export default function Footer() {
                       className="text-zinc-500 hover:text-white text-xs font-bold transition-colors uppercase tracking-widest"
                     >
                       {link}
-                    </Link>
+                    </CustomLink>
                   </li>
                 ))}
               </ul>
@@ -107,7 +108,7 @@ export default function Footer() {
               <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
                 By
               </p>
-              <Link
+              <CustomLink
                 href="https://tooj-rtn.vercel.app/"
                 prefetch={false}
                 target="_blank"
@@ -115,7 +116,7 @@ export default function Footer() {
                 className="text-cyan-500 text-[10px] font-bold uppercase tracking-widest hover:underline"
               >
                 Tooj Rtn
-              </Link>
+              </CustomLink>
             </div>
           </div>
 

@@ -3,12 +3,16 @@
 const API_KEY = process.env.TMDB_API_KEY;
 const BASE_URL = process.env.BASE_URL;
 
-export async function getSearchKDramas(query: string, page: number = 1) {
+export async function getSearchKDramas(
+  query: string,
+  page: number = 1,
+  display_lang?: string,
+) {
   try {
     const res = await fetch(
       `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(
         query,
-      )}&language=en-US&page=${page}&include_adult=true`,
+      )}&language=${display_lang || "en-US"}&page=${page}&include_adult=true`,
       { next: { revalidate: 3600 } },
     );
 

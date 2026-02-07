@@ -12,6 +12,7 @@ export default async function MoviesPage({
     sort?: string;
     genre?: string;
     year?: string;
+    display_lang?: string;
   }>;
 }) {
   // 1. Unwrap all search parameters (Next.js 15 Async API)
@@ -20,12 +21,20 @@ export default async function MoviesPage({
     sort: sortBy = "primary_release_date.desc",
     genre: genreId = "all",
     year = "All",
+    display_lang,
   } = await searchParams;
 
   const page = Number(rawPage) || 1;
 
   // 2. Fetch data with all filters active
-  const data = await getAllMovies(page, sortBy, genreId, year);
+  const data = await getAllMovies(
+    page,
+    sortBy,
+    genreId,
+    year,
+    "movie",
+    display_lang,
+  );
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">

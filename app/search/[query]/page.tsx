@@ -4,12 +4,15 @@ import { Search, Sparkles } from "lucide-react";
 
 export default async function SearchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ query: string }>;
+  searchParams: Promise<{ display_lang?: string }>;
 }) {
   const { query } = await params;
+  const { display_lang } = await searchParams;
   const decodedQuery = decodeURIComponent(query);
-  const results = await getSearchResults(decodedQuery);
+  const results = await getSearchResults(decodedQuery, "", display_lang);
 
   return (
     <main className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16">

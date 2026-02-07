@@ -3,11 +3,11 @@
 const API_KEY = process.env.TMDB_API_KEY;
 const BASE_URL = process.env.BASE_URL;
 
-export async function getKDramaDetails(id: string) {
+export async function getKDramaDetails(id: string, display_lang?: string) {
   try {
     const res = await fetch(
-      `${BASE_URL}/tv/${id}?api_key=${API_KEY}&language=en-US`,
-      { next: { revalidate: 3600 } }
+      `${BASE_URL}/tv/${id}?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+      { next: { revalidate: 3600 } },
     );
     if (!res.ok) return null;
     return await res.json();
@@ -19,12 +19,13 @@ export async function getKDramaDetails(id: string) {
 
 export async function getSeasonEpisodes(
   seriesId: string,
-  seasonNumber: number
+  seasonNumber: number,
+  display_lang?: string,
 ) {
   try {
     const res = await fetch(
-      `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}?api_key=${API_KEY}&language=en-US`,
-      { next: { revalidate: 3600 } }
+      `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+      { next: { revalidate: 3600 } },
     );
     if (!res.ok) return [];
     const data = await res.json();

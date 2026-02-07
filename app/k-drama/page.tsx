@@ -8,12 +8,19 @@ export default async function KDramaPage({
 }: {
   searchParams: Promise<{
     page?: string;
+    display_lang?: string;
   }>;
 }) {
-  const { page: rawPage } = await searchParams;
+  const { page: rawPage, display_lang } = await searchParams;
 
   const page = Number(rawPage) || 1;
-  const data = await getAllKDramas(page, "popularity.desc", "all", "All");
+  const data = await getAllKDramas(
+    page,
+    "popularity.desc",
+    "all",
+    "All",
+    display_lang,
+  );
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">

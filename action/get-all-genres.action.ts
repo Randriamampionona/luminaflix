@@ -2,16 +2,22 @@
 
 import { Genre } from "@/typing";
 
-export async function getAllGenres(): Promise<
-  (Genre & { backdrop?: string })[]
-> {
+export async function getAllGenres({
+  display_lang,
+}: {
+  display_lang?: string;
+}): Promise<(Genre & { backdrop?: string })[]> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   try {
     const [movieRes, tvRes] = await Promise.all([
-      fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=fr-FR`),
-      fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=fr-FR`),
+      fetch(
+        `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+      ),
+      fetch(
+        `${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+      ),
     ]);
 
     const movieData = await movieRes.json();

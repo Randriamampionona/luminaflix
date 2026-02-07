@@ -28,6 +28,7 @@ import {
 import NavbarActions from "./navbar-actions";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import LanguageSelector from "./language-selector";
+import CustomLink from "./custom-link";
 
 export default function Navbar() {
   const router = useRouter();
@@ -83,7 +84,7 @@ export default function Navbar() {
     >
       <div className="max-w-360 mx-auto px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-12">
-          <Link href="/" className="group flex items-center gap-2">
+          <CustomLink href="/" className="group flex items-center gap-2">
             <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
               <span className="text-black font-black text-xl italic leading-none">
                 L
@@ -92,7 +93,7 @@ export default function Navbar() {
             <span className="text-2xl font-black uppercase italic tracking-tighter text-white">
               Lumina<span className="text-cyan-500">Flix</span>
             </span>
-          </Link>
+          </CustomLink>
 
           {/* Desktop Menu */}
           <div className="hidden xl:flex items-center gap-8">
@@ -100,7 +101,7 @@ export default function Navbar() {
               const href = getHref(item);
               const active = isActive(href);
               return (
-                <Link
+                <CustomLink
                   key={item}
                   href={href}
                   className={`relative text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 hover:text-cyan-500 ${
@@ -108,7 +109,7 @@ export default function Navbar() {
                   }`}
                 >
                   {item}
-                </Link>
+                </CustomLink>
               );
             })}
 
@@ -124,7 +125,7 @@ export default function Navbar() {
                     const active = isActive(href);
                     return (
                       <DropdownMenuItem key={item} asChild>
-                        <Link
+                        <CustomLink
                           href={href}
                           className={`flex items-center justify-between px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all focus:bg-cyan-500 focus:text-black ${
                             active
@@ -134,7 +135,7 @@ export default function Navbar() {
                         >
                           {item}
                           {active && <Zap className="w-3 h-3 fill-current" />}
-                        </Link>
+                        </CustomLink>
                       </DropdownMenuItem>
                     );
                   })}
@@ -224,7 +225,7 @@ export default function Navbar() {
                     const active = isActive(href);
                     return (
                       <SheetClose key={item} asChild>
-                        <Link
+                        <CustomLink
                           href={href}
                           className={`group flex items-center justify-between font-black uppercase italic tracking-tighter transition-all ${
                             active
@@ -240,7 +241,7 @@ export default function Navbar() {
                                 : "opacity-0 group-hover:opacity-100"
                             }`}
                           />
-                        </Link>
+                        </CustomLink>
                       </SheetClose>
                     );
                   })}
@@ -253,22 +254,22 @@ export default function Navbar() {
                     <div className="flex flex-col gap-4">
                       {/* Wrap Sign In Link */}
                       <SheetClose asChild>
-                        <Link
+                        <CustomLink
                           href="/sign-in"
                           className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white text-center"
                         >
                           Sign In
-                        </Link>
+                        </CustomLink>
                       </SheetClose>
 
                       {/* Wrap Join Lumina Link */}
                       <SheetClose asChild>
-                        <Link
+                        <CustomLink
                           href="/sign-up"
                           className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all text-center"
                         >
                           Join Lumina Now
-                        </Link>
+                        </CustomLink>
                       </SheetClose>
                     </div>
                   </SignedOut>

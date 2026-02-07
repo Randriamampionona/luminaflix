@@ -8,15 +8,21 @@ import { Bookmark, LayoutGrid, Star, History } from "lucide-react";
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; sort?: string; genre?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    sort?: string;
+    genre?: string;
+    display_lang?: string;
+  }>;
 }) {
   const {
     page: rawPage,
     sort: sortBy = "vote_average.desc",
     genre: genreId = "all",
+    display_lang,
   } = await searchParams;
   const page = Number(rawPage) || 1;
-  const data = await getLibrary(page, sortBy, genreId);
+  const data = await getLibrary(page, sortBy, genreId, display_lang);
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">

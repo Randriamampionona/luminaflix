@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Genre } from "@/typing";
+import CustomLink from "./custom-link";
 
 interface GenreCardProps {
   genre: Genre & { count: number; poster: string };
@@ -9,7 +10,7 @@ interface GenreCardProps {
 
 export default function GenreCard({ genre }: GenreCardProps) {
   return (
-    <Link href={`/genres/${genre.id}`}>
+    <CustomLink href={`/genres/${genre.id}`}>
       <div className="group relative h-28 bg-zinc-900/40 rounded-md overflow-hidden border border-white/5 transition-all duration-500 hover:bg-cyan-600">
         {/* Text Content: Title and Count */}
         <div className="p-5 h-full flex flex-col justify-center relative z-10">
@@ -34,6 +35,6 @@ export default function GenreCard({ genre }: GenreCardProps) {
           </div>
         </div>
       </div>
-    </Link>
+    </CustomLink>
   );
 }

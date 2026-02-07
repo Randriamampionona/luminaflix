@@ -1,30 +1,31 @@
-import Link from "next/link";
 import {
   X,
-  Zap,
   ShieldAlert,
-  Languages,
   ChevronLeft,
-  Activity,
   MonitorPlay,
   Cpu,
-  Hash,
   Binary,
   Globe,
 } from "lucide-react";
 import { getMovieTrailer } from "@/action/get-movie-trailer.action";
+import CustomLink from "@/components/custom-link";
 
 export default async function TrailerPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ type?: string; fallback?: string; lang?: string }>;
+  searchParams: Promise<{
+    type?: string;
+    fallback?: string;
+    lang?: string;
+    display_lang?: string;
+  }>;
 }) {
   const { id } = await params;
-  const { type, fallback, lang } = await searchParams;
+  const { type, fallback, lang, display_lang } = await searchParams;
 
-  const trailerData = await getMovieTrailer(id, lang, type);
+  const trailerData = await getMovieTrailer(id, lang, type, display_lang);
   const currentLang = trailerData?.lang === "fr" ? "fr" : "en";
   const nextLang = currentLang === "fr" ? "en" : "fr";
 
@@ -36,7 +37,7 @@ export default async function TrailerPage({
     <div className="relative min-h-screen bg-[#020202] text-white font-geist overflow-x-hidden selection:bg-cyan-500/30">
       {/* 1. TOP NAVIGATION HUD */}
       <header className="w-full max-w-6xl mx-auto mt-32 p-6 md:p-10 flex items-center justify-between bg-linear-to-b from-[#020202] to-transparent">
-        <Link href="/" className="flex items-center gap-6 group">
+        <CustomLink href="/" className="flex items-center gap-6 group">
           <div className="p-2 border border-white/10 rounded-xl group-hover:border-cyan-500 transition-all group-hover:bg-cyan-500/5">
             <ChevronLeft className="w-5 h-5 text-zinc-600 group-hover:text-cyan-500" />
           </div>
@@ -51,7 +52,7 @@ export default async function TrailerPage({
               </span>
             </div>
           </div>
-        </Link>
+        </CustomLink>
 
         <div className="flex items-center gap-12">
           <div className="hidden lg:flex items-center gap-12">
@@ -72,12 +73,12 @@ export default async function TrailerPage({
               </span>
             </div>
           </div>
-          <Link
+          <CustomLink
             href="/"
             className="group p-2 bg-white/5 rounded-full hover:bg-red-500/10 transition-colors"
           >
             <X className="w-6 h-6 text-zinc-700 group-hover:text-red-500 group-hover:rotate-90 transition-all duration-300" />
-          </Link>
+          </CustomLink>
         </div>
       </header>
 
@@ -85,7 +86,7 @@ export default async function TrailerPage({
       <main className="w-full flex flex-col items-center mb-32 px-6">
         <div className="w-full max-w-6xl relative">
           {/* THE PLAYER (Updated Rounding) */}
-          <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)] rounded-[2.5rem] md:rounded-[3.5rem] transition-all duration-700">
+          <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)] transition-all duration-700">
             {trailerData?.key ? (
               <iframe
                 src={`https://www.youtube.com/embed/${trailerData.key}?autoplay=1&rel=0&modestbranding=1&hl=${currentLang}`}
@@ -131,7 +132,7 @@ export default async function TrailerPage({
 
             {/* MODULE B: MAIN ACTION (WATCH) */}
             <div className="lg:col-span-6 p-8 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 shadow-xl shadow-cyan-500/5">
-              <Link
+              <CustomLink
                 href={watchLink}
                 className="group relative w-full py-6 bg-white text-black rounded-2xl flex items-center justify-center gap-4 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-[0.98]"
               >
@@ -139,7 +140,7 @@ export default async function TrailerPage({
                 <span className="text-xs font-black uppercase tracking-[0.4em]">
                   Start Watching
                 </span>
-              </Link>
+              </CustomLink>
               <div className="flex items-center gap-3">
                 <Binary className="w-3 h-3 text-cyan-500" />
                 <span className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-500">
@@ -150,12 +151,12 @@ export default async function TrailerPage({
 
             {/* MODULE C: LOCALE OVERRIDE */}
             <div className="lg:col-span-3 p-8 bg-white/2 border border-white/5 rounded-[2rem] flex flex-col items-center justify-center gap-6 backdrop-blur-sm">
-              <Link
+              <CustomLink
                 href={`/trailer/${id}?lang=${nextLang}&type=${type}&fallback=${fallback}`}
                 className="w-full py-3 border border-white/10 rounded-xl text-center text-[9px] font-black uppercase tracking-widest hover:border-cyan-500 hover:bg-cyan-500/5 hover:text-cyan-500 transition-all"
               >
                 Switch to {nextLang.toUpperCase()}
-              </Link>
+              </CustomLink>
               <div className="flex items-center gap-4">
                 <Globe className="w-3 h-3 text-zinc-700" />
                 <span className="text-[9px] font-black text-white uppercase tracking-widest">

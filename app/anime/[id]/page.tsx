@@ -8,14 +8,17 @@ import Image from "next/image";
 
 export default async function AnimeDetailsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ display_lang?: string }>;
 }) {
   const { id } = await params;
+  const { display_lang } = await searchParams;
 
   // These actions should mirror your getKDramaDetails but fetch from TMDB /tv endpoint
-  const anime = await getAnimeDetails(id);
-  const initialEpisodes = await getAnimeSeasonEpisodes(id, 1);
+  const anime = await getAnimeDetails(id, display_lang);
+  const initialEpisodes = await getAnimeSeasonEpisodes(id, 1, display_lang);
 
   if (!anime)
     return (

@@ -11,6 +11,7 @@ import {
 import { Calendar, Star, Play, Film } from "lucide-react";
 import { Movie } from "@/typing";
 import Link from "next/link";
+import CustomLink from "./custom-link";
 
 interface MovieDetailsProps {
   movie: Movie;
@@ -59,12 +60,12 @@ export default function MovieDetails({
 
             {/* Desktop Play Overlay (Visible only on MD+) */}
             <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center backdrop-blur-[2px]">
-              <Link
+              <CustomLink
                 href={playLink}
                 className="w-16 h-16 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.5)] active:scale-90 transition-all"
               >
                 <Play className="w-8 h-8 text-black fill-current ml-1" />
-              </Link>
+              </CustomLink>
             </div>
           </div>
 
@@ -108,14 +109,14 @@ export default function MovieDetails({
 
             {/* Buttons Stack */}
             <div className="space-y-4">
-              <Link
+              <CustomLink
                 href={trailerLink}
                 className="flex items-center justify-center gap-3 w-full bg-zinc-900/80 md:bg-zinc-900 border border-white/10 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-zinc-800 transition-all active:scale-95 backdrop-blur-md"
               >
                 <Film className="w-4 h-4 text-cyan-500" />
                 Watch Trailer
-              </Link>
-              <Link
+              </CustomLink>
+              <CustomLink
                 href={playLink}
                 className="flex items-center justify-center gap-3 w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-xl group border border-transparent hover:border-white/20"
               >
@@ -123,7 +124,7 @@ export default function MovieDetails({
                 {type === "tv" || type === "anime"
                   ? "Explore Episodes"
                   : "Start Watching"}
-              </Link>
+              </CustomLink>
             </div>
           </div>
         </div>

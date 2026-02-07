@@ -7,14 +7,15 @@ export async function getAllMovies(
   sortBy: string = "primary_release_date.desc",
   genreId?: string,
   year?: string,
-  type: string = "movie", // Default to movie as per your /movies route
+  type: string = "movie",
+  display_lang?: string,
 ): Promise<TMDBResponse> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   // TMDb uses different endpoints for Movies vs TV
   const endpoint = type === "tv" ? "tv" : "movie";
-  let url = `${BASE_URL}/discover/${endpoint}?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}&include_adult=true&vote_count.gte=50`;
+  let url = `${BASE_URL}/discover/${endpoint}?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}&include_adult=true&vote_count.gte=50&language=${display_lang || "en-US"}`;
 
   if (genreId && genreId !== "all") url += `&with_genres=${genreId}`;
   if (year && year !== "all") {

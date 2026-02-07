@@ -3,6 +3,7 @@ import {
   getAnimeSeasonEpisodes,
 } from "@/action/get-anime-details.action";
 import LuminaAnimePlayer from "@/components/anime-player"; // We will create this below
+import CustomLink from "@/components/custom-link";
 import {
   ChevronLeft,
   Info,
@@ -10,29 +11,28 @@ import {
   Activity,
   Clapperboard,
 } from "lucide-react";
-import Link from "next/link";
 
 export default async function AnimePlayPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ s?: string; e?: string }>;
+  searchParams: Promise<{ s?: string; e?: string; display_lang?: string }>;
 }) {
   const { id } = await params;
-  const { s, e } = await searchParams;
+  const { s, e, display_lang } = await searchParams;
 
   const seasonNum = Number(s) || 1;
   const episodeNum = Number(e) || 1;
 
   // Parallel fetch for speed
   const [anime, episodes] = await Promise.all([
-    getAnimeDetails(id),
-    getAnimeSeasonEpisodes(id, seasonNum),
+    getAnimeDetails(id, display_lang),
+    getAnimeSeasonEpisodes(id, seasonNum, display_lang),
   ]);
 
   const currentEpisode = episodes?.find(
-    (ep: any) => ep.episode_number === episodeNum
+    (ep: any) => ep.episode_number === episodeNum,
   );
   const episodeTitle = currentEpisode?.name || `Episode ${episodeNum}`;
 
@@ -53,7 +53,7 @@ export default async function AnimePlayPage({
       <div className="max-w-7xl mx-auto mb-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-6">
-            <Link
+            <CustomLink
               href={`/anime/${id}`}
               className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-all group"
             >
@@ -63,7 +63,7 @@ export default async function AnimePlayPage({
               <span className="text-[10px] font-black uppercase tracking-[0.2em]">
                 Abort Mission / Back to Library
               </span>
-            </Link>
+            </CustomLink>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">

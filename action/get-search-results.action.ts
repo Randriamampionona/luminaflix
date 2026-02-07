@@ -5,6 +5,7 @@ import { Movie, TMDBResponse } from "@/typing";
 export async function getSearchResults(
   query: string,
   genreId?: string,
+  display_lang?: string,
 ): Promise<Movie[]> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
@@ -14,10 +15,10 @@ export async function getSearchResults(
 
     // Build the URL based on the logic
     if (query && query.trim() !== "") {
-      url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true`;
+      url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true&language=${display_lang || "en-US"}`;
     } else if (genreId && genreId !== "all") {
       // url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`;
-      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_original_language=fr&language=fr-FR&region=FR&sort_by=popularity.desc`;
+      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&language=${display_lang || "en-US"}`;
     } else {
       return [];
     }

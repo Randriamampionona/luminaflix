@@ -6,12 +6,13 @@ export async function getLibrary(
   page: number = 1,
   sortBy: string = "vote_average.desc",
   genreId?: string,
+  display_lang?: string,
 ): Promise<TMDBResponse> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   // Library default: High rating, established films (vote_count > 500)
-  let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}&vote_count.gte=500&include_adult=true`;
+  let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}&vote_count.gte=500&include_adult=true&language=${display_lang || "en-US"}`;
 
   if (genreId && genreId !== "all") {
     url += `&with_genres=${genreId}`;

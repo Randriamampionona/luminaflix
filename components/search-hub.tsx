@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
+import CustomLink from "./custom-link";
 
 // TMDB Genre IDs mapped to your specific list
 const GENRE_FILTERS = [
@@ -120,7 +121,7 @@ export default function SearchHub() {
                   </div>
                 </button>
               ))}
-              <Link href="/genres">
+              <CustomLink href="/genres">
                 <button className="group/item relative flex flex-col p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden">
                   <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
                     See all...
@@ -129,7 +130,7 @@ export default function SearchHub() {
                     <ArrowRight className="w-3 h-3 text-black" />
                   </div>
                 </button>
-              </Link>
+              </CustomLink>
             </div>
           </div>
 

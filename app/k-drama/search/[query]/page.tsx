@@ -1,22 +1,29 @@
 import MovieCard from "@/components/movie-card";
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getSearchKDramas } from "@/action/get-search-kdrama.action";
+import CustomLink from "@/components/custom-link";
 
 export default async function KDramaSearchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ query: string }>;
+  searchParams: Promise<{ page?: string; display_lang?: string }>;
 }) {
   const { query } = await params;
+  const { page, display_lang } = await searchParams;
   const decodedQuery = decodeURIComponent(query);
-  const data = await getSearchKDramas(decodedQuery);
+  const data = await getSearchKDramas(
+    decodedQuery,
+    Number(page) || 1,
+    display_lang,
+  );
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
       {/* Search Header */}
       <div className="space-y-8 mb-16">
-        <Link
+        <CustomLink
           href="/k-drama"
           className="inline-flex items-center gap-2 text-zinc-500 hover:text-cyan-500 transition-all group"
         >
@@ -24,7 +31,7 @@ export default async function KDramaSearchPage({
           <span className="text-[10px] font-black uppercase tracking-widest">
             Return to Base
           </span>
-        </Link>
+        </CustomLink>
 
         <div className="space-y-2">
           <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
@@ -58,12 +65,12 @@ export default async function KDramaSearchPage({
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
             Signal Lost: No Dramas found for "{decodedQuery}"
           </p>
-          <Link
+          <CustomLink
             href="/k-drama"
             className="mt-4 text-cyan-500 font-black uppercase italic text-xs hover:underline"
           >
             Try a Different Frequency
-          </Link>
+          </CustomLink>
         </div>
       )}
     </div>

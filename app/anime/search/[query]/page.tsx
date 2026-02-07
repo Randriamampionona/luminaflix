@@ -2,23 +2,27 @@ import MovieCard from "@/components/movie-card";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getSearchAnime } from "@/action/get-search-anime.action";
+import CustomLink from "@/components/custom-link";
 
 export default async function AnimeSearchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ query: string }>;
+  searchParams: Promise<{ page?: number; display_lang?: string }>;
 }) {
   const { query } = await params;
   const decodedQuery = decodeURIComponent(query);
+  const { page = 1, display_lang } = await searchParams;
 
   // Using the Anime-specific server action we created
-  const data = await getSearchAnime(decodedQuery);
+  const data = await getSearchAnime(decodedQuery, page, display_lang);
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
       {/* Search Header */}
       <div className="space-y-8 mb-16">
-        <Link
+        <CustomLink
           href="/anime"
           className="inline-flex items-center gap-2 text-zinc-500 hover:text-cyan-500 transition-all group"
         >
@@ -26,7 +30,7 @@ export default async function AnimeSearchPage({
           <span className="text-[10px] font-black uppercase tracking-widest">
             Return to Base
           </span>
-        </Link>
+        </CustomLink>
 
         <div className="space-y-2">
           <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
@@ -60,12 +64,12 @@ export default async function AnimeSearchPage({
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
             Signal Lost: No Anime found for "{decodedQuery}"
           </p>
-          <Link
+          <CustomLink
             href="/anime"
             className="mt-4 text-cyan-500 font-black uppercase italic text-xs hover:underline"
           >
             Scan a Different Frequency
-          </Link>
+          </CustomLink>
         </div>
       )}
     </div>

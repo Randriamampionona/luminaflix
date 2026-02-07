@@ -12,6 +12,7 @@ export default async function TVShowsPage({
     sort?: string;
     genre?: string;
     year?: string;
+    display_lang?: string;
   }>;
 }) {
   const {
@@ -19,12 +20,13 @@ export default async function TVShowsPage({
     sort: sortBy = "first_air_date.desc",
     genre: genreId = "all",
     year = "All",
+    display_lang,
   } = await searchParams;
 
   const page = Number(rawPage) || 1;
 
   // Fetch TV data
-  const data = await getAllTVShows(page, sortBy, genreId, year);
+  const data = await getAllTVShows(page, sortBy, genreId, year, display_lang);
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">

@@ -1,13 +1,13 @@
 "use server";
 
-export async function getMovieData(id: string) {
+export async function getMovieData(id: string, display_lang?: string) {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   try {
     // We append external_ids to the response to get the IMDB ID directly
     const res = await fetch(
-      `${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos,external_ids`,
+      `${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos,external_ids&language=${display_lang || "en-US"}`,
       {
         next: { revalidate: 60 },
       },

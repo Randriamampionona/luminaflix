@@ -10,18 +10,20 @@ export default async function NewPopularPage({
     page?: string;
     genre?: string;
     year?: string;
+    display_lang?: string;
   }>;
 }) {
   const {
     page: rawPage,
     genre: genreId = "all",
     year = "All",
+    display_lang,
   } = await searchParams;
 
   const page = Number(rawPage) || 1;
 
   // Fetch New & Popular data
-  const data = await getNewAndPopular(page, genreId, year);
+  const data = await getNewAndPopular(page, genreId, year, display_lang);
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">

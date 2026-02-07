@@ -5,8 +5,9 @@ import { TMDBResponse } from "@/typing";
 export async function getAllAnime(
   page: number = 1,
   sortBy: string = "popularity.desc",
-  genreId: string = "all", // You can pass specific anime sub-genres here if needed
-  year: string = "All"
+  genreId: string = "all",
+  year: string = "All",
+  display_lang?: string,
 ) {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
@@ -19,8 +20,8 @@ export async function getAllAnime(
 
   try {
     const res = await fetch(
-      `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_origin_country=JP&with_original_language=ja`,
-      { next: { revalidate: 60 } }
+      `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_origin_country=JP&with_original_language=ja&language=${display_lang || "en-US"}`,
+      { next: { revalidate: 60 } },
     );
 
     if (!res.ok) throw new Error("Failed to fetch Anime");

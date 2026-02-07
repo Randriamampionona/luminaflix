@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Play, Calendar } from "lucide-react";
 import Link from "next/link";
+import CustomLink from "./custom-link";
 
 interface EpisodeCardProps {
   ep: any;
@@ -47,7 +48,7 @@ export default function EpisodeCard({
       </div>
 
       {/* Now these variables are accessible via props */}
-      <Link
+      <CustomLink
         href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
       >
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -55,7 +56,7 @@ export default function EpisodeCard({
             <Play className="w-5 h-5 fill-current ml-1" />
           </div>
         </div>
-      </Link>
+      </CustomLink>
     </div>
   );
 }

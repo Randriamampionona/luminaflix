@@ -2,9 +2,15 @@ import { getAllGenres } from "@/action/get-all-genres.action";
 import { ChevronRight, Hash } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import CustomLink from "@/components/custom-link";
 
-export default async function AllGenresPage() {
-  const genres = await getAllGenres();
+export default async function AllGenresPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ display_lang?: string }>;
+}) {
+  const { display_lang } = await searchParams;
+  const genres = await getAllGenres({ display_lang });
 
   return (
     <main className="min-h-screen pt-32 pb-20 px-6 md:px-12 bg-black text-white">
@@ -25,7 +31,7 @@ export default async function AllGenresPage() {
         {/* THE GRID UI WITH IMAGES */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-l gap-2 border-t border-white/5">
           {genres.map((genre, index) => (
-            <Link
+            <CustomLink
               key={genre.id}
               href={`/genres/${genre.id}`}
               className="group relative aspect-video md:aspect-square flex flex-col justify-between p-8 border-r border-b border-white/5 bg-zinc-950 overflow-hidden transition-all duration-700"
@@ -70,7 +76,7 @@ export default async function AllGenresPage() {
 
               {/* SCANLINE DECORATION */}
               <div className="absolute bottom-0 left-0 w-full h-1 bg-cyan-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 ease-in-out" />
-            </Link>
+            </CustomLink>
           ))}
         </div>
 

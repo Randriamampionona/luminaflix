@@ -1,26 +1,28 @@
 import { getFallbackMovie } from "@/action/get-fallback-movies.action";
 import { getMovieData } from "@/action/get-movie-data.action";
+import CustomLink from "@/components/custom-link";
 import VideoPlayer from "@/components/movies/video-player";
 import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
-import Link from "next/link";
 
 export default async function WatchPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ fallback?: string }>;
+  searchParams: Promise<{ fallback?: string; display_lang?: string }>;
 }) {
   const { id } = await params;
-  const { fallback } = await searchParams;
+  const { fallback, display_lang } = await searchParams;
 
   // Attempt to fetch the primary movie data
-  const movie = await getMovieData(id);
+  const movie = await getMovieData(id, display_lang);
 
   // IF MOVIE NOT FOUND: Display the "Discovery" UI
   if (!movie) {
     // This calls your Server Action securely
-    const alternatives = fallback ? await getFallbackMovie(fallback) : [];
+    const alternatives = fallback
+      ? await getFallbackMovie(fallback, display_lang)
+      : [];
 
     return (
       <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white flex flex-col items-center">
@@ -55,7 +57,7 @@ export default async function WatchPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {alternatives.length > 0 ? (
                 alternatives.slice(0, 6).map((item: any) => (
-                  <Link
+                  <CustomLink
                     key={item.id}
                     href={`/movies/${item.id}?fallback=${encodeURIComponent(item.title)}`}
                     className="group bg-zinc-900/40 border border-white/5 rounded-[2rem] p-4 hover:bg-zinc-800/60 transition-all hover:scale-[1.02]"
@@ -77,7 +79,7 @@ export default async function WatchPage({
                       </span>
                       <ArrowRight className="w-3 h-3 text-zinc-600 group-hover:text-white transition-colors" />
                     </div>
-                  </Link>
+                  </CustomLink>
                 ))
               ) : (
                 <div className="col-span-full py-20 text-zinc-600 font-black uppercase tracking-widest text-xs">
@@ -86,12 +88,12 @@ export default async function WatchPage({
               )}
             </div>
 
-            <Link
+            <CustomLink
               href="/"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]"
             >
               Return to Library
-            </Link>
+            </CustomLink>
           </div>
         </div>
       </div>
