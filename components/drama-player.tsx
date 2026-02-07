@@ -15,6 +15,7 @@ import {
   X,
   Maximize2,
 } from "lucide-react";
+import SignalMonitor from "./signal-monitor";
 
 interface Provider {
   name: string;
@@ -77,8 +78,10 @@ export default function LuminaDramaPlayer({
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-1000">
+      <SignalMonitor />
+
       {/* 2. MAIN CINEMA VIEWPORT */}
-      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/5 group">
+      <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/5 group">
         {/* THE STREAM ENGINE */}
         {isUnlocked && (
           <div className="absolute inset-0 z-10 bg-black animate-in fade-in duration-700">
@@ -113,12 +116,12 @@ export default function LuminaDramaPlayer({
             <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
             <div className="relative">
               <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
-              <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
-                <Play className="w-12 h-12 text-black fill-current ml-1.5" />
+              <div className="relative w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
+                <Play className="w-7 h-7 md:w-12 md:h-12 text-black fill-current" />
               </div>
             </div>
-            <p className="mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
-              Launch Lumina <span className="text-cyan-500">Theater</span>
+            <p className="hidden md:block mt-8 md:mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
+              Initialize Lumina <span className="text-cyan-500">Theater</span>
             </p>
           </div>
         )}

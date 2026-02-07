@@ -42,7 +42,7 @@ export default async function HomePage() {
         </div>
 
         {/* Content Area */}
-        <div className="relative z-10 pl-8 md:pl-16 max-w-3xl">
+        <div className="relative z-10 px-8 md:px-16 max-w-3xl">
           <div className="flex items-center space-x-3 mb-4">
             <span className="bg-cyan-500 text-black text-[10px] font-black px-2 py-0.5 rounded tracking-tighter">
               TRENDING NOW
@@ -52,7 +52,7 @@ export default async function HomePage() {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter uppercase italic drop-shadow-2xl line-clamp-2">
+          <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter uppercase italic drop-shadow-2xl line-clamp-2">
             {heroMovie.title}
             <span className="text-cyan-500 not-italic">.</span>
           </h1>
@@ -84,6 +84,8 @@ export default async function HomePage() {
       </section>
 
       <div className="relative">
+        <MovieRow title="Top Films" movies={topMovies} />
+
         <section className="px-8 md:px-16 my-20">
           {/* Header with Title and Link */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
@@ -102,7 +104,7 @@ export default async function HomePage() {
             {/* PRO "VIEW ALL" LINK */}
             <Link
               href="/genres"
-              className="group flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:border-cyan-500/50 transition-all duration-300"
+              className="group flex items-center justify-between gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:border-cyan-500/50 transition-all duration-300"
             >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
                 View All Archives
@@ -113,14 +115,13 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {genres.slice(0, 10).map((genre) => (
               <GenreCard key={genre.id} genre={genre} />
             ))}
           </div>
         </section>
 
-        <MovieRow title="Top Films" movies={topMovies} />
         <MovieRow title="Top 10 TV Series This Week" movies={topTV} />
         {featured && <FeaturedBanner movie={featured} />}
         <HomeCTA />

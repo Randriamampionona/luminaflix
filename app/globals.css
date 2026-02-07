@@ -6,8 +6,9 @@
 @tailwind utilities;
 
 body {
-  background-color: #000000;
-  color: #ffffff;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -51,12 +52,6 @@ body {
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 :root {
@@ -129,9 +124,19 @@ body {
 }
 
 @layer base {
+  html,
+  body {
+    overscroll-behavior-y: none;
+    min-height: 100dvh;
+    background-color: #020202;
+  }
+
   body {
     @apply bg-background text-foreground;
+    display: flex;
+    flex-direction: column;
   }
+
   /* 1. Dimensions - Ultra thin for the "Pro" look */
   ::-webkit-scrollbar {
     width: 5px;

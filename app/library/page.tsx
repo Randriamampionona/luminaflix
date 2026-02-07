@@ -22,8 +22,8 @@ export default async function LibraryPage({
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
       {/* 1. THE BENTO HEADER */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-        <div className="md:col-span-2 p-10 rounded-[2.5rem] bg-linear-to-br from-zinc-900 to-black border border-white/5 flex flex-col justify-between">
-          <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+        <div className="md:col-span-2 p-7 lg:p-10 rounded-[2.5rem] bg-linear-to-br from-zinc-900 to-black border border-white/5 flex flex-col justify-between">
+          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Master <span className="text-cyan-500">Archive.</span>
           </h1>
           <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] mt-8 flex items-center gap-2">
@@ -61,7 +61,7 @@ export default async function LibraryPage({
       </div>
 
       {/* 2. CONTROL BAR */}
-      <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-8">
+      <div className="flex flex-wrap items-center justify-between mb-10 space-y-4 lg:space-y-0 border-b border-white/5 pb-8">
         <div className="flex items-center gap-4">
           <div className="px-4 py-1.5 bg-cyan-500 rounded-full text-black text-[10px] font-black uppercase tracking-widest">
             All Content
@@ -70,7 +70,7 @@ export default async function LibraryPage({
             Sorting by Relevance
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <AdvancedFilter />
           <SortDropdown />
         </div>

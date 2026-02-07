@@ -103,6 +103,20 @@ export default function Footer() {
                 Global Service
               </p>
             </div>
+            <div className="flex items-center space-x-2">
+              <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
+                By
+              </p>
+              <Link
+                href="https://tooj-rtn.vercel.app/"
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-500 text-[10px] font-bold uppercase tracking-widest hover:underline"
+              >
+                Tooj Rtn
+              </Link>
+            </div>
           </div>
 
           {/* Status Indicator */}

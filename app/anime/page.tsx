@@ -22,7 +22,7 @@ export default async function AnimePage({
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-20">
         <div className="space-y-2">
-          <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Lumina <span className="text-white/20">Anime</span>
             <span className="text-cyan-500">.</span>
           </h1>

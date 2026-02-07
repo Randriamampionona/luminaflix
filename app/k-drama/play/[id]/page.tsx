@@ -33,7 +33,7 @@ export default async function KDramaPlayPage({
 
   // Find the specific episode title from the list
   const currentEpisode = episodes?.find(
-    (ep: any) => ep.episode_number === episodeNum
+    (ep: any) => ep.episode_number === episodeNum,
   );
   const episodeTitle = currentEpisode?.name || `Episode ${episodeNum}`;
 

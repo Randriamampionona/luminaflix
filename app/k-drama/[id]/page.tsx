@@ -34,7 +34,7 @@ export default async function KDramaDetailsPage({
         />
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
 
-        <div className="absolute bottom-10 left-8 md:left-16 space-y-4 max-w-4xl">
+        <div className="absolute bottom-10 left-8 md:left-16 pr-8 space-y-4 max-w-4xl">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full">
               K-Series
@@ -44,7 +44,7 @@ export default async function KDramaDetailsPage({
               <span className="text-sm">{drama.vote_average.toFixed(1)}</span>
             </div>
           </div>
-          <h1 className="flex flex-col space-y-6 text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="flex flex-col space-y-6 text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             <span>{drama.name}</span>
             <span className="text-zinc-600 not-italic text-2xl md:text-3xl">
               {drama.original_name}

@@ -51,13 +51,16 @@ export default function MovieRow({ title, movies }: MovieRowProps) {
         </div>
       </div>
 
-      {/* The Scrollable Row */}
+      {/* The Scrollable Row - Updated for Mobile Swipe */}
       <div
         ref={rowRef}
-        className="flex overflow-x-hidden scroll-smooth space-x-4 mx-8 md:mx-16 no-scrollbar pb-4"
+        className="flex overflow-x-auto scroll-smooth space-x-4 mx-8 md:mx-16 pb-4 scrollbar-hide touch-pan-x"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <div key={movie.id} className="shrink-0">
+            <MovieCard movie={movie} />
+          </div>
         ))}
       </div>
     </div>

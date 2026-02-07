@@ -11,7 +11,7 @@ export default function UserTerminal() {
   if (!isLoaded || !user) return null;
 
   return (
-    <div className="group relative flex items-center gap-3 pl-4 pr-1 py-3 xl:py-1 bg-zinc-900/40 backdrop-blur-md border border-white/5 rounded-md hover:border-cyan-500/50 transition-all duration-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+    <div className="group relative flex items-center gap-3 p-2 bg-zinc-900/40 backdrop-blur-md border border-white/5 rounded-md hover:border-cyan-500/50 transition-all duration-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
       {/* USER METADATA */}
       <div className="flex flex-col items-end">
         <div className="flex items-center gap-2">

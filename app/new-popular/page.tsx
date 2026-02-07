@@ -28,7 +28,7 @@ export default async function NewPopularPage({
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 space-y-20">
         <div className="space-y-2">
-          <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Hot <span className="text-white/20">Trending</span>
             <span className="text-cyan-500">.</span>
           </h1>

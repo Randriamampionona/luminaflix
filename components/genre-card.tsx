@@ -13,7 +13,7 @@ export default function GenreCard({ genre }: GenreCardProps) {
       <div className="group relative h-28 bg-zinc-900/40 rounded-md overflow-hidden border border-white/5 transition-all duration-500 hover:bg-cyan-600">
         {/* Text Content: Title and Count */}
         <div className="p-5 h-full flex flex-col justify-center relative z-10">
-          <h3 className="text-white font-black text-xl tracking-tight uppercase italic transition-transform duration-300 group-hover:translate-x-1">
+          <h3 className="text-white font-black text-xl tracking-tight uppercase italic transition-transform duration-300 group-hover:translate-x-1 line-clamp-1">
             {genre.name}
           </h3>
           <p className="text-[11px] text-zinc-400 group-hover:text-white/90 font-bold mt-1">

@@ -18,6 +18,7 @@ import {
   Languages,
   Tv2,
 } from "lucide-react";
+import SignalMonitor from "./signal-monitor";
 
 interface Provider {
   name: string;
@@ -141,17 +142,12 @@ export default function LuminaAnimePlayer({
             French (VF)
           </button>
         </div>
-
-        <div className="flex items-center gap-3 px-6 py-3 bg-zinc-900/20 rounded-2xl border border-white/5">
-          <Activity className="w-3.5 h-3.5 text-cyan-500 animate-pulse" />
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-            S{season} E{episode} • Active Signal
-          </span>
-        </div>
       </div>
 
+      <SignalMonitor />
+
       {/* 2. VIEWPORT */}
-      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
+      <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
         {/* EXTERNAL/BRIDGE THEATER */}
         {showTheater && (
           <div className="absolute inset-0 z-50 bg-black flex flex-col animate-in zoom-in-95 duration-500">
@@ -195,21 +191,41 @@ export default function LuminaAnimePlayer({
         {/* BRIDGE LAUNCHER */}
         {isUnlocked && activeSource.isExternal && !showTheater && (
           <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950 px-6">
-            <div className="text-center space-y-8">
-              <div className="w-24 h-24 mx-auto bg-black border border-white/10 rounded-3xl flex items-center justify-center shadow-2xl">
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)",
+                backgroundSize: "24px 24px",
+              }}
+            />
+
+            <div className="text-center space-y-8 relative z-10">
+              <div className="hidden relative w-24 h-24 mx-auto bg-black border border-white/10 rounded-3xl rotate-12 md:flex items-center justify-center group-hover:rotate-0 transition-transform duration-700">
                 <ShieldCheck className="w-10 h-10 text-cyan-500" />
+                <div className="absolute -inset-2 border border-cyan-500/20 rounded-3xl animate-ping" />
               </div>
-              <h3 className="text-xl font-black uppercase text-white italic">
-                Protocol Initialized
-              </h3>
+
+              <div className="space-y-3">
+                <h3 className="text-xl font-black uppercase text-white tracking-tighter italic">
+                  Bypass Protocol Ready
+                </h3>
+                <p className="text-zinc-500 text-[10px] uppercase tracking-[0.3em] font-bold max-w-70 mx-auto leading-relaxed">
+                  Decrypted source found via{" "}
+                  <span className="text-cyan-500">{activeSource.name}</span>
+                </p>
+              </div>
+
               <button
                 onClick={() => {
                   setIsLoading(true);
                   setShowTheater(true);
                 }}
-                className="px-12 py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 hover:scale-105 transition-all"
+                className="group/btn relative px-12 py-4 bg-white text-black font-black rounded-2xl transition-all hover:bg-cyan-500 hover:scale-105 active:scale-95 overflow-hidden"
               >
-                START VIRTUAL STREAM
+                <div className="flex items-center gap-3 relative z-10 uppercase text-xs tracking-widest text-nowrap">
+                  Start Virtual Stream <Maximize2 className="w-4 h-4" />
+                </div>
               </button>
             </div>
           </div>
@@ -219,13 +235,17 @@ export default function LuminaAnimePlayer({
         {!isUnlocked && (
           <div
             onClick={() => setIsUnlocked(true)}
-            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all"
+            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
           >
-            <div className="relative w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] hover:scale-110 transition-all duration-700">
-              <Play className="w-12 h-12 text-black fill-current ml-1.5" />
+            <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
+            <div className="relative">
+              <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
+              <div className="relative w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
+                <Play className="w-7 h-7 md:w-12 md:h-12 text-black fill-current" />
+              </div>
             </div>
-            <p className="mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80">
-              Launch Lumina <span className="text-cyan-500">Anime</span>
+            <p className="hidden md:block mt-8 md:mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
+              Initialize Lumina <span className="text-cyan-500">Theater</span>
             </p>
           </div>
         )}

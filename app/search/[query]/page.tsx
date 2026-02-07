@@ -25,7 +25,7 @@ export default async function SearchPage({
                 Search Results
               </span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none wrap-break-word">
+            <h1 className="text-5xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none wrap-break-word">
               &ldquo;{decodedQuery}&rdquo;
               <span className="text-cyan-500">.</span>
             </h1>

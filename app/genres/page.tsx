@@ -17,7 +17,7 @@ export default async function AllGenresPage() {
               System Directory
             </span>
           </div>
-          <h1 className="text-7xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             GENRE<span className="text-cyan-500">.</span>MAP
           </h1>
         </div>
