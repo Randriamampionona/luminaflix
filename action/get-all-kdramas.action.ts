@@ -19,7 +19,7 @@ export async function getAllKDramas(
   try {
     const res = await fetch(
       `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_original_language=ko&with_origin_country=KR&language=${display_lang || "en-US"}`,
-      { next: { revalidate: 60 } }, // 1-minute cache as requested
+      { cache: "no-store" },
     );
 
     if (!res.ok) throw new Error("Failed to fetch K-Dramas");

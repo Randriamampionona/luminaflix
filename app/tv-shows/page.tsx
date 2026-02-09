@@ -1,8 +1,10 @@
 import { getAllTVShows } from "@/action/get-all-tv.action";
-import MovieCard from "@/components/movie-card"; // Reuse the same card for consistency
+import MovieCard from "@/components/movie-card";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
 import SortDropdown from "@/components/movies/sort-dropdown";
+
+export const dynamic = "force-dynamic";
 
 export default async function TVShowsPage({
   searchParams,

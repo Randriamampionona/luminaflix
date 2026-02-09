@@ -13,7 +13,7 @@ export async function getFeatured({
   try {
     const res = await fetch(
       `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=${display_lang || "en-US"}&page=1`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
 
     if (!res.ok) throw new Error("Failed to fetch Coup de Coeur");

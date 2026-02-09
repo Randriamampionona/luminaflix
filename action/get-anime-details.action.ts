@@ -30,7 +30,7 @@ export async function getAnimeSeasonEpisodes(
   try {
     const res = await fetch(
       `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
-      { next: { revalidate: 3600 } },
+      { cache: "no-store" },
     );
 
     if (!res.ok)

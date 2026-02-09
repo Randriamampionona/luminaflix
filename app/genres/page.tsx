@@ -1,6 +1,5 @@
 import { getAllGenres } from "@/action/get-all-genres.action";
 import { ChevronRight, Hash } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import CustomLink from "@/components/custom-link";
 

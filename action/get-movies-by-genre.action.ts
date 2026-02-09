@@ -13,7 +13,7 @@ export async function getMoviesByGenre(
     // Added &page= parameter to the URL
     const url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`;
 
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
 
     if (!res.ok) {
       return { results: [], total_pages: 0, total_results: 0, page: 1 };

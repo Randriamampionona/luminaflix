@@ -2,6 +2,8 @@ import { getSearchResults } from "@/action/get-search-results.action";
 import MovieCard from "@/components/movie-card";
 import { Search, Sparkles } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage({
   params,
   searchParams,

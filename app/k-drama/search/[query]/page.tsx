@@ -3,6 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { getSearchKDramas } from "@/action/get-search-kdrama.action";
 import CustomLink from "@/components/custom-link";
 
+export const dynamic = "force-dynamic";
+
 export default async function KDramaSearchPage({
   params,
   searchParams,

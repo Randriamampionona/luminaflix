@@ -14,7 +14,7 @@ export async function getFallbackMovie(
   try {
     const res = await fetch(
       `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1&language=${display_lang || "en-US"}`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
 
     if (!res.ok) return [];

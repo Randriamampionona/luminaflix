@@ -5,6 +5,8 @@ import Pagination from "@/components/movies/pagination";
 // Assuming you'll create an AnimeSearch similar to KDramaSearch later
 // import AnimeSearch from "@/components/anime-search";
 
+export const dynamic = "force-dynamic";
+
 export default async function AnimePage({
   searchParams,
 }: {

@@ -13,7 +13,7 @@ export async function getSearchAnime(
       `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(
         query,
       )}&language=${display_lang || "en-US"}&page=${page}&include_adult=true`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
 
     const data = await res.json();

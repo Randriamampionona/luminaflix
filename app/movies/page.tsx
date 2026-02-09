@@ -4,6 +4,8 @@ import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
 import SortDropdown from "@/components/movies/sort-dropdown";
 
+export const dynamic = "force-dynamic";
+
 export default async function MoviesPage({
   searchParams,
 }: {

@@ -3,6 +3,8 @@ import KDramaSearch from "@/components/kdrama-search";
 import MovieCard from "@/components/movie-card";
 import Pagination from "@/components/movies/pagination";
 
+export const dynamic = "force-dynamic";
+
 export default async function KDramaPage({
   searchParams,
 }: {

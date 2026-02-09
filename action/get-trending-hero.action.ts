@@ -11,7 +11,7 @@ export async function getTrendingHero({
   try {
     const res = await fetch(
       `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
 
     if (!res.ok) throw new Error("Failed to fetch trending movies");

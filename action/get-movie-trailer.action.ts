@@ -17,7 +17,7 @@ export async function getMovieTrailer(
   const fetchFromTMDB = async (tmdbType: "movie" | "tv", lang: string) => {
     try {
       const url = `${BASE_URL}/${tmdbType}/${id}/videos?api_key=${TMDB_API_KEY}&language=${lang}${display_lang ? `&language=${display_lang}` : ""}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: "no-store" });
       const data = await response.json();
 
       if (!data.results) return null;

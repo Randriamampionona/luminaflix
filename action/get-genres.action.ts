@@ -13,6 +13,7 @@ export async function getGenres({
   try {
     const res = await fetch(
       `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+      { next: { revalidate: 60 * 24 } },
     );
     const data: GenreResponse = await res.json();
 

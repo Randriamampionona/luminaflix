@@ -5,6 +5,8 @@ import Pagination from "@/components/movies/pagination";
 import SortDropdown from "@/components/movies/sort-dropdown";
 import { Bookmark, LayoutGrid, Star, History } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function LibraryPage({
   searchParams,
 }: {

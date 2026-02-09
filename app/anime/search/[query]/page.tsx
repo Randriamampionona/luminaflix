@@ -4,6 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { getSearchAnime } from "@/action/get-search-anime.action";
 import CustomLink from "@/components/custom-link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AnimeSearchPage({
   params,
   searchParams,

@@ -29,7 +29,7 @@ export async function getSearchResults(
       return [];
     }
 
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
 
     if (!res.ok) {
       const errorData = await res.json();

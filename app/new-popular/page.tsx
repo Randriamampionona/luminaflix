@@ -3,6 +3,8 @@ import MovieCard from "@/components/movie-card";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewPopularPage({
   searchParams,
 }: {

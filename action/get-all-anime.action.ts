@@ -21,7 +21,7 @@ export async function getAllAnime(
   try {
     const res = await fetch(
       `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_origin_country=JP&with_original_language=ja&language=${display_lang || "en-US"}`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
 
     if (!res.ok) throw new Error("Failed to fetch Anime");

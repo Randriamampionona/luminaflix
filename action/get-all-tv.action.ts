@@ -24,7 +24,7 @@ export async function getAllTVShows(
   }
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch TV Library");
 
     const data: TMDBResponse = await res.json();

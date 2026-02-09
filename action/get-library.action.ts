@@ -19,7 +19,7 @@ export async function getLibrary(
   }
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     const data: TMDBResponse = await res.json();
     return {
       ...data,

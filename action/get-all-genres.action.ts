@@ -14,9 +14,11 @@ export async function getAllGenres({
     const [movieRes, tvRes] = await Promise.all([
       fetch(
         `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+        { next: { revalidate: 60 * 24 } },
       ),
       fetch(
         `${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
+        { next: { revalidate: 60 * 24 } },
       ),
     ]);
 

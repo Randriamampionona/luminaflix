@@ -4,6 +4,8 @@ import CustomLink from "@/components/custom-link";
 import VideoPlayer from "@/components/movies/video-player";
 import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function WatchPage({
   params,
   searchParams,

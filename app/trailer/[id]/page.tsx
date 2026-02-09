@@ -10,6 +10,8 @@ import {
 import { getMovieTrailer } from "@/action/get-movie-trailer.action";
 import CustomLink from "@/components/custom-link";
 
+export const dynamic = "force-dynamic";
+
 export default async function TrailerPage({
   params,
   searchParams,
