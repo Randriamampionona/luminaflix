@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react"; // Added useState
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   DropdownMenu,
@@ -20,24 +20,21 @@ const Flag = ({ code }: { code: string }) => (
   />
 );
 
-export default function LanguageSelector() {
+// 1. Logic moved to the "Content" component
+function LanguageSelectorContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // 1. Initialize state from URL or fallback
   const [currentLang, setCurrentLang] = useState("en-US");
 
-  // 2. Sync UI state with URL and LocalStorage
   useEffect(() => {
     const savedLang = localStorage.getItem("display_lang");
     const urlParam = searchParams.get("display_lang");
 
-    // Priority: URL Param > LocalStorage > Default 'en'
     const activeLang = urlParam || savedLang || "en-US";
     setCurrentLang(activeLang);
 
-    // Silent URL sync if param is missing but storage exists
     if (savedLang && urlParam !== savedLang) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("display_lang", savedLang);
@@ -51,16 +48,10 @@ export default function LanguageSelector() {
   }, [pathname, searchParams]);
 
   const handleLanguageChange = (value: string) => {
-    // 1. Update LocalStorage
     localStorage.setItem("display_lang", value);
-
-    // 2. Update Local State immediately for the UI
     setCurrentLang(value);
-
-    // 3. Dispatch event for CustomLink to react
     window.dispatchEvent(new Event("langChange"));
 
-    // 4. Update current URL parameters
     const params = new URLSearchParams(searchParams.toString());
     params.set("display_lang", value);
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -95,5 +86,18 @@ export default function LanguageSelector() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+// 2. Main component provides the boundary
+export default function LanguageSelector() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center gap-3 px-4 bg-white/5 border border-white/10 rounded-xl h-11 w-22.5 animate-pulse" />
+      }
+    >
+      <LanguageSelectorContent />
+    </Suspense>
   );
 }

@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { MoveLeft, Construction, Zap, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import CustomLink from "@/components/custom-link";
 
 export default function NotFound() {
   const [glitch, setGlitch] = useState(false);
@@ -68,7 +66,7 @@ export default function NotFound() {
 
         {/* ACTION BUTTON */}
         <div className="pt-8">
-          <CustomLink
+          <a
             href="/"
             className="group relative inline-flex items-center gap-3 px-10 py-5 bg-white rounded-2xl transition-all hover:scale-105 active:scale-95 overflow-hidden"
           >
@@ -77,7 +75,7 @@ export default function NotFound() {
             <span className="relative z-10 text-black font-black uppercase italic tracking-tighter text-sm">
               Back to Command
             </span>
-          </CustomLink>
+          </a>
         </div>
       </div>
 

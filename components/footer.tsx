@@ -108,7 +108,7 @@ export default function Footer() {
               <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
                 By
               </p>
-              <CustomLink
+              <Link
                 href="https://tooj-rtn.vercel.app/"
                 prefetch={false}
                 target="_blank"
@@ -116,7 +116,7 @@ export default function Footer() {
                 className="text-cyan-500 text-[10px] font-bold uppercase tracking-widest hover:underline"
               >
                 Tooj Rtn
-              </CustomLink>
+              </Link>
             </div>
           </div>
 

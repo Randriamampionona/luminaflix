@@ -1,7 +1,7 @@
 "use client";
 
 import Link, { LinkProps } from "next/link";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface CustomLinkProps extends LinkProps {
@@ -11,7 +11,8 @@ interface CustomLinkProps extends LinkProps {
   rel?: string;
 }
 
-export default function CustomLink({
+// 1. We move the logic into a separate inner component
+function CustomLinkContent({
   href,
   children,
   className,
@@ -19,20 +20,15 @@ export default function CustomLink({
 }: CustomLinkProps) {
   const searchParams = useSearchParams();
 
-  // 1. Get the current lang directly from the active URL
-  // We default to en-US only if the URL is empty
+  // Get the current lang directly from the active URL
   const currentLang = searchParams.get("display_lang") || "en-US";
 
   const finalHref = useMemo(() => {
     const baseHref = href.toString();
-
-    // 2. Build the new URL
     const [pathWithoutHash, hash] = baseHref.split("#");
     const [pathWithoutQuery, query] = pathWithoutHash.split("?");
 
     const params = new URLSearchParams(query || "");
-
-    // 3. Inject the current language into the new link
     params.set("display_lang", currentLang);
 
     return `${pathWithoutQuery}?${params.toString()}${hash ? `#${hash}` : ""}`;
@@ -42,5 +38,22 @@ export default function CustomLink({
     <Link href={finalHref} className={className} {...props}>
       {children}
     </Link>
+  );
+}
+
+// 2. The main component just provides the Suspense boundary
+export default function CustomLink(props: CustomLinkProps) {
+  return (
+    <Suspense
+      // Fallback is a standard Link with the original href
+      // so it works even while loading or during build
+      fallback={
+        <Link href={props.href} className={props.className}>
+          {props.children}
+        </Link>
+      }
+    >
+      <CustomLinkContent {...props} />
+    </Suspense>
   );
 }
