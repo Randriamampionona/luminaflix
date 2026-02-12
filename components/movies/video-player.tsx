@@ -18,6 +18,7 @@ import {
   Cpu,
 } from "lucide-react";
 import SignalMonitor from "../signal-monitor";
+import DirectLuminaLinker from "../direct-lumina-linker";
 
 interface Provider {
   name: string;
@@ -297,6 +298,14 @@ export default function VideoPlayer({
             </button>
           );
         })}
+      </div>
+
+      {/* 3.5 DOWNLOAD SECTION */}
+      <div className="flex justify-center py-4">
+        <DirectLuminaLinker
+          embedUrl={activeSource.url(movieId, imdbId)}
+          title={`Lumina_${activeTab}_${movieId}`}
+        />
       </div>
 
       {/* 4. SYSTEM STATUS FOOTER */}

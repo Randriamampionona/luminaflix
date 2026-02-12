@@ -19,6 +19,7 @@ import {
   Tv2,
 } from "lucide-react";
 import SignalMonitor from "./signal-monitor";
+import DirectLuminaLinker from "./direct-lumina-linker";
 
 interface Provider {
   name: string;
@@ -286,6 +287,14 @@ export default function LuminaAnimePlayer({
             </button>
           );
         })}
+      </div>
+
+      {/* 3.5 DOWNLOAD SECTION */}
+      <div className="flex justify-center py-4">
+        <DirectLuminaLinker
+          embedUrl={activeSource.url(id, season, episode)}
+          title={`Lumina_anime_${id}`}
+        />
       </div>
 
       {/* 4. FOOTER */}
