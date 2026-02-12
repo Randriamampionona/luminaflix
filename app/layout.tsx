@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -74,6 +75,17 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <NextTopLoader
+            color="#06b6d4" // Cyan-500 to match your blue theme
+            initialPosition={0.08}
+            crawlSpeed={200}
+            height={3}
+            crawl={true}
+            showSpinner={false} // Cleaner "Pro" look without the spinning circle
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px #06b6d4, 0 0 5px #06b6d4"
+          />
           <Navbar />
           {children}
           <Analytics />
