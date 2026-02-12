@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next"; // Added Viewport type
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -17,7 +17,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const viewport = {
+// This is correct - keep this
+export const viewport: Viewport = {
   themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
@@ -42,7 +43,6 @@ export const metadata: Metadata = {
   authors: [{ name: "Tooj Rtn" }],
   creator: "Tooj Rtn",
   publisher: "LuminaFlix",
-  // OpenGraph for social media previews
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -59,9 +59,8 @@ export const metadata: Metadata = {
       },
     ],
   },
-  // Modern mobile browser styling
-  themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  // themeColor: "#000000", <--- DELETED THIS
+  // viewport: "..."      <--- DELETED THIS
 };
 
 export default function RootLayout({
@@ -76,12 +75,12 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <NextTopLoader
-            color="#06b6d4" // Cyan-500 to match your blue theme
+            color="#06b6d4"
             initialPosition={0.08}
             crawlSpeed={200}
             height={3}
             crawl={true}
-            showSpinner={false} // Cleaner "Pro" look without the spinning circle
+            showSpinner={false}
             easing="ease"
             speed={200}
             shadow="0 0 10px #06b6d4, 0 0 5px #06b6d4"
