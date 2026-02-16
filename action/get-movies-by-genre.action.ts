@@ -5,13 +5,14 @@ import { TMDBResponse } from "@/typing";
 export async function getMoviesByGenre(
   genreId: string,
   page: number = 1,
+  display_lang?: string,
 ): Promise<TMDBResponse> {
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = process.env.BASE_URL;
 
   try {
     // Added &page= parameter to the URL
-    const url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`;
+    const url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}&language=${display_lang || "en-US"}`;
 
     const res = await fetch(url, { cache: "no-store" });
 

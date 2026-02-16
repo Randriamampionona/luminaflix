@@ -18,7 +18,7 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
 
   // 1. Fetch movies and genre list in parallel for maximum speed
   const [data, allGenres] = await Promise.all([
-    getMoviesByGenre(id, page),
+    getMoviesByGenre(id, page, resolvedSearchParams.display_lang),
     getAllGenres({ display_lang: resolvedSearchParams.display_lang }),
   ]);
 
