@@ -46,6 +46,7 @@ export default function Navbar() {
     "Genres",
     "Anime",
     "TV Shows",
+    "Favorites",
   ];
 
   const visibleMenus = MENUS.slice(0, 3);

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import SignalMonitor from "./signal-monitor";
 import DirectLuminaLinker from "./direct-lumina-linker";
+import StreamActionSuite from "./stream-action-suite";
 
 interface Provider {
   name: string;
@@ -82,50 +83,59 @@ export default function LuminaDramaPlayer({
       <SignalMonitor />
 
       {/* 2. MAIN CINEMA VIEWPORT */}
-      <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/5 group">
-        {/* THE STREAM ENGINE */}
-        {isUnlocked && (
-          <div className="absolute inset-0 z-10 bg-black animate-in fade-in duration-700">
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
-                <div className="relative flex flex-col items-center gap-4">
-                  <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
-                  <div className="absolute inset-0 blur-xl bg-cyan-500/20 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                    Handshaking {activeSource.id}...
-                  </span>
+      <div className="flex items-end flex-col space-y-2">
+        <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/10 shadow-[0_0_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/5 group">
+          {/* THE STREAM ENGINE */}
+          {isUnlocked && (
+            <div className="absolute inset-0 z-10 bg-black animate-in fade-in duration-700">
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
+                  <div className="relative flex flex-col items-center gap-4">
+                    <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                    <div className="absolute inset-0 blur-xl bg-cyan-500/20 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+                      Handshaking {activeSource.id}...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <iframe
+                src={activeSource.url(id, season, episode)}
+                className="w-full h-full grayscale-[0.05] contrast-[1.05]"
+                allowFullScreen
+                allow="autoplay; encrypted-media; picture-in-picture"
+                onLoad={() => setIsLoading(false)}
+              />
+            </div>
+          )}
+
+          {/* INITIAL UNLOCK SPLASH */}
+          {!isUnlocked && (
+            <div
+              onClick={() => setIsUnlocked(true)}
+              className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
+            >
+              <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
+              <div className="relative">
+                <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
+                <div className="relative w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
+                  <Play className="w-7 h-7 md:w-12 md:h-12 text-black fill-current" />
                 </div>
               </div>
-            )}
-
-            <iframe
-              src={activeSource.url(id, season, episode)}
-              className="w-full h-full grayscale-[0.05] contrast-[1.05]"
-              allowFullScreen
-              allow="autoplay; encrypted-media; picture-in-picture"
-              onLoad={() => setIsLoading(false)}
-            />
-          </div>
-        )}
-
-        {/* INITIAL UNLOCK SPLASH */}
-        {!isUnlocked && (
-          <div
-            onClick={() => setIsUnlocked(true)}
-            className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
-          >
-            <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
-            <div className="relative">
-              <div className="absolute inset-0 blur-3xl bg-cyan-500/30 scale-150 animate-pulse" />
-              <div className="relative w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
-                <Play className="w-7 h-7 md:w-12 md:h-12 text-black fill-current" />
-              </div>
+              <p className="hidden md:block mt-8 md:mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
+                Initialize Lumina <span className="text-cyan-500">Theater</span>
+              </p>
             </div>
-            <p className="hidden md:block mt-8 md:mt-12 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80 group-hover/unlock:text-cyan-400 transition-colors">
-              Initialize Lumina <span className="text-cyan-500">Theater</span>
-            </p>
-          </div>
-        )}
+          )}
+        </div>
+        {/* 2.5 STEARM ACTION */}
+        <StreamActionSuite
+          type="K_DRAMA"
+          mediaId={id}
+          season={season}
+          episode={episode}
+        />
       </div>
 
       {/* 3. PROVIDER SELECTION ENGINE */}
