@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import NextTopLoader from "nextjs-toploader";
 import AdsterraSocialBar from "@/components/ads/adsterra-social-bar";
+import HilltopVideoSlider from "@/components/ads/hilltop-video-slider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -103,6 +104,7 @@ export default function RootLayout({
           <Analytics />
           <Footer />
           <AdsterraSocialBar />
+          <HilltopVideoSlider />
         </body>
       </html>
     </ClerkProvider>
