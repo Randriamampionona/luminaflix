@@ -6,6 +6,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import NextTopLoader from "nextjs-toploader";
+import AdsterraSocialBar from "@/components/ads/adsterra-social-bar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -94,6 +95,7 @@ export default function RootLayout({
           {children}
           <Analytics />
           <Footer />
+          <AdsterraSocialBar />
         </body>
       </html>
     </ClerkProvider>
