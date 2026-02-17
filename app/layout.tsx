@@ -74,7 +74,14 @@ export default function RootLayout({
       <html lang="en">
         <head>
           {/* ADMAVEN */}
-          <meta name="admaven-placement" content="Bqjw4pjY4"></meta>
+          <meta name="admaven-placement" content="Bqjw4pjY4" />
+
+          {/* HILLTOPADS */}
+          <meta name="referrer" content="no-referrer-when-downgrade" />
+          <meta
+            name="c2fee7a46e85e2563bde2faad9315d0fc626ec01"
+            content="c2fee7a46e85e2563bde2faad9315d0fc626ec01"
+          />
         </head>
 
         <body
