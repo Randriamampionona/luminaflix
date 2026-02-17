@@ -71,6 +71,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          {/* ADMAVEN */}
+          <meta name="admaven-placement" content="Bqjw4pjY4"></meta>
+        </head>
+
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
