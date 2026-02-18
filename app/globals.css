@@ -215,3 +215,11 @@ body {
     transform: scale(1);
   }
 }
+
+/* Fluid Player Customization */
+.fluid_video_wrapper {
+  background-color: black !important;
+}
+.fluid_controls_container {
+  color: #06b6d4 !important; /* Cyan accents */
+}

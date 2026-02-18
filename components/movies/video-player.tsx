@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Tv2,
   Globe2,
@@ -87,9 +87,60 @@ export default function VideoPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [showTheater, setShowTheater] = useState(false);
 
+  // --- AD FUNCTIONALITY ---
+  const [isAdPlaying, setIsAdPlaying] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [showSkip, setShowSkip] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const AD_URL =
+    "https://creamymouth.com/d_m/F.zWdgG-N/vrZ/GnUy/aeem/9HuLZqUllck-POTlYa4/MVDekM2fMRj/UPtoNGjJgtwIOtT/YayIOPQL";
+
+  // Handle the Ad Countdown
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isAdPlaying && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isAdPlaying && timeLeft === 0) {
+      setShowSkip(true);
+    }
+    return () => clearInterval(timer);
+  }, [isAdPlaying, timeLeft]);
+
+  // Handle Video Auto-play via Promise
+  useEffect(() => {
+    if (isAdPlaying && videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Ad playback started");
+          })
+          .catch((error) => {
+            console.error("Auto-play prevented:", error);
+          });
+      }
+    }
+  }, [isAdPlaying]);
+
+  const startAdSequence = () => {
+    setIsAdPlaying(true);
+    setTimeLeft(15);
+    setShowSkip(false);
+  };
+
+  const skipAdAndPlay = () => {
+    setIsAdPlaying(false);
+    setIsUnlocked(true);
+  };
+  // -------------------------
+
   const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
     setIsUnlocked(false);
+    setIsAdPlaying(false);
     setIsLoading(true);
     setShowTheater(false);
   };
@@ -119,7 +170,7 @@ export default function VideoPlayer({
             onClick={() => handleTabChange("EN")}
             className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
               activeTab === "EN"
-                ? "bg-cyan-500 text-black shadow-[0_10px_20px_rgba(6,182,212,0.2)]"
+                ? "bg-cyan-500 text-black shadow-[0_10px_20_rgba(6,182,212,0.2)]"
                 : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -170,6 +221,59 @@ export default function VideoPlayer({
                   allow="autoplay; encrypted-media"
                   onLoad={() => setIsLoading(false)}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* AD OVERLAY WITH LOADING TEXT */}
+          {isAdPlaying && (
+            <div className="absolute inset-0 z-60 bg-black flex flex-col items-center justify-center">
+              {/* Background Loading Text (Visible behind the iframe if it's transparent/loading) */}
+              {!showSkip && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <div className="relative mb-4">
+                    <Loader2 className="w-10 h-10 text-cyan-500 animate-spin opacity-20" />
+                    <div className="absolute inset-0 blur-2xl bg-cyan-500/10 animate-pulse" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700 animate-pulse">
+                    Secure Ad Stream Initializing...
+                  </span>
+                </div>
+              )}
+
+              {/* The Ad Frame */}
+              <iframe
+                src={AD_URL}
+                className="w-full h-full border-none relative z-10"
+                allow="autoplay"
+              />
+
+              {/* Top Indicator */}
+              <div className="absolute top-6 left-6 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">
+                  Sponsored Message
+                </span>
+              </div>
+
+              {/* Bottom Control */}
+              <div className="absolute bottom-6 right-6 z-20 flex items-center gap-4">
+                {!showSkip ? (
+                  <div className="px-6 py-3 bg-black/80 border border-white/10 backdrop-blur-md rounded-xl text-white font-black text-[10px] uppercase tracking-widest flex items-center gap-3">
+                    <span className="opacity-50">Lumina Bypass in</span>
+                    <span className="text-cyan-400">{timeLeft}s</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={skipAdAndPlay}
+                    className="px-8 py-3 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] group/skip"
+                  >
+                    <div className="flex items-center gap-2">
+                      Skip Ad & Play{" "}
+                      <FastForward className="w-3.5 h-3.5 group-hover/skip:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -239,9 +343,9 @@ export default function VideoPlayer({
           )}
 
           {/* INITIAL UNLOCK SPLASH */}
-          {!isUnlocked && (
+          {!isUnlocked && !isAdPlaying && (
             <div
-              onClick={() => setIsUnlocked(true)}
+              onClick={startAdSequence}
               className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black transition-all duration-1000 group/unlock"
             >
               <div className="absolute inset-0 bg-linear-to-t from-cyan-950/20 to-transparent" />
@@ -257,7 +361,6 @@ export default function VideoPlayer({
             </div>
           )}
         </div>
-        {/* 2.5 STEARM ACTION */}
         <StreamActionSuite type="MOVIE" mediaId={movieId} />
       </div>
 
@@ -305,7 +408,6 @@ export default function VideoPlayer({
         })}
       </div>
 
-      {/* 3.5 DOWNLOAD SECTION */}
       <div className="flex justify-center py-4">
         <DirectLuminaLinker
           embedUrl={activeSource.url(movieId, imdbId)}
