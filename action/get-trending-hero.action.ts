@@ -13,17 +13,12 @@ export async function getTrendingHero({
       `${BASE_URL}/trending/movie/day?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
       { cache: "no-store" },
     );
-
     if (!res.ok) throw new Error("Failed to fetch trending movies");
 
     const data = await res.json();
-    const movies = data.results;
-
-    // Pick a random movie from the top 20 results
-    const randomIndex = Math.floor(Math.random() * movies.length);
-    return movies[randomIndex];
+    return data.results;
   } catch (error) {
     console.error(error);
-    return null;
+    return [];
   }
 }

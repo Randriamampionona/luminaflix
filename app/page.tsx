@@ -7,6 +7,7 @@ import { getTrendingTV } from "@/action/get-trending-TV.action";
 import CustomLink from "@/components/custom-link";
 import FeaturedBanner from "@/components/featured-banner";
 import GenreCard from "@/components/genre-card";
+import HeroSlider from "@/components/hero-slider";
 import HomeCTA from "@/components/home-cta";
 import MovieDetails from "@/components/movie-details";
 import MovieRow from "@/components/movie-row";
@@ -35,59 +36,7 @@ export default async function HomePage({
 
   return (
     <main className="relative min-h-screen bg-black">
-      <section className="relative h-screen w-full flex items-center overflow-hidden">
-        {/* Background Image - Dynamic from Action */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={`https://image.tmdb.org/t/p/original${heroMovie.backdrop_path}`}
-            alt={heroMovie.title}
-            className="w-full h-full object-cover opacity-60 transition-opacity duration-1000"
-          />
-          <div className="absolute inset-0 bg-linear-to-r from-black via-black/40 to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
-        </div>
-
-        {/* Content Area */}
-        <div className="relative z-10 px-8 md:px-16 max-w-3xl">
-          <div className="flex items-center space-x-3 mb-4">
-            <span className="bg-cyan-500 text-black text-[10px] font-black px-2 py-0.5 rounded tracking-tighter">
-              TRENDING NOW
-            </span>
-            <span className="text-white/60 text-xs tracking-[0.2em] uppercase font-bold">
-              Luminaflix Originals
-            </span>
-          </div>
-
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter uppercase italic drop-shadow-2xl line-clamp-2">
-            {heroMovie.title}
-            <span className="text-cyan-500 not-italic">.</span>
-          </h1>
-
-          <p className="text-lg text-white/80 mb-8 line-clamp-3 leading-relaxed max-w-xl drop-shadow-md">
-            {heroMovie.overview}
-          </p>
-
-          {/* Action Buttons with Lucide Icons */}
-          <div className="flex flex-wrap gap-4">
-            <CustomLink href={`/movies/${heroMovie.id}`} prefetch={false}>
-              <button className="group flex items-center gap-3 bg-white text-black px-10 py-4 rounded-full font-black uppercase text-sm hover:bg-cyan-500 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer">
-                <Play className="w-5 h-5 fill-current" />
-                Play Now
-              </button>
-            </CustomLink>
-
-            <MovieDetails movie={heroMovie}>
-              <button className="group flex items-center gap-3 bg-white/10 text-white px-10 py-4 rounded-full font-black uppercase text-sm backdrop-blur-xl border border-white/10 hover:bg-white/20 transition-all cursor-pointer">
-                <Info className="w-5 h-5 text-cyan-400" />
-                More Info
-              </button>
-            </MovieDetails>
-          </div>
-        </div>
-
-        {/* The Lumina Line */}
-        <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-transparent via-cyan-500 to-transparent opacity-30 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
-      </section>
+      <HeroSlider trendingMovies={heroMovie} />
 
       <div className="relative">
         <MovieRow title="Top Films" movies={topMovies} />
