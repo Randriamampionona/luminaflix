@@ -52,7 +52,7 @@ export default function DirectLuminaLinker({
   return (
     <>
       {/* FLOATING ACTION AREA */}
-      <div className="fixed bottom-8 right-8 z-60">
+      <div className="fixed bottom-8 right-8 z-100">
         <div className="group relative flex items-center justify-end">
           {/* CONTENT LABEL */}
           {/* Desktop: Hidden until hover | Mobile: Always visible */}

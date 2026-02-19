@@ -214,7 +214,7 @@ export default function VideoPlayer({
 
       {/* 2. MAIN CINEMA VIEWPORT */}
       <div className="flex items-end flex-col space-y-2">
-        <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
+        <div className="relative aspect-video max-h-[60vh] md:max-h-[69vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
           {/* THEATER MODE (Final Video State) */}
           {showTheater && (
             <div className="absolute inset-0 z-50 bg-black flex flex-col">
@@ -255,16 +255,16 @@ export default function VideoPlayer({
               </div>
 
               {/* Skip Logic Overlay */}
-              <div className="absolute bottom-6 right-6 z-20 flex items-center gap-4">
+              <div className="absolute top-6 right-6 z-20 flex items-center gap-4">
                 {!showSkip ? (
-                  <div className="px-6 py-3 bg-black/80 border border-white/10 backdrop-blur-md rounded-xl text-white font-black text-[10px] uppercase tracking-widest">
+                  <div className="px-8 py-4 bg-black/80 border border-white/10 backdrop-blur-md rounded-md text-white font-black text-[10px] uppercase tracking-widest">
                     Lumina Bypass in{" "}
                     <span className="text-cyan-400">{timeLeft}s</span>
                   </div>
                 ) : (
                   <button
                     onClick={handleAdFinished}
-                    className="px-8 py-3 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                    className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-md hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] cursor-pointer"
                   >
                     Skip Ad & Play
                   </button>
