@@ -95,7 +95,7 @@ export default function VideoPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/dkm/Fpz.dzG/NovfZzGvUu/Feumd9vuIZJUhlyk/P/TKYO4RMAD/kc2GMRj/UXtENqj/guwlORThYgy/O/QI";
+    "https://creamymouth.com/d/mdFqzWd.GhNpvNZWGnUn/GeNme9qutZRU_lwkGPXT/Yf4fMPD/ka2VMRjYUStON/jagJwsOCT/YzyiOdQT";
 
   // 1. Load the Fluid Player SDK (The Engine)
   useEffect(() => {
