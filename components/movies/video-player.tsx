@@ -98,7 +98,7 @@ export default function VideoPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/d/mdFqzWd.GhNpvNZWGnUn/GeNme9qutZRU_lwkGPXT/Yf4fMPD/ka2VMRjYUStON/jagJwsOCT/YzyiOdQT";
+    "https://creamymouth.com/dumIF.zpdDGhNLvfZxGxUl/bewmQ9Iu/ZJURl/kXPeTFY_4GMcDCkX2oM-j/U/t/NfjEgiw/OkTBYUypO/QE";
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -116,14 +116,25 @@ export default function VideoPlayer({
     };
   }, []);
 
-  // Timer logic - Only decrements if adStarted is true
+  // Timer logic - Now checks if video is actually playing/not paused
   useEffect(() => {
     let timer: NodeJS.Timeout;
+
+    // Only run interval if ad started AND video is not paused
     if (adStarted && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+      timer = setInterval(() => {
+        if (
+          videoRef.current &&
+          !videoRef.current.paused &&
+          !videoRef.current.ended
+        ) {
+          setTimeLeft((prev) => prev - 1);
+        }
+      }, 1000);
     } else if (adStarted && timeLeft === 0) {
       setShowSkip(true);
     }
+
     return () => clearInterval(timer);
   }, [adStarted, timeLeft]);
 

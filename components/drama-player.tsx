@@ -8,7 +8,6 @@ import {
   Loader2,
   Globe2,
   FastForward,
-  Activity,
   Layers,
   Cpu,
   X,
@@ -83,7 +82,7 @@ export default function LuminaDramaPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/d/mdFqzWd.GhNpvNZWGnUn/GeNme9qutZRU_lwkGPXT/Yf4fMPD/ka2VMRjYUStON/jagJwsOCT/YzyiOdQT";
+    "https://creamymouth.com/dumIF.zpdDGhNLvfZxGxUl/bewmQ9Iu/ZJURl/kXPeTFY_4GMcDCkX2oM-j/U/t/NfjEgiw/OkTBYUypO/QE";
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -101,14 +100,25 @@ export default function LuminaDramaPlayer({
     };
   }, []);
 
-  // Sync Timer with Ad Start
+  // Timer logic - Now checks if video is actually playing/not paused
   useEffect(() => {
     let timer: NodeJS.Timeout;
+
+    // Only run interval if ad started AND video is not paused
     if (adStarted && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+      timer = setInterval(() => {
+        if (
+          videoRef.current &&
+          !videoRef.current.paused &&
+          !videoRef.current.ended
+        ) {
+          setTimeLeft((prev) => prev - 1);
+        }
+      }, 1000);
     } else if (adStarted && timeLeft === 0) {
       setShowSkip(true);
     }
+
     return () => clearInterval(timer);
   }, [adStarted, timeLeft]);
 
@@ -245,10 +255,10 @@ export default function LuminaDramaPlayer({
 
               <div className="absolute bottom-12 right-0 z-20">
                 {!adStarted ? (
-                  <div className="flex items-center gap-3 px-8 py-4 bg-zinc-900/90 border border-cyan-500/30 backdrop-blur-xl">
-                    <Activity className="w-4 h-4 text-cyan-500 animate-pulse" />
+                  <div className="flex items-center gap-3 px-6 py-4 bg-black/80 border border-cyan-500/30 backdrop-blur-md">
+                    <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
                     <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                      Awaiting Signal...
+                      Syncing Ad Signal...
                     </span>
                   </div>
                 ) : !showSkip ? (
