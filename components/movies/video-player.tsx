@@ -15,6 +15,7 @@ import {
   Layers,
   Activity,
   Cpu,
+  Volume2,
 } from "lucide-react";
 import SignalMonitor from "../signal-monitor";
 import DirectLuminaLinker from "../direct-lumina-linker";
@@ -89,6 +90,8 @@ export default function VideoPlayer({
 
   // --- AD ENGINE STATES ---
   const [isAdPlaying, setIsAdPlaying] = useState(false);
+  const [adInitialized, setAdInitialized] = useState(false);
+  const [adStarted, setAdStarted] = useState(false); // NEW: Syncs timer with video
   const [timeLeft, setTimeLeft] = useState(15);
   const [showSkip, setShowSkip] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -97,7 +100,6 @@ export default function VideoPlayer({
   const AD_URL =
     "https://creamymouth.com/d/mdFqzWd.GhNpvNZWGnUn/GeNme9qutZRU_lwkGPXT/Yf4fMPD/ka2VMRjYUStON/jagJwsOCT/YzyiOdQT";
 
-  // 1. Load the Fluid Player SDK (The Engine)
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js";
@@ -114,16 +116,16 @@ export default function VideoPlayer({
     };
   }, []);
 
-  // 2. Handle Ad Timer Logic
+  // Timer logic - Only decrements if adStarted is true
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isAdPlaying && timeLeft > 0) {
+    if (adStarted && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    } else if (isAdPlaying && timeLeft === 0) {
+    } else if (adStarted && timeLeft === 0) {
       setShowSkip(true);
     }
     return () => clearInterval(timer);
-  }, [isAdPlaying, timeLeft]);
+  }, [adStarted, timeLeft]);
 
   const handleAdFinished = () => {
     if (playerInstance.current) {
@@ -131,6 +133,8 @@ export default function VideoPlayer({
       playerInstance.current = null;
     }
     setIsAdPlaying(false);
+    setAdInitialized(false);
+    setAdStarted(false);
     setIsUnlocked(true);
     setIsLoading(true);
   };
@@ -139,71 +143,89 @@ export default function VideoPlayer({
     setIsAdPlaying(true);
     setTimeLeft(15);
     setShowSkip(false);
+    setAdStarted(false);
+  };
 
-    // Initialize Fluid Player inside your custom UI
-    setTimeout(() => {
+  // 1. Monitor the video element directly for playback
+  useEffect(() => {
+    let monitor: NodeJS.Timeout;
+
+    if (adInitialized && !adStarted) {
+      monitor = setInterval(() => {
+        if (videoRef.current && videoRef.current.currentTime > 0.1) {
+          setAdStarted(true);
+          clearInterval(monitor);
+        }
+      }, 500);
+    }
+
+    return () => clearInterval(monitor);
+  }, [adInitialized, adStarted]);
+
+  // 2. Updated Trigger (Simplified)
+  const triggerActualAd = () => {
+    // @ts-ignore
+    if (window.fluidPlayer && videoRef.current) {
+      setAdInitialized(true);
       // @ts-ignore
-      if (window.fluidPlayer && videoRef.current) {
-        // @ts-ignore
-        playerInstance.current = window.fluidPlayer(videoRef.current, {
-          layoutControls: {
-            fillToContainer: true,
-            primaryColor: "#06b6d4",
-            autoPlay: true,
-            playButtonShowing: false,
-            mute: false,
-          },
-          vastOptions: {
-            adList: [{ roll: "preRoll", vastTag: AD_URL }],
-            adFinishedCallback: handleAdFinished,
-            adErrorCallback: handleAdFinished,
-          },
-        });
-      } else {
-        handleAdFinished(); // Fallback if script fails
-      }
-    }, 100);
+      playerInstance.current = window.fluidPlayer(videoRef.current, {
+        layoutControls: {
+          fillToContainer: true,
+          primaryColor: "#06b6d4",
+          autoPlay: true,
+          playButtonShowing: false,
+          mute: false,
+        },
+        vastOptions: {
+          adList: [{ roll: "preRoll", vastTag: AD_URL }],
+          // Fallbacks in case the heartbeat misses
+          adStartedCallback: () => setAdStarted(true),
+          adFinishedCallback: handleAdFinished,
+          adErrorCallback: handleAdFinished,
+        },
+      });
+
+      // Force play call for mobile browsers
+      videoRef.current.play().catch((e) => console.error("Playback failed", e));
+    } else {
+      handleAdFinished();
+    }
   };
 
   const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
     setIsUnlocked(false);
     setIsAdPlaying(false);
+    setAdInitialized(false);
+    setAdStarted(false);
     setIsLoading(true);
     setShowTheater(false);
   };
 
   const handleTabChange = (tab: "FR" | "EN") => {
     setActiveTab(tab);
-    const firstSource = tab === "FR" ? FR_PROVIDERS[0] : EN_PROVIDERS[0];
-    handleSourceChange(firstSource);
+    handleSourceChange(tab === "FR" ? FR_PROVIDERS[0] : EN_PROVIDERS[0]);
   };
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-1000">
-      {/* 1. TOP CONTROL BAR */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-2">
         <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/40 border border-white/5 backdrop-blur-md rounded-2xl">
-          <button
-            onClick={() => handleTabChange("FR")}
-            className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
-              activeTab === "FR"
-                ? "bg-white text-black shadow-lg"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            FR Channel
-          </button>
-          <button
-            onClick={() => handleTabChange("EN")}
-            className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
-              activeTab === "EN"
-                ? "bg-cyan-500 text-black shadow-lg"
-                : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            EN Channel
-          </button>
+          {(["FR", "EN"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
+                activeTab === tab
+                  ? tab === "FR"
+                    ? "bg-white text-black"
+                    : "bg-cyan-500 text-black"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              {tab} Channel
+            </button>
+          ))}
         </div>
         <div className="hidden md:flex items-center gap-6 px-6 py-3 bg-zinc-900/20 rounded-2xl border border-white/5">
           <Activity className="w-4 h-4 text-cyan-500 animate-pulse" />
@@ -212,10 +234,9 @@ export default function VideoPlayer({
 
       <SignalMonitor />
 
-      {/* 2. MAIN CINEMA VIEWPORT */}
       <div className="flex items-end flex-col space-y-2">
         <div className="relative aspect-video max-h-[60vh] md:max-h-[69vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
-          {/* THEATER MODE (Final Video State) */}
+          {/* THEATER MODE */}
           {showTheater && (
             <div className="absolute inset-0 z-50 bg-black flex flex-col">
               <div className="flex items-center justify-between px-6 py-3 bg-zinc-950 border-b border-white/5">
@@ -241,39 +262,66 @@ export default function VideoPlayer({
             </div>
           )}
 
-          {/* AD PLAYER (Fluid Player Container) */}
+          {/* AD PLAYER CONTAINER */}
           {isAdPlaying && (
             <div className="absolute inset-0 z-75 bg-black flex flex-col items-center justify-center">
-              <video ref={videoRef} className="w-full h-full" />
+              <video
+                ref={videoRef}
+                className="w-full h-full"
+                playsInline
+                preload="auto"
+              />
 
-              {/* Ad Overlay Text */}
-              <div className="absolute top-6 left-6 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
+              {/* STAGE 2 TRIGGER BUTTON */}
+              {!adInitialized && (
+                <div className="absolute inset-0 z-80 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+                  <button
+                    onClick={triggerActualAd}
+                    className="group flex flex-col items-center gap-6"
+                  >
+                    <div className="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.4)] group-hover:scale-110 transition-transform">
+                      <Volume2 className="w-8 h-8 text-black fill-current" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500">
+                      Enable Media Stream
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              <div className="absolute top-1 left-1 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                 <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">
                   Sponsored Bypass Protocol
                 </span>
               </div>
 
-              {/* Skip Logic Overlay */}
-              <div className="absolute top-6 right-6 z-20 flex items-center gap-4">
-                {!showSkip ? (
-                  <div className="px-8 py-4 bg-black/80 border border-white/10 backdrop-blur-md rounded-md text-white font-black text-[10px] uppercase tracking-widest">
-                    Lumina Bypass in{" "}
-                    <span className="text-cyan-400">{timeLeft}s</span>
+              {/* SYNCED TIMER OVERLAY */}
+              <div className="absolute bottom-12 right-0 z-20">
+                {!adStarted ? (
+                  <div className="flex items-center gap-3 px-6 py-4 bg-black/80 border border-cyan-500/30 backdrop-blur-md">
+                    <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
+                    <span className="text-white font-black text-[10px] uppercase tracking-widest">
+                      Syncing Ad Signal...
+                    </span>
+                  </div>
+                ) : !showSkip ? (
+                  <div className="px-8 py-4 bg-black/80 border border-white/10 backdrop-blur-md text-white font-black text-[10px] uppercase tracking-widest">
+                    Skip in <span className="text-cyan-400">{timeLeft}s</span>
                   </div>
                 ) : (
                   <button
                     onClick={handleAdFinished}
-                    className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-md hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] cursor-pointer"
+                    className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-widest hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] cursor-pointer"
                   >
-                    Skip Ad & Play
+                    Skip & Play
                   </button>
                 )}
               </div>
             </div>
           )}
 
-          {/* NATIVE PLAYER (Direct Source) */}
+          {/* NATIVE PLAYER */}
           {isUnlocked && !activeSource.isExternal && (
             <div className="absolute inset-0 z-10">
               {isLoading && (
@@ -285,26 +333,25 @@ export default function VideoPlayer({
                 src={activeSource.url(movieId, imdbId)}
                 className="w-full h-full"
                 allowFullScreen
-                frameBorder="0"
                 onLoad={() => setIsLoading(false)}
               />
             </div>
           )}
 
-          {/* BYPASS PROTOCOL (Bridge State) */}
+          {/* BYPASS PROTOCOL */}
           {isUnlocked && activeSource.isExternal && !showTheater && (
             <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950">
               <div className="text-center space-y-8">
                 <ShieldCheck className="w-12 h-12 text-cyan-500 mx-auto animate-pulse" />
-                <h3 className="text-xl font-black uppercase text-white tracking-tighter">
-                  Bypass Protocol Ready
+                <h3 className="text-xl font-black uppercase text-white tracking-tighter italic underline decoration-cyan-500 underline-offset-8">
+                  Protocol Ready
                 </h3>
                 <button
                   onClick={() => {
                     setIsLoading(true);
                     setShowTheater(true);
                   }}
-                  className="px-12 py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 transition-all uppercase text-xs tracking-widest"
+                  className="px-12 py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 transition-all uppercase text-xs tracking-widest shadow-[0_0_40px_rgba(255,255,255,0.1)]"
                 >
                   Start Virtual Stream
                 </button>
@@ -312,7 +359,7 @@ export default function VideoPlayer({
             </div>
           )}
 
-          {/* INITIAL UNLOCK SPLASH (The "Gate") */}
+          {/* INITIAL UNLOCK SPLASH */}
           {!isUnlocked && !isAdPlaying && (
             <div
               onClick={startAdSequence}
@@ -330,7 +377,6 @@ export default function VideoPlayer({
         <StreamActionSuite type="MOVIE" mediaId={movieId} />
       </div>
 
-      {/* 3. PROVIDER SELECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {(activeTab === "FR" ? FR_PROVIDERS : EN_PROVIDERS).map((provider) => {
           const Icon = provider.icon;
@@ -374,7 +420,6 @@ export default function VideoPlayer({
         />
       </div>
 
-      {/* 4. FOOTER */}
       <div className="flex flex-wrap items-center justify-between gap-4 px-8 py-5 bg-zinc-950 rounded-[2rem] border border-white/5 shadow-2xl">
         <div className="flex items-center gap-3">
           <Cpu className="w-4 h-4 text-cyan-500/50" />
