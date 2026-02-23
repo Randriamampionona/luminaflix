@@ -16,6 +16,7 @@ import {
   Activity,
   Cpu,
   Volume2,
+  AlertTriangle,
 } from "lucide-react";
 import SignalMonitor from "../signal-monitor";
 import DirectLuminaLinker from "../direct-lumina-linker";
@@ -91,14 +92,19 @@ export default function VideoPlayer({
   // --- AD ENGINE STATES ---
   const [isAdPlaying, setIsAdPlaying] = useState(false);
   const [adInitialized, setAdInitialized] = useState(false);
-  const [adStarted, setAdStarted] = useState(false); // NEW: Syncs timer with video
+  const [adStarted, setAdStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [showSkip, setShowSkip] = useState(false);
+
+  // --- WATCHDOG PROTOCOL STATES ---
+  const [watchdogTime, setWatchdogTime] = useState(45);
+  const [syncFailed, setSyncFailed] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/dumIF.zpdDGhNLvfZxGxUl/bewmQ9Iu/ZJURl/kXPeTFY_4GMcDCkX2oM-j/U/t/NfjEgiw/OkTBYUypO/QE";
+    "https://creamymouth.com/ddmlFczfd.GwNRvYZEGbUv/Zecms9DusZWU/lZksPMTrYt4hMyDVkn2RMXjJU-tONKj/gcw/ODTpYSyWOnQN";
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -116,11 +122,9 @@ export default function VideoPlayer({
     };
   }, []);
 
-  // Timer logic - Now checks if video is actually playing/not paused
+  // Timer logic - Checks if video is actually playing
   useEffect(() => {
     let timer: NodeJS.Timeout;
-
-    // Only run interval if ad started AND video is not paused
     if (adStarted && timeLeft > 0) {
       timer = setInterval(() => {
         if (
@@ -134,9 +138,26 @@ export default function VideoPlayer({
     } else if (adStarted && timeLeft === 0) {
       setShowSkip(true);
     }
-
     return () => clearInterval(timer);
   }, [adStarted, timeLeft]);
+
+  // Watchdog Timer logic - Triggers if ad fails to start
+  useEffect(() => {
+    let watchdog: NodeJS.Timeout;
+    if (isAdPlaying && !adStarted && !syncFailed) {
+      watchdog = setInterval(() => {
+        setWatchdogTime((prev) => {
+          if (prev <= 1) {
+            setSyncFailed(true);
+            clearInterval(watchdog);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(watchdog);
+  }, [isAdPlaying, adStarted, syncFailed]);
 
   const handleAdFinished = () => {
     if (playerInstance.current) {
@@ -146,6 +167,8 @@ export default function VideoPlayer({
     setIsAdPlaying(false);
     setAdInitialized(false);
     setAdStarted(false);
+    setSyncFailed(false);
+    setWatchdogTime(45);
     setIsUnlocked(true);
     setIsLoading(true);
   };
@@ -153,14 +176,14 @@ export default function VideoPlayer({
   const startAdSequence = () => {
     setIsAdPlaying(true);
     setTimeLeft(15);
+    setWatchdogTime(45);
+    setSyncFailed(false);
     setShowSkip(false);
     setAdStarted(false);
   };
 
-  // 1. Monitor the video element directly for playback
   useEffect(() => {
     let monitor: NodeJS.Timeout;
-
     if (adInitialized && !adStarted) {
       monitor = setInterval(() => {
         if (videoRef.current && videoRef.current.currentTime > 0.1) {
@@ -169,11 +192,9 @@ export default function VideoPlayer({
         }
       }, 500);
     }
-
     return () => clearInterval(monitor);
   }, [adInitialized, adStarted]);
 
-  // 2. Updated Trigger (Simplified)
   const triggerActualAd = () => {
     // @ts-ignore
     if (window.fluidPlayer && videoRef.current) {
@@ -189,14 +210,11 @@ export default function VideoPlayer({
         },
         vastOptions: {
           adList: [{ roll: "preRoll", vastTag: AD_URL }],
-          // Fallbacks in case the heartbeat misses
           adStartedCallback: () => setAdStarted(true),
           adFinishedCallback: handleAdFinished,
           adErrorCallback: handleAdFinished,
         },
       });
-
-      // Force play call for mobile browsers
       videoRef.current.play().catch((e) => console.error("Playback failed", e));
     } else {
       handleAdFinished();
@@ -209,6 +227,8 @@ export default function VideoPlayer({
     setIsAdPlaying(false);
     setAdInitialized(false);
     setAdStarted(false);
+    setSyncFailed(false);
+    setWatchdogTime(45);
     setIsLoading(true);
     setShowTheater(false);
   };
@@ -284,7 +304,7 @@ export default function VideoPlayer({
               />
 
               {/* STAGE 2 TRIGGER BUTTON */}
-              {!adInitialized && (
+              {!adInitialized && !syncFailed && (
                 <div className="absolute inset-0 z-80 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
                   <button
                     onClick={triggerActualAd}
@@ -307,13 +327,28 @@ export default function VideoPlayer({
                 </span>
               </div>
 
-              {/* SYNCED TIMER OVERLAY */}
+              {/* SYNCED TIMER / WATCHDOG OVERLAY */}
               <div className="absolute bottom-12 right-0 z-20">
-                {!adStarted ? (
+                {syncFailed ? (
+                  <div className="flex flex-col items-end gap-2 px-6 py-4 bg-red-500/10 border border-red-500/50 backdrop-blur-xl">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
+                      <span className="text-white font-black text-[10px] uppercase tracking-widest">
+                        Ad Protocol Sync Failed
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleAdFinished}
+                      className="mt-2 px-6 py-2 bg-white text-black font-black text-[9px] uppercase tracking-[0.2em] hover:bg-cyan-500 transition-all"
+                    >
+                      Bypass & Start Movie
+                    </button>
+                  </div>
+                ) : !adStarted ? (
                   <div className="flex items-center gap-3 px-6 py-4 bg-black/80 border border-cyan-500/30 backdrop-blur-md">
                     <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
                     <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                      Syncing Ad Signal...
+                      Syncing Ad Signal ({watchdogTime}s)
                     </span>
                   </div>
                 ) : !showSkip ? (

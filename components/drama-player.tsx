@@ -12,6 +12,7 @@ import {
   Cpu,
   X,
   Volume2,
+  AlertTriangle,
 } from "lucide-react";
 import SignalMonitor from "./signal-monitor";
 import DirectLuminaLinker from "./direct-lumina-linker";
@@ -78,11 +79,16 @@ export default function LuminaDramaPlayer({
   const [adStarted, setAdStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [showSkip, setShowSkip] = useState(false);
+
+  // --- WATCHDOG PROTOCOL ---
+  const [watchdogTime, setWatchdogTime] = useState(45);
+  const [syncFailed, setSyncFailed] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/dumIF.zpdDGhNLvfZxGxUl/bewmQ9Iu/ZJURl/kXPeTFY_4GMcDCkX2oM-j/U/t/NfjEgiw/OkTBYUypO/QE";
+    "https://creamymouth.com/ddmlFczfd.GwNRvYZEGbUv/Zecms9DusZWU/lZksPMTrYt4hMyDVkn2RMXjJU-tONKj/gcw/ODTpYSyWOnQN";
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -100,11 +106,9 @@ export default function LuminaDramaPlayer({
     };
   }, []);
 
-  // Timer logic - Now checks if video is actually playing/not paused
+  // Timer logic for Ad Bypass
   useEffect(() => {
     let timer: NodeJS.Timeout;
-
-    // Only run interval if ad started AND video is not paused
     if (adStarted && timeLeft > 0) {
       timer = setInterval(() => {
         if (
@@ -118,9 +122,26 @@ export default function LuminaDramaPlayer({
     } else if (adStarted && timeLeft === 0) {
       setShowSkip(true);
     }
-
     return () => clearInterval(timer);
   }, [adStarted, timeLeft]);
+
+  // Watchdog Safety Protocol
+  useEffect(() => {
+    let watchdog: NodeJS.Timeout;
+    if (isAdPlaying && !adStarted && !syncFailed) {
+      watchdog = setInterval(() => {
+        setWatchdogTime((prev) => {
+          if (prev <= 1) {
+            setSyncFailed(true);
+            clearInterval(watchdog);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(watchdog);
+  }, [isAdPlaying, adStarted, syncFailed]);
 
   // Heartbeat Monitor logic
   useEffect(() => {
@@ -144,6 +165,8 @@ export default function LuminaDramaPlayer({
     setIsAdPlaying(false);
     setAdInitialized(false);
     setAdStarted(false);
+    setSyncFailed(false);
+    setWatchdogTime(45);
     setIsUnlocked(true);
     setIsLoading(true);
   };
@@ -151,6 +174,8 @@ export default function LuminaDramaPlayer({
   const startAdSequence = () => {
     setIsAdPlaying(true);
     setTimeLeft(15);
+    setWatchdogTime(45);
+    setSyncFailed(false);
     setShowSkip(false);
     setAdStarted(false);
   };
@@ -186,6 +211,8 @@ export default function LuminaDramaPlayer({
     setIsAdPlaying(false);
     setAdInitialized(false);
     setAdStarted(false);
+    setSyncFailed(false);
+    setWatchdogTime(45);
     setIsLoading(true);
     setShowTheater(false);
   };
@@ -194,7 +221,6 @@ export default function LuminaDramaPlayer({
     <div className="w-full space-y-8 animate-in fade-in duration-1000">
       <SignalMonitor />
 
-      {/* VIEWPORT ENGINE */}
       <div className="flex items-end flex-col space-y-2">
         <div className="relative aspect-video max-h-[60vh] md:max-h-[69vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
           {/* THEATER OVERLAY */}
@@ -214,7 +240,12 @@ export default function LuminaDramaPlayer({
               <div className="relative flex-1">
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
-                    <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                    <div className="flex flex-col items-center gap-4">
+                      <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                      <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em]">
+                        Establishing Link
+                      </span>
+                    </div>
                   </div>
                 )}
                 <iframe
@@ -227,7 +258,7 @@ export default function LuminaDramaPlayer({
             </div>
           )}
 
-          {/* AD SYSTEM */}
+          {/* AD SYSTEM WITH WATCHDOG */}
           {isAdPlaying && (
             <div className="absolute inset-0 z-75 bg-black flex flex-col items-center justify-center">
               <video
@@ -237,7 +268,7 @@ export default function LuminaDramaPlayer({
                 preload="auto"
               />
 
-              {!adInitialized && (
+              {!adInitialized && !syncFailed && (
                 <div className="absolute inset-0 z-80 flex flex-col items-center justify-center bg-zinc-950/90 backdrop-blur-md">
                   <button
                     onClick={triggerActualAd}
@@ -254,11 +285,26 @@ export default function LuminaDramaPlayer({
               )}
 
               <div className="absolute bottom-12 right-0 z-20">
-                {!adStarted ? (
+                {syncFailed ? (
+                  <div className="flex flex-col items-end gap-2 px-6 py-4 bg-red-500/10 border border-red-500/50 backdrop-blur-xl">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
+                      <span className="text-white font-black text-[10px] uppercase tracking-widest">
+                        Handshake Interrupted
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleAdFinished}
+                      className="mt-2 px-6 py-2 bg-white text-black font-black text-[9px] uppercase tracking-[0.2em] hover:bg-cyan-500 transition-all"
+                    >
+                      Emergency Bypass
+                    </button>
+                  </div>
+                ) : !adStarted ? (
                   <div className="flex items-center gap-3 px-6 py-4 bg-black/80 border border-cyan-500/30 backdrop-blur-md">
                     <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
                     <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                      Syncing Ad Signal...
+                      Syncing Ad Signal ({watchdogTime}s)
                     </span>
                   </div>
                 ) : !showSkip ? (
