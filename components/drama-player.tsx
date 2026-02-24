@@ -88,7 +88,7 @@ export default function LuminaDramaPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/d.mKFDzkdZGnNIv/ZxGcUV/veCmk9zuqZ/UvlGkIPxT_Y/4_MtDjkc2uMDj/UhtRNnjsgJwJOgTHYky/OMQw";
+    "https://creamymouth.com/dZm.FczudSGINgvyZjGSUr/ieNmA9xuRZnUBlSkjPjTNY/4vMvDvkz2/MojUUqt/Nqjqg_whObTEY/ygOhQz";
 
   useEffect(() => {
     const script = document.createElement("script");
