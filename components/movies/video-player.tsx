@@ -104,7 +104,7 @@ export default function VideoPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/ddmlFczfd.GwNRvYZEGbUv/Zecms9DusZWU/lZksPMTrYt4hMyDVkn2RMXjJU-tONKj/gcw/ODTpYSyWOnQN";
+    "https://creamymouth.com/d.mKFDzkdZGnNIv/ZxGcUV/veCmk9zuqZ/UvlGkIPxT_Y/4_MtDjkc2uMDj/UhtRNnjsgJwJOgTHYky/OMQw";
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -266,7 +266,7 @@ export default function VideoPlayer({
       <SignalMonitor />
 
       <div className="flex items-end flex-col space-y-2">
-        <div className="relative aspect-video max-h-[60vh] md:max-h-[69vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
+        <div className="relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
           {/* THEATER MODE */}
           {showTheater && (
             <div className="absolute inset-0 z-50 bg-black flex flex-col">

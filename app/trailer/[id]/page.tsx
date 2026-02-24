@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { getMovieTrailer } from "@/action/get-movie-trailer.action";
 import CustomLink from "@/components/custom-link";
+import TrailerAdEngine from "@/components/trailer-ad-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -87,14 +88,12 @@ export default async function TrailerPage({
       {/* 2. MAIN MISSION CENTER */}
       <main className="w-full flex flex-col items-center mb-32 px-6">
         <div className="w-full max-w-6xl relative">
-          {/* THE PLAYER (Updated Rounding) */}
-          <div className="relative aspect-video w-full overflow-hidden bg-black border border-white/5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)] transition-all duration-700">
+          {/* THE PLAYER CONTAINER */}
+          <div className="relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full overflow-hidden bg-black border border-white/5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)] transition-all duration-700">
             {trailerData?.key ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${trailerData.key}?autoplay=1&rel=0&modestbranding=1&hl=${currentLang}`}
-                className="w-full h-full grayscale-[0.1] contrast-[1.05]"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
+              <TrailerAdEngine
+                trailerKey={trailerData.key}
+                lang={currentLang}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-4 bg-[#050505]">
@@ -109,7 +108,7 @@ export default async function TrailerPage({
             <div className="absolute inset-0 pointer-events-none z-10 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_2px,3px_100%]" />
           </div>
 
-          {/* LOWER HUD MODULES (Updated Rounding & Layout) */}
+          {/* LOWER HUD MODULES */}
           <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* MODULE A: ENGINE DATA */}
             <div className="lg:col-span-3 p-8 bg-white/2 border border-white/5 rounded-[2rem] flex flex-col justify-between group backdrop-blur-sm">
