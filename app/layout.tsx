@@ -9,6 +9,7 @@ import NextTopLoader from "nextjs-toploader";
 import AdsterraSocialBar from "@/components/ads/adsterra-social-bar";
 import HilltopVideoSlider from "@/components/ads/hilltop-video-slider";
 import HilltopPopunder from "@/components/ads/hilltop-popunder";
+import HilltopadsInPagePush from "@/components/ads/hilltop-in-page-push";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -107,6 +108,7 @@ export default function RootLayout({
           <AdsterraSocialBar />
           <HilltopVideoSlider />
           <HilltopPopunder />
+          <HilltopadsInPagePush />
         </body>
       </html>
     </ClerkProvider>
