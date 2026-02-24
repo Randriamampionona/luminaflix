@@ -28,7 +28,7 @@ export default async function TrailerPage({
   const { id } = await params;
   const { type, fallback, lang, display_lang } = await searchParams;
 
-  const trailerData = await getMovieTrailer(id, lang, type, display_lang);
+  const trailerData = await getMovieTrailer(id, lang, type);
   const currentLang = trailerData?.lang === "fr" ? "fr" : "en";
   const nextLang = currentLang === "fr" ? "en" : "fr";
 

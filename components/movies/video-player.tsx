@@ -104,7 +104,7 @@ export default function VideoPlayer({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/dZm.FczudSGINgvyZjGSUr/ieNmA9xuRZnUBlSkjPjTNY/4vMvDvkz2/MojUUqt/Nqjqg_whObTEY/ygOhQz";
+    "https://creamymouth.com/dymxFCzud.GtNWvyZBG-UV/gewm/9WueZcUBlTktPlT/Yk4tMGDGkW2MMgjLUOtfNWjTg/wiOZT/YsyuOvQA";
 
   useEffect(() => {
     const script = document.createElement("script");

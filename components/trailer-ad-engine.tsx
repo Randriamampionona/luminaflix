@@ -25,7 +25,7 @@ export default function TrailerAdEngine({
   const playerInstance = useRef<any>(null);
 
   const AD_URL =
-    "https://creamymouth.com/dYm/Fbz.dnGNNyvgZgG/Ud/IeOmQ9RuhZ/UYlPkwPBTrYg4/MQDLk/2PMvjWUAtBNCj/gCwLOyTBYcyfO-SeZhsla/W/1MpUdzDo0uxr";
+    "https://creamymouth.com/dymxFCzud.GtNWvyZBG-UV/gewm/9WueZcUBlTktPlT/Yk4tMGDGkW2MMgjLUOtfNWjTg/wiOZT/YsyuOvQA";
 
   useEffect(() => {
     if (!document.querySelector('script[src*="fluidplayer"]')) {
