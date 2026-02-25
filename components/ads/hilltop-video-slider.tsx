@@ -14,7 +14,7 @@ export default function HilltopVideoSlider() {
                 s = d.createElement('script'),
                 l = d.scripts[d.scripts.length - 1];
             s.settings = nyhwzs || {};
-            s.src = "//rapid-university.com/b.XjVpsYdWGKlH0BYFWkch/deEmx9tu/ZNU/ldk/PQTqYS4/MHDIkG1jNFj/kRtINzjjgwwiONTtUi3NMPw-";
+            s.src = "//diligentresident.com/b/XaVOs.dGGPll0_YoWccm/Ge/m/9Ru/Z/UJlpk/PUTeYp4/MeDokr1/NRj-kstbN/jCgxwIOsTgU/3bMcwV";
             s.async = true;
             s.referrerPolicy = 'no-referrer-when-downgrade';
             l.parentNode.insertBefore(s, l);
