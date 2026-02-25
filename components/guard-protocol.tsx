@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { ShieldAlert, RefreshCcw, Terminal } from "lucide-react";
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
 export default function GuardProtocol({
   children,
 }: {
@@ -13,6 +15,7 @@ export default function GuardProtocol({
 
   // --- LOCKDOWN: DISALLOW INTERFACE MANIPULATION ---
   const enforceLockdown = useCallback((e: any) => {
+    if (!IS_PROD) return;
     if (e.type === "contextmenu") {
       e.preventDefault();
       return false;

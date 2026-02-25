@@ -23,12 +23,39 @@ export default function DirectLuminaLinker({
   const [showQR, setShowQR] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
 
+  // --- NEW LOGIC STATE ---
+  const [isLinkReady, setIsLinkReady] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const AD_LINK =
+    "https://bold-consequence.com/b.3jV/0kPV3cpFvSbEmrV/JRZ/D-0-2lOeDnIHxbM/zqIt1/L/TrYh4vMVjvExzlMljjkP";
+  const TIMER_DURATION = 15; // Seconds the real link stays active
+
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     setCurrentUrl(window.location.href);
   }, []);
 
+  // --- TIMER CORE ---
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLinkReady && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (countdown === 0) {
+      setIsLinkReady(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isLinkReady, countdown]);
+
   const handleInitialClick = () => {
+    // 1. If link isn't "Ready", it's the Ad Phase
+    if (!isLinkReady) {
+      window.open(AD_LINK, "_blank"); // Open HilltopAd
+      setIsLinkReady(true); // Activate the real link
+      setCountdown(TIMER_DURATION); // Start the cycle
+      return;
+    }
+
+    // 2. If link IS "Ready" (During Countdown), execute your original logic
     if (!isSignedIn) {
       const loginUrl = `/sign-in?fallback_redirect_url=${encodeURIComponent(pathname)}`;
       router.push(loginUrl);
@@ -47,6 +74,9 @@ export default function DirectLuminaLinker({
     } else {
       setShowQR(true);
     }
+
+    // Optional: Reset link ready status after successful action
+    // setIsLinkReady(false);
   };
 
   return (
@@ -55,7 +85,6 @@ export default function DirectLuminaLinker({
       <div className="fixed bottom-8 right-8 z-100">
         <div className="group relative flex items-center justify-end">
           {/* CONTENT LABEL */}
-          {/* Desktop: Hidden until hover | Mobile: Always visible */}
           <div
             className={`
             absolute right-0 flex items-center pr-14 transition-all duration-500
@@ -66,22 +95,28 @@ export default function DirectLuminaLinker({
             }
           `}
           >
-            <div className="px-6 py-3 bg-white text-black rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.2)] mr-2 whitespace-nowrap">
+            <div className="px-6 py-3 bg-white text-black rounded-md shadow-[0_0_30px_rgba(255,255,255,0.2)] mr-2 whitespace-nowrap">
               <div className="flex flex-col items-start leading-none">
                 <span className="text-[11px] font-black uppercase italic tracking-tighter flex items-center gap-2">
-                  {!isSignedIn ? (
-                    <Lock className="w-3 h-3 text-cyan-600" />
+                  {/* LABEL LOGIC: Show countdown if active, else show standard status */}
+                  {isLinkReady ? (
+                    <span className="text-cyan-600 animate-pulse">
+                      Link Expiring: {countdown}s
+                    </span>
+                  ) : !isSignedIn ? (
+                    <>
+                      <Lock className="w-3 h-3 text-cyan-600" />
+                      Login Required
+                    </>
                   ) : (
-                    <Download className="w-3 h-3 text-cyan-600" />
+                    <>
+                      <Download className="w-3 h-3 text-cyan-600" />
+                      Download Content
+                    </>
                   )}
-                  {isSignedIn ? "Download Content" : "Login Required"}
                 </span>
                 <span className="text-[7px] font-bold text-cyan-600 uppercase tracking-[0.2em] mt-1">
-                  {isSignedIn
-                    ? isMobile
-                      ? "Push to 1DM"
-                      : "Sync to Mobile"
-                    : "Authorize to Sync"}
+                  {isLinkReady ? "AUTHORIZED ACCESS" : "CLICK TO UNLOCK LINK"}
                 </span>
               </div>
             </div>
@@ -90,15 +125,22 @@ export default function DirectLuminaLinker({
           {/* THE ORB */}
           <button
             onClick={handleInitialClick}
-            className="relative flex items-center justify-center w-14 h-14 bg-black border border-white/10 rounded-2xl shadow-[0_0_40px_-10px_rgba(0,0,0,1)] hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] transition-all duration-500 cursor-pointer"
+            className={`relative flex items-center justify-center w-14 h-14 bg-black border rounded-md shadow-[0_0_40px_-10px_rgba(0,0,0,1)] transition-all duration-500 cursor-pointer
+              ${isLinkReady ? "border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.3)]" : "border-white/10 hover:border-cyan-500/50"}
+            `}
           >
             <div
-              className={`absolute inset-0 rounded-2xl animate-pulse group-hover:hidden ${isSignedIn ? "bg-cyan-500/10" : "bg-white/5"}`}
+              className={`absolute inset-0 rounded-md animate-pulse group-hover:hidden ${isLinkReady ? "bg-cyan-500/20" : isSignedIn ? "bg-cyan-500/10" : "bg-white/5"}`}
             />
 
-            <Download className="w-6 h-6 text-white group-hover:text-cyan-400 transition-colors" />
+            <Download
+              className={`w-6 h-6 transition-colors ${isLinkReady ? "text-cyan-400" : "text-white group-hover:text-cyan-400"}`}
+            />
 
-            <div className="absolute top-0 right-0 w-2.5 h-2.5 border-2 border-black rounded-full bg-cyan-500" />
+            {/* STATUS DOT: Blue if link ready, Gray if not */}
+            <div
+              className={`absolute top-0 right-0 w-2.5 h-2.5 border-2 border-black rounded-full transition-colors ${isLinkReady ? "bg-cyan-500" : "bg-zinc-600"}`}
+            />
           </button>
         </div>
       </div>
