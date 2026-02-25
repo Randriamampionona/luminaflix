@@ -9,7 +9,6 @@ import {
   Loader2,
   ShieldCheck,
   Languages,
-  X,
   FastForward,
   CloudLightning,
   Layers,
@@ -17,6 +16,8 @@ import {
   Cpu,
   Volume2,
   AlertTriangle,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import SignalMonitor from "../signal-monitor";
 import DirectLuminaLinker from "../direct-lumina-linker";
@@ -76,6 +77,8 @@ const EN_PROVIDERS: Provider[] = [
   },
 ];
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
 export default function VideoPlayer({
   movieId,
   imdbId,
@@ -88,16 +91,17 @@ export default function VideoPlayer({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showTheater, setShowTheater] = useState(false);
+  const [isCustomFullscreen, setIsCustomFullscreen] = useState(false);
 
   // --- AD ENGINE STATES ---
   const [isAdPlaying, setIsAdPlaying] = useState(false);
   const [adInitialized, setAdInitialized] = useState(false);
   const [adStarted, setAdStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(IS_PROD ? 15 : 3);
   const [showSkip, setShowSkip] = useState(false);
 
   // --- WATCHDOG PROTOCOL STATES ---
-  const [watchdogTime, setWatchdogTime] = useState(45);
+  const [watchdogTime, setWatchdogTime] = useState(IS_PROD ? 45 : 5);
   const [syncFailed, setSyncFailed] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -159,6 +163,32 @@ export default function VideoPlayer({
     return () => clearInterval(watchdog);
   }, [isAdPlaying, adStarted, syncFailed]);
 
+  // Prevent scrolling and handle orientation lock logic for mobile
+  useEffect(() => {
+    if (isCustomFullscreen) {
+      document.body.style.overflow = "hidden";
+
+      // Cast orientation to 'any' to bypass TS errors for .lock()
+      const orientation = (window.screen.orientation ||
+        (window.screen as any).mozOrientation ||
+        (window.screen as any).msOrientation) as any;
+
+      if (orientation && orientation.lock) {
+        orientation.lock("landscape").catch(() => {
+          // Fallback handled by CSS rotation in the JSX
+        });
+      }
+    } else {
+      document.body.style.overflow = "auto";
+      const orientation = (window.screen.orientation ||
+        (window.screen as any).mozOrientation ||
+        (window.screen as any).msOrientation) as any;
+      if (orientation && orientation.unlock) {
+        orientation.unlock();
+      }
+    }
+  }, [isCustomFullscreen]);
+
   const handleAdFinished = () => {
     if (playerInstance.current) {
       playerInstance.current.destroy();
@@ -168,15 +198,15 @@ export default function VideoPlayer({
     setAdInitialized(false);
     setAdStarted(false);
     setSyncFailed(false);
-    setWatchdogTime(45);
+    setWatchdogTime(IS_PROD ? 45 : 5);
     setIsUnlocked(true);
     setIsLoading(true);
   };
 
   const startAdSequence = () => {
     setIsAdPlaying(true);
-    setTimeLeft(15);
-    setWatchdogTime(45);
+    setTimeLeft(IS_PROD ? 15 : 3);
+    setWatchdogTime(IS_PROD ? 45 : 5);
     setSyncFailed(false);
     setShowSkip(false);
     setAdStarted(false);
@@ -228,9 +258,10 @@ export default function VideoPlayer({
     setAdInitialized(false);
     setAdStarted(false);
     setSyncFailed(false);
-    setWatchdogTime(45);
+    setWatchdogTime(IS_PROD ? 45 : 5);
     setIsLoading(true);
     setShowTheater(false);
+    setIsCustomFullscreen(false);
   };
 
   const handleTabChange = (tab: "FR" | "EN") => {
@@ -266,21 +297,16 @@ export default function VideoPlayer({
       <SignalMonitor />
 
       <div className="flex items-end flex-col space-y-2">
-        <div className="relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5">
+        <div
+          className={`overflow-hidden bg-black border border-white/10 shadow-2xl ring-1 ring-white/5 transition-all duration-500 ${
+            isCustomFullscreen
+              ? "fixed inset-0 p-0 m-0 z-9999 w-screen h-screen portrait:w-[100vh] portrait:h-[100vw] portrait:rotate-90 portrait:origin-center portrait:top-1/2 portrait:left-1/2 portrait:-translate-x-1/2 portrait:-translate-y-1/2"
+              : "relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full"
+          }`}
+        >
           {/* THEATER MODE */}
           {showTheater && (
             <div className="absolute inset-0 z-50 bg-black flex flex-col">
-              <div className="flex items-center justify-between px-6 py-3 bg-zinc-950 border-b border-white/5">
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/70">
-                  Lumina Virtual Terminal — {activeSource.name}
-                </span>
-                <button
-                  onClick={() => setShowTheater(false)}
-                  className="text-white/50 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
               <div className="flex-1">
                 <iframe
                   src={activeSource.url(movieId, imdbId)}
@@ -419,6 +445,50 @@ export default function VideoPlayer({
               </p>
             </div>
           )}
+
+          {/* MODERN CUSTOM FULLSCREEN BUTTON */}
+          <button
+            onClick={() => setIsCustomFullscreen(!isCustomFullscreen)}
+            className={`
+              absolute top-2 right-2 z-150
+              group flex items-center gap-3 md:gap-0 md:hover:gap-3
+              px-4 py-3 md:px-3 md:py-3 rounded-2xl
+              bg-zinc-950/80 md:bg-zinc-950/60 backdrop-blur-2xl
+              border border-white/10
+              transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+              hover:border-cyan-500/50 hover:bg-zinc-900/80
+              hover:shadow-[0_0_40px_rgba(6,182,212,0.25)]
+              md:hover:pr-5
+              active:scale-95
+            `}
+          >
+            <div className="absolute inset-0 rounded-2xl bg-cyan-500/5 md:bg-cyan-500/0 md:group-hover:bg-cyan-500/5 transition-colors duration-500" />
+
+            <div className="relative flex items-center justify-center w-6 h-6">
+              {isCustomFullscreen ? (
+                <Minimize className="w-5 h-5 text-zinc-400 group-hover:text-white transition-all duration-300" />
+              ) : (
+                <>
+                  <Maximize className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-all duration-300 md:group-hover:rotate-90" />
+                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(6,182,212,1)]" />
+                </>
+              )}
+            </div>
+
+            {/* Label: Always visible on mobile, sliding on desktop */}
+            <span
+              className={`
+                overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em]
+                text-cyan-400 md:text-zinc-400 md:group-hover:text-cyan-400
+                max-w-50 md:max-w-0 md:group-hover:max-w-37.5
+                transition-all duration-500 ease-in-out
+              `}
+            >
+              {isCustomFullscreen ? "Exit Terminal" : "Go Fullscreen"}
+            </span>
+
+            <div className="absolute bottom-1 right-1 w-1 h-1 border-r border-b border-white/20 group-hover:border-cyan-500/50 transition-colors" />
+          </button>
         </div>
         <StreamActionSuite type="MOVIE" mediaId={movieId} />
       </div>

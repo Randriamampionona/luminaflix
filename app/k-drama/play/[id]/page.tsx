@@ -122,8 +122,7 @@ export default async function KDramaPlayPage({
       </div>
 
       {/* PLAYER COMPONENT */}
-      <div className="max-w-7xl mx-auto relative group">
-        <div className="absolute -inset-1 bg-cyan-500/20 rounded-[2.6rem] blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-1000" />
+      <div className="max-w-7xl mx-auto relative">
         <div className="relative">
           <LuminaDramaPlayer id={id} season={seasonNum} episode={episodeNum} />
         </div>
