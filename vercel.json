@@ -2,23 +2,19 @@
   "crons": [
     {
       "path": "/api/cron/sync",
-      "schedule": "42 18 * * *"
+      "schedule": "53 17 * * *"
     },
     {
       "path": "/api/cron/sync",
-      "schedule": "30 9 * * *"
+      "schedule": "0 10 * * *"
     },
     {
       "path": "/api/cron/sync",
-      "schedule": "0 13 * * *"
+      "schedule": "45 13 * * *"
     },
     {
       "path": "/api/cron/sync",
-      "schedule": "45 16 * * *"
-    },
-    {
-      "path": "/api/cron/sync",
-      "schedule": "0 20 * * *"
+      "schedule": "0 17 * * *"
     }
   ]
 }

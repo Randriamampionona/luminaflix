@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { triggerDailySync } from "@/action/daily-sync.action";
 import { NextResponse } from "next/server";
 
