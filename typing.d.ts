@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export type Movie = {
   id: number;
   title: string;
@@ -65,4 +67,16 @@ export type AnimeDetail = {
   poster_path: string;
   backdrop_path: string;
   seasons: AnimeSeason[];
+};
+
+export type User = {
+  clerkId: string;
+  createdAt: Timestamp;
+  email: string;
+  firstName: string;
+  fullName: string;
+  lastActive: Timestamp;
+  lastName: string;
+  profileImage: string;
+  role?: null | "ADMIN";
 };
