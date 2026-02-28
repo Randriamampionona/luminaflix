@@ -713,6 +713,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.10.tgz#a2a1e3812d14525f725d011a73eceb41fef5bc1c"
   integrity sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==
 
+"@getbrevo/brevo@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@getbrevo/brevo/-/brevo-4.0.1.tgz#4bc8090f132a2fb83709b35bfbd481c498d8abfa"
+  integrity sha512-U1xOsr5e7pfRTdngrt9VWmPV8SQD/LayTOp55/Wnb4aW33IkBWypDJ8jOpQtxn6xL4t8aBw1thRisvQY4+/Edw==
+
 "@google-cloud/firestore@^7.11.0":
   version "7.11.6"
   resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-7.11.6.tgz#0a2b26e215aa4f903267f82370450753b84db16a"
