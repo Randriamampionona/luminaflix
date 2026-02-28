@@ -27,7 +27,7 @@ export default function DirectLuminaLinker({
   const [isLinkReady, setIsLinkReady] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const AD_LINK =
-    "https://bold-consequence.com/b.3jV/0kPV3cpFvSbEmrV/JRZ/D-0-2lOeDnIHxbM/zqIt1/L/TrYh4vMVjvExzlMljjkP";
+    "https://bold-consequence.com/bn3/Vn0/P.3mptvebrmrVRJ_ZCDZ0o2-OQDtIhx/M/zTIK1PLBT/Yy4/MRjLEnz/MjjIke";
   const TIMER_DURATION = 15; // Seconds the real link stays active
 
   useEffect(() => {
