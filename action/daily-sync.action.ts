@@ -52,7 +52,7 @@ export async function triggerDailySync() {
     if (IS_PROD) {
       const emailPromises = recipients.map((user: any) => {
         return brevo.transactionalEmails.sendTransacEmail({
-          subject: `[LUMINA] New Signals Intercepted: ${m?.title || "Update"}`,
+          subject: `[LUMINA] ⚡ Daily Transmission | Intelligence Update`,
           sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
           to: [{ email: user.email, name: user.firstName }],
           cc: [{ email: "tojorandriaii474@gmail.com", name: "Ops Manager" }],
