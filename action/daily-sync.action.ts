@@ -25,7 +25,7 @@ const getRandomItem = (data: any) => {
 
 export async function triggerDailySync() {
   const domain = IS_PROD
-    ? process.env.NEXT_PUBLIC_DOMAIN_NAME
+    ? process.env.NEXT_PUBLIC_DOMAIN
     : "http://localhost:3000";
   const currentDate = new Date()
     .toLocaleDateString("en-GB", {
