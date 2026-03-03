@@ -2,6 +2,8 @@ import {
   getAnimeDetails,
   getAnimeSeasonEpisodes,
 } from "@/action/get-anime-details.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import LuminaAnimePlayer from "@/components/anime-player"; // We will create this below
 import CustomLink from "@/components/custom-link";
 import {
@@ -159,6 +161,10 @@ export default async function AnimePlayPage({
           </div>
         </div>
       </div>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
     </main>
   );
 }

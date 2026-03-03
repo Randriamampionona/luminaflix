@@ -2,6 +2,8 @@ import MovieCard from "@/components/movie-card";
 import { ChevronLeft } from "lucide-react";
 import { getSearchKDramas } from "@/action/get-search-kdrama.action";
 import CustomLink from "@/components/custom-link";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +77,10 @@ export default async function KDramaSearchPage({
           </CustomLink>
         </div>
       )}
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
     </div>
   );
 }

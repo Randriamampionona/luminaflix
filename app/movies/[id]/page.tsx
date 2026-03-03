@@ -1,5 +1,7 @@
 import { getFallbackMovie } from "@/action/get-fallback-movies.action";
 import { getMovieData } from "@/action/get-movie-data.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import CustomLink from "@/components/custom-link";
 import VideoPlayer from "@/components/movies/video-player";
 import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
@@ -126,6 +128,10 @@ export default async function WatchPage({
           movieId={movie.id.toString()}
           imdbId={movie.external_ids?.imdb_id}
         />
+
+        <AdWrapper>
+          <EvadavNative />
+        </AdWrapper>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t border-white/5">
           <div className="lg:col-span-2 space-y-6">

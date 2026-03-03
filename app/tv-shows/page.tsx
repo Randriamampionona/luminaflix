@@ -1,4 +1,6 @@
 import { getAllTVShows } from "@/action/get-all-tv.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import MovieCard from "@/components/movie-card";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
@@ -73,6 +75,10 @@ export default async function TVShowsPage({
           </button>
         </div>
       )}
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
 
       {/* Pagination Footer */}
       {data.results.length > 0 && (

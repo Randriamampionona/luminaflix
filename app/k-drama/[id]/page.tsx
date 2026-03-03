@@ -2,6 +2,8 @@ import {
   getKDramaDetails,
   getSeasonEpisodes,
 } from "@/action/get-kdrama-details.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import EpisodeExplorer from "@/components/episode-explorer";
 import { Star } from "lucide-react";
 import Image from "next/image";
@@ -68,6 +70,10 @@ export default async function KDramaDetailsPage({
           path="k-drama"
         />
       </div>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
     </div>
   );
 }

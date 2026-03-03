@@ -2,6 +2,8 @@ import {
   getKDramaDetails,
   getSeasonEpisodes,
 } from "@/action/get-kdrama-details.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import CustomLink from "@/components/custom-link";
 import LuminaDramaPlayer from "@/components/drama-player";
 import {
@@ -163,6 +165,10 @@ export default async function KDramaPlayPage({
           </div>
         </div>
       </div>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
     </main>
   );
 }

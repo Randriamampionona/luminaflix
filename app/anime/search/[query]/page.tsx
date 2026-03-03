@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getSearchAnime } from "@/action/get-search-anime.action";
 import CustomLink from "@/components/custom-link";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +76,10 @@ export default async function AnimeSearchPage({
           </CustomLink>
         </div>
       )}
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
     </div>
   );
 }

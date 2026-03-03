@@ -2,6 +2,8 @@ import { getAllGenres } from "@/action/get-all-genres.action";
 import { ChevronRight, Hash } from "lucide-react";
 import Image from "next/image";
 import CustomLink from "@/components/custom-link";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 
 export default async function AllGenresPage({
   searchParams,
@@ -78,6 +80,10 @@ export default async function AllGenresPage({
             </CustomLink>
           ))}
         </div>
+
+        <AdWrapper>
+          <EvadavNative />
+        </AdWrapper>
 
         {/* FOOTER DATA */}
         <div className="mt-12 flex justify-between items-center border-t border-white/5 pt-8">

@@ -1,4 +1,6 @@
 import { getUserFavorites } from "@/action/get-favorites.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import FavoriteCard from "@/components/favorite-card";
 import { FolderLock, PlusCircle } from "lucide-react";
 import Link from "next/link";
@@ -101,6 +103,10 @@ export default async function FavoritesPage({
           </div>
         )}
       </div>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
 
       {/* FOOTER DECORATION */}
       <div className="max-w-7xl mx-auto mt-20 pt-10 border-t border-white/5 flex justify-between items-center">

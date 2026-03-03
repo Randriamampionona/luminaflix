@@ -10,6 +10,8 @@ import {
 import { getMovieTrailer } from "@/action/get-movie-trailer.action";
 import CustomLink from "@/components/custom-link";
 import TrailerAdEngine from "@/components/trailer-ad-engine";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 
 export const dynamic = "force-dynamic";
 
@@ -168,6 +170,10 @@ export default async function TrailerPage({
           </div>
         </div>
       </main>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
 
       {/* BACKGROUND SCENE */}
       <div className="fixed inset-0 pointer-events-none -z-10">

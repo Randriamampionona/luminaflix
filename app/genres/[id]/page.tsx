@@ -3,6 +3,8 @@ import { getAllGenres } from "@/action/get-all-genres.action"; // Using the acti
 import MovieCard from "@/components/movie-card";
 import Pagination from "@/components/movies/pagination";
 import { ShieldCheck, Activity, Terminal } from "lucide-react";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -67,6 +69,10 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
                 <MovieCard key={movie.id} movie={movie} />
               ))}
             </div>
+
+            <AdWrapper>
+              <EvadavNative />
+            </AdWrapper>
 
             {/* PAGINATION FOOTER */}
             <div className="mt-20 border-t border-white/5 pt-10">

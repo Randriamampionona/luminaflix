@@ -1,4 +1,6 @@
 import { getLibrary } from "@/action/get-library.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import MovieCard from "@/components/movie-card";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
@@ -90,6 +92,10 @@ export default async function LibraryPage({
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
 
       <div className="mt-20">
         <Pagination currentPage={page} totalPages={data.total_pages} />

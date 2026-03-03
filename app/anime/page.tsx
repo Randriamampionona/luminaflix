@@ -1,4 +1,6 @@
 import { getAllAnime } from "@/action/get-all-anime.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import AnimeSearch from "@/components/anime-search";
 import MovieCard from "@/components/movie-card";
 import Pagination from "@/components/movies/pagination";
@@ -72,6 +74,10 @@ export default async function AnimePage({
           </p>
         </div>
       )}
+
+      <AdWrapper>
+        <EvadavNative />
+      </AdWrapper>
 
       {/* Pagination Footer */}
       {data.results.length > 0 && (

@@ -4,6 +4,8 @@ import { getLatestMovies } from "@/action/get-latest-movies.action";
 import { getTopRatedMovies } from "@/action/get-top-rated-movies.action";
 import { getTrendingHero } from "@/action/get-trending-hero.action";
 import { getTrendingTV } from "@/action/get-trending-TV.action";
+import AdWrapper from "@/components/ads/ad-wrapper";
+import EvadavNative from "@/components/ads/evadav-native";
 import CustomLink from "@/components/custom-link";
 import FeaturedBanner from "@/components/featured-banner";
 import GenreCard from "@/components/genre-card";
@@ -40,6 +42,9 @@ export default async function HomePage({
 
       <div className="relative">
         <MovieRow title="Top Films" movies={topMovies} />
+        <AdWrapper>
+          <EvadavNative />
+        </AdWrapper>
 
         <section className="px-8 md:px-16 my-20">
           {/* Header with Title and Link */}
