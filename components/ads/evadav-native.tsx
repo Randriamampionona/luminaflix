@@ -1,26 +1,37 @@
-import Script from "next/script";
+"use client";
+
+import { useEffect, useRef } from "react";
 
 const EvadavNative = () => {
-  return (
-    <>
-      {/* We use strategy "afterInteractive" so the ad doesn't 
-          slow down your initial page load. 
-      */}
-      <Script
-        src="https://curoax.com/na/waWQiOjEyMjA5MTUsInNpZCI6MTY1ODI3Mywid2lkIjo3MzQ1MzYsInNyYyI6Mn0=eyJ.js"
-        strategy="afterInteractive"
-        async
-      />
+  const containerRef = useRef<HTMLDivElement>(null);
 
-      {/* If Evadav requires a specific container to render the ads, 
-          add it here. Usually, native ads look for a div with a specific ID.
-          Check your Evadav dashboard for a 'placement ID' if needed.
-      */}
-      <div
-        id="evadav-native-placement"
-        className="my-8 w-full min-h-25 flex justify-center"
-      />
-    </>
+  useEffect(() => {
+    // Check if the script already exists to avoid double-loading
+    const scriptId = "evadav-script-tag";
+    if (document.getElementById(scriptId)) return;
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src =
+      "https://curoax.com/na/waWQiOjEyMjA5MTUsInNpZCI6MTY1ODI3Mywid2lkIjo3MzQ1MzYsInNyYyI6Mn0=eyJ.js";
+    script.async = true;
+
+    // This is the "Modern" way to ensure the script targets
+    // the div directly above it in the DOM flow.
+    if (containerRef.current) {
+      containerRef.current.appendChild(script);
+    }
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      id="evadav-native-placement"
+      className="w-full min-h-25 flex justify-center items-center overflow-hidden"
+    >
+      {/* The script will be injected here by the useEffect, 
+          keeping it trapped inside your AdWrapper box. */}
+    </div>
   );
 };
 
