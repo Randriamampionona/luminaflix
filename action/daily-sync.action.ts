@@ -62,80 +62,78 @@ export async function triggerDailySync() {
           sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
           to: [{ email: user.email, name: user.firstName }],
           cc: [{ email: "tojorandriaii474@gmail.com", name: "Ops Manager" }],
-          htmlContent: `<div style="background-color: #020405; padding: 50px 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <div style="max-width: 600px; margin: auto; background: #05080a; border: 1px solid #161b22; border-radius: 32px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
-    
-    <div style="background: linear-gradient(to bottom, #0f172a, #05080a); padding: 40px 20px; text-align: center; border-bottom: 1px solid rgba(6, 182, 212, 0.1);">
-      <h1 style="margin: 0; font-size: 32px; font-weight: 100; letter-spacing: 12px; color: #ffffff; text-transform: uppercase;">
-        LUMINA<span style="color: #06b6d4; font-weight: 900;">.</span>
-      </h1>
-      <div style="height: 1px; width: 60px; background: linear-gradient(to right, transparent, #06b6d4, transparent); margin: 15px auto;"></div>
-      <p style="margin: 0; font-size: 10px; color: #06b6d4; letter-spacing: 4px; font-weight: 700; text-transform: uppercase;">Aperture Intelligence</p>
-    </div>
+          htmlContent: `<div style="background-color: #020405; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+            <div style="max-width: 600px; margin: auto; background: #05080a; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);">
+              
+              <div style="padding: 16px 24px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 6px; height: 6px; background: #06b6d4; border-radius: 50%; box-shadow: 0 0 8px #06b6d4;"></div>
+                  <span style="color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Secure Stream Active</span>
+                </div>
+                <span style="color: #475569; font-size: 10px; font-weight: 500; font-family: monospace; margin-left: 7px;">${new Date().toISOString().replace("T", " // ").slice(0, 19)}</span>
+              </div>
 
-    <div style="padding: 40px 30px; text-align: center;">
-      <h2 style="font-size: 28px; font-weight: 600; color: #ffffff; margin: 0 0 12px 0; letter-spacing: -0.5px;">Welcome back, ${user.firstName || "Operative"}.</h2>
-      <p style="font-size: 15px; color: #8899a6; line-height: 1.6; margin: 0 auto; max-width: 440px;">
-        The system has synchronized. We’ve isolated three high-frequency signals for your immediate review.
-      </p>
-    </div>
+              <div style="position: relative; padding: 40px 30px; background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);">
+                <h1 style="margin: 0; font-size: 12px; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 12px;">LUMINA OS</h1>
+                <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">${user.firstName || "Operative"}</span>.</h2>
+              </div>
 
-    <div style="padding: 0 30px 40px 30px;">
-      <div style="background: #0d1117; border-radius: 24px; border: 1px solid #30363d; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-        
-        <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block; filter: brightness(0.9);" />
-        
-        <div style="background: rgba(6, 182, 212, 0.05); border-top: 2px solid #06b6d4; border-bottom: 1px solid rgba(6, 182, 212, 0.1); padding: 8px 20px;">
-           <span style="color: #06b6d4; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Target Identified: Top Priority</span>
-        </div>
-        
-        <div style="padding: 30px; text-align: left; background: linear-gradient(180deg, #0d1117 0%, #05080a 100%);">
-          <h2 style="margin: 0 0 10px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h2>
-          <p style="font-size: 14px; color: #8b949e; line-height: 1.6; margin-bottom: 25px;">${truncate(m?.overview, 150)}</p>
-          <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #ffffff; color: #000000; padding: 14px 35px; text-decoration: none; font-weight: 800; font-size: 13px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px;">Initialize Stream</a>
-        </div>
-      </div>
-    </div>
+              <div style="padding: 0 24px 32px 24px;">
+                <div style="background: #0d1117; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
+                  <div style="position: relative;">
+                    <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block;" />
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, #0d1117 0%, transparent 50%);"></div>
+                    <div style="position: absolute; bottom: 20px; left: 20px;">
+                      <span style="background: #ffffff; color: #000000; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Top Priority</span>
+                    </div>
+                  </div>
+                  
+                  <div style="padding: 24px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h3>
+                    <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
+                    
+                    <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
+                      Initialize Link →
+                    </a>
+                  </div>
+                </div>
+              </div>
 
-    <div style="padding: 0 30px 50px 30px;">
-      <table width="100%" cellspacing="0" cellpadding="0">
-        <tr>
-          <td width="48%" valign="top">
-            <div style="background: #0d1117; border-radius: 20px; border: 1px solid #21262d; overflow: hidden;">
-              <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; display: block;" />
-              <div style="padding: 20px;">
-                <p style="color: #06b6d4; font-size: 10px; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">K-Drama</p>
-                <h3 style="font-size: 15px; color: #ffffff; margin: 0 0 15px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h3>
-                <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px solid #06b6d4; padding-bottom: 2px;">Access Files →</a>
+              <div style="padding: 0 24px 40px 24px;">
+                <table width="100%" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td width="48%" valign="top">
+                      <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
+                        <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+                        <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
+                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h4>
+                        <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
+                      </div>
+                    </td>
+                    <td width="4%"></td>
+                    <td width="48%" valign="top">
+                      <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
+                        <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+                        <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
+                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h4>
+                        <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="padding: 32px 24px; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                <div style="margin-bottom: 16px;">
+                  <span style="color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">LUMINA_PROTOCOL // ENCRYPTED</span>
+                </div>
+                <div style="font-size: 11px; color: #64748b;">
+                  <a href="#" style="color: #64748b; text-decoration: none;">Security Settings</a>
+                  <span style="margin: 0 10px; opacity: 0.2;">|</span>
+                  <a href="#" style="color: #64748b; text-decoration: none;">End Session</a>
+                </div>
               </div>
             </div>
-          </td>
-          <td width="4%"></td>
-          <td width="48%" valign="top">
-            <div style="background: #0d1117; border-radius: 20px; border: 1px solid #21262d; overflow: hidden;">
-              <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; display: block;" />
-              <div style="padding: 20px;">
-                <p style="color: #06b6d4; font-size: 10px; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">Anime</p>
-                <h3 style="font-size: 15px; color: #ffffff; margin: 0 0 15px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h3>
-                <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px solid #06b6d4; padding-bottom: 2px;">Access Files →</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <div style="background: #010409; padding: 40px 20px; text-align: center; border-top: 1px solid #21262d;">
-      <p style="font-size: 11px; color: #484f58; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
-        Transmitted by Lumina Secure Core
-      </p>
-      <div style="font-size: 11px;">
-        <a href="#" style="color: #8b949e; text-decoration: none; margin: 0 12px;">Security Protocol</a>
-        <span style="color: #30363d;">•</span>
-        <a href="#" style="color: #8b949e; text-decoration: none; margin: 0 12px;">Terminal Exit</a>
-      </div>
-    </div>
-  </div>
           </div>`,
         });
       });
@@ -147,80 +145,78 @@ export async function triggerDailySync() {
         sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
         to: [{ email: "tojorandriaii474@gmail.com", name: "Developer" }],
         cc: [{ email: "joodev08@gmail.com", name: "Ops Manager" }],
-        htmlContent: `<div style="background-color: #020405; padding: 50px 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <div style="max-width: 600px; margin: auto; background: #05080a; border: 1px solid #161b22; border-radius: 32px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
-    
-    <div style="background: linear-gradient(to bottom, #0f172a, #05080a); padding: 40px 20px; text-align: center; border-bottom: 1px solid rgba(6, 182, 212, 0.1);">
-      <h1 style="margin: 0; font-size: 32px; font-weight: 100; letter-spacing: 12px; color: #ffffff; text-transform: uppercase;">
-        LUMINA<span style="color: #06b6d4; font-weight: 900;">.</span>
-      </h1>
-      <div style="height: 1px; width: 60px; background: linear-gradient(to right, transparent, #06b6d4, transparent); margin: 15px auto;"></div>
-      <p style="margin: 0; font-size: 10px; color: #06b6d4; letter-spacing: 4px; font-weight: 700; text-transform: uppercase;">Aperture Intelligence</p>
-    </div>
+        htmlContent: `<div style="background-color: #020405; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
+        <div style="max-width: 600px; margin: auto; background: #05080a; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);">
+          
+          <div style="padding: 16px 24px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 6px; height: 6px; background: #06b6d4; border-radius: 50%; box-shadow: 0 0 8px #06b6d4;"></div>
+              <span style="color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Secure Stream Active</span>
+            </div>
+            <span style="color: #475569; font-size: 10px; font-weight: 500; font-family: monospace; margin-left: 7px;">${new Date().toISOString().replace("T", " // ").slice(0, 19)}</span>
+          </div>
 
-    <div style="padding: 40px 30px; text-align: center;">
-      <h2 style="font-size: 28px; font-weight: 600; color: #ffffff; margin: 0 0 12px 0; letter-spacing: -0.5px;">Welcome back, Operative.</h2>
-      <p style="font-size: 15px; color: #8899a6; line-height: 1.6; margin: 0 auto; max-width: 440px;">
-        The system has synchronized. We’ve isolated three high-frequency signals for your immediate review.
-      </p>
-    </div>
+          <div style="position: relative; padding: 40px 30px; background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);">
+            <h1 style="margin: 0; font-size: 12px; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 12px;">LUMINA OS</h1>
+            <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">Tooj</span>.</h2>
+          </div>
 
-    <div style="padding: 0 30px 40px 30px;">
-      <div style="background: #0d1117; border-radius: 24px; border: 1px solid #30363d; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-        
-        <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block; filter: brightness(0.9);" />
-        
-        <div style="background: rgba(6, 182, 212, 0.05); border-top: 2px solid #06b6d4; border-bottom: 1px solid rgba(6, 182, 212, 0.1); padding: 8px 20px;">
-           <span style="color: #06b6d4; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Target Identified: Top Priority</span>
-        </div>
-        
-        <div style="padding: 30px; text-align: left; background: linear-gradient(180deg, #0d1117 0%, #05080a 100%);">
-          <h2 style="margin: 0 0 10px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h2>
-          <p style="font-size: 14px; color: #8b949e; line-height: 1.6; margin-bottom: 25px;">${truncate(m?.overview, 150)}</p>
-          <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #ffffff; color: #000000; padding: 14px 35px; text-decoration: none; font-weight: 800; font-size: 13px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px;">Initialize Stream</a>
-        </div>
-      </div>
-    </div>
-
-    <div style="padding: 0 30px 50px 30px;">
-      <table width="100%" cellspacing="0" cellpadding="0">
-        <tr>
-          <td width="48%" valign="top">
-            <div style="background: #0d1117; border-radius: 20px; border: 1px solid #21262d; overflow: hidden;">
-              <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; display: block;" />
-              <div style="padding: 20px;">
-                <p style="color: #06b6d4; font-size: 10px; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">K-Drama</p>
-                <h3 style="font-size: 15px; color: #ffffff; margin: 0 0 15px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h3>
-                <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px solid #06b6d4; padding-bottom: 2px;">Access Files →</a>
+          <div style="padding: 0 24px 32px 24px;">
+            <div style="background: #0d1117; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
+              <div style="position: relative;">
+                <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block;" />
+                <div style="position: absolute; inset: 0; background: linear-gradient(to top, #0d1117 0%, transparent 50%);"></div>
+                <div style="position: absolute; bottom: 20px; left: 20px;">
+                  <span style="background: #ffffff; color: #000000; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Top Priority</span>
+                </div>
+              </div>
+              
+              <div style="padding: 24px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h3>
+                <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
+                
+                <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
+                  Initialize Link →
+                </a>
               </div>
             </div>
-          </td>
-          <td width="4%"></td>
-          <td width="48%" valign="top">
-            <div style="background: #0d1117; border-radius: 20px; border: 1px solid #21262d; overflow: hidden;">
-              <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; display: block;" />
-              <div style="padding: 20px;">
-                <p style="color: #06b6d4; font-size: 10px; margin: 0 0 8px 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">Anime</p>
-                <h3 style="font-size: 15px; color: #ffffff; margin: 0 0 15px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h3>
-                <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; border-bottom: 1px solid #06b6d4; padding-bottom: 2px;">Access Files →</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
+          </div>
 
-    <div style="background: #010409; padding: 40px 20px; text-align: center; border-top: 1px solid #21262d;">
-      <p style="font-size: 11px; color: #484f58; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
-        Transmitted by Lumina Secure Core
-      </p>
-      <div style="font-size: 11px;">
-        <a href="#" style="color: #8b949e; text-decoration: none; margin: 0 12px;">Security Protocol</a>
-        <span style="color: #30363d;">•</span>
-        <a href="#" style="color: #8b949e; text-decoration: none; margin: 0 12px;">Terminal Exit</a>
-      </div>
-    </div>
-  </div>
+          <div style="padding: 0 24px 40px 24px;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="48%" valign="top">
+                  <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
+                    <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+                    <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
+                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h4>
+                    <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
+                  </div>
+                </td>
+                <td width="4%"></td>
+                <td width="48%" valign="top">
+                  <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
+                    <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+                    <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
+                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h4>
+                    <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="padding: 32px 24px; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+            <div style="margin-bottom: 16px;">
+              <span style="color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">LUMINA_PROTOCOL // ENCRYPTED</span>
+            </div>
+            <div style="font-size: 11px; color: #64748b;">
+              <a href="#" style="color: #64748b; text-decoration: none;">Security Settings</a>
+              <span style="margin: 0 10px; opacity: 0.2;">|</span>
+              <a href="#" style="color: #64748b; text-decoration: none;">End Session</a>
+            </div>
+          </div>
+        </div>
         </div>`,
       });
       return { success: true, count: 1 };
