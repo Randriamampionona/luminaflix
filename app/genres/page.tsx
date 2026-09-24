@@ -3,7 +3,7 @@ import { ChevronRight, Hash } from "lucide-react";
 import Image from "next/image";
 import CustomLink from "@/components/custom-link";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 
 export default async function AllGenresPage({
   searchParams,
@@ -82,7 +82,7 @@ export default async function AllGenresPage({
         </div>
 
         <AdWrapper>
-          <EvadavNative />
+          <NativeBannerAd />
         </AdWrapper>
 
         {/* FOOTER DATA */}

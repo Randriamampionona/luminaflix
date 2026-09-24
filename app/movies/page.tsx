@@ -1,6 +1,6 @@
 import { getAllMovies } from "@/action/get-all-movies.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 import MovieCard from "@/components/movie-card";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import Pagination from "@/components/movies/pagination";
@@ -84,7 +84,7 @@ export default async function MoviesPage({
       )}
 
       <AdWrapper>
-        <EvadavNative />
+        <NativeBannerAd />
       </AdWrapper>
 
       {/* Pagination Footer */}

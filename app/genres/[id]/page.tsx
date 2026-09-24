@@ -4,7 +4,7 @@ import MovieCard from "@/components/movie-card";
 import Pagination from "@/components/movies/pagination";
 import { ShieldCheck, Activity, Terminal } from "lucide-react";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -71,7 +71,7 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
             </div>
 
             <AdWrapper>
-              <EvadavNative />
+              <NativeBannerAd />
             </AdWrapper>
 
             {/* PAGINATION FOOTER */}

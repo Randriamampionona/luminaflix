@@ -6,9 +6,6 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import NextTopLoader from "nextjs-toploader";
-import HilltopVideoSlider from "@/components/ads/hilltop-video-slider";
-import HilltopPopunder from "@/components/ads/hilltop-popunder";
-import HilltopadsInPagePush from "@/components/ads/hilltop-in-page-push";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,9 +58,7 @@ export const metadata: Metadata = {
         alt: "LuminaFlix Preview",
       },
     ],
-  },
-  // themeColor: "#000000", <--- DELETED THIS
-  // viewport: "..."      <--- DELETED THIS
+  }
 };
 
 export default function RootLayout({
@@ -75,15 +70,8 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
-          {/* ADMAVEN */}
-          <meta name="admaven-placement" content="Bqjw4pjY4" />
-
-          {/* HILLTOPADS */}
-          <meta name="referrer" content="no-referrer-when-downgrade" />
-          <meta
-            name="c2fee7a46e85e2563bde2faad9315d0fc626ec01"
-            content="c2fee7a46e85e2563bde2faad9315d0fc626ec01"
-          />
+          {/* CLICKADU */}
+          <meta name="clckd" content="6f37617a6ebc179967a081299a6194ec" />
         </head>
 
         <body
@@ -104,9 +92,6 @@ export default function RootLayout({
           {children}
           <Analytics />
           <Footer />
-          <HilltopVideoSlider />
-          <HilltopPopunder />
-          <HilltopadsInPagePush />
         </body>
       </html>
     </ClerkProvider>

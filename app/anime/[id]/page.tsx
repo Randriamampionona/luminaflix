@@ -3,7 +3,7 @@ import {
   getAnimeSeasonEpisodes,
 } from "@/action/get-anime-details.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 import EpisodeExplorer from "@/components/episode-explorer";
 import { Star } from "lucide-react";
 import Image from "next/image";
@@ -79,7 +79,7 @@ export default async function AnimeDetailsPage({
       </div>
 
       <AdWrapper>
-        <EvadavNative />
+        <NativeBannerAd />
       </AdWrapper>
     </div>
   );

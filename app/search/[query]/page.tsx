@@ -1,6 +1,6 @@
 import { getSearchResults } from "@/action/get-search-results.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 import MovieCard from "@/components/movie-card";
 import { Search, Sparkles } from "lucide-react";
 
@@ -71,7 +71,7 @@ export default async function SearchPage({
       </div>
 
       <AdWrapper>
-        <EvadavNative />
+        <NativeBannerAd />
       </AdWrapper>
     </main>
   );

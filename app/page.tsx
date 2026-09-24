@@ -5,15 +5,14 @@ import { getTopRatedMovies } from "@/action/get-top-rated-movies.action";
 import { getTrendingHero } from "@/action/get-trending-hero.action";
 import { getTrendingTV } from "@/action/get-trending-TV.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 import CustomLink from "@/components/custom-link";
 import FeaturedBanner from "@/components/featured-banner";
 import GenreCard from "@/components/genre-card";
 import HeroSlider from "@/components/hero-slider";
 import HomeCTA from "@/components/home-cta";
-import MovieDetails from "@/components/movie-details";
 import MovieRow from "@/components/movie-row";
-import { ArrowRight, Info, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default async function HomePage({
   searchParams,
@@ -43,7 +42,7 @@ export default async function HomePage({
       <div className="relative">
         <MovieRow title="Top Films" movies={topMovies} />
         <AdWrapper>
-          <EvadavNative />
+          <NativeBannerAd />
         </AdWrapper>
 
         <section className="px-8 md:px-16 my-20">

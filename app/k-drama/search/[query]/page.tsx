@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getSearchKDramas } from "@/action/get-search-kdrama.action";
 import CustomLink from "@/components/custom-link";
 import AdWrapper from "@/components/ads/ad-wrapper";
-import EvadavNative from "@/components/ads/evadav-native";
+import NativeBannerAd from "@/components/ads/native-banner-ad";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +79,7 @@ export default async function KDramaSearchPage({
       )}
 
       <AdWrapper>
-        <EvadavNative />
+        <NativeBannerAd />
       </AdWrapper>
     </div>
   );

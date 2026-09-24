@@ -35,6 +35,20 @@ interface Provider {
 
 const FR_PROVIDERS: Provider[] = [
   {
+    name: "Lumina frembed.surf TMBD",
+    id: "frembed_surf_TMBD",
+    url: (id) => `https://frembed.surf/embed/movie/603692?id${id}`,
+    icon: Tv2,
+    isExternal: true,
+  },
+  {
+    name: "Lumina frembed.surf IMDB",
+    id: "frembed_surf_IMDB",
+    url: (_, imdbId) => `https://frembed.surf/embed/movie/603692?id${imdbId}`,
+    icon: Tv2,
+    isExternal: true,
+  },
+  {
     name: "FrenchCloud (Ultra)",
     id: "frenchcloud",
     url: (_, imdbId) => `https://frenchcloud.cam/movie/${imdbId}`,
