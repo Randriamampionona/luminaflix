@@ -30,7 +30,7 @@ export default async function AllGenresPage({
         </div>
 
         {/* THE GRID UI WITH IMAGES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-l gap-2 border-t border-white/5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-l border-t border-white/5">
           {genres.map((genre, index) => (
             <CustomLink
               key={genre.id}
@@ -86,7 +86,7 @@ export default async function AllGenresPage({
         </AdWrapper>
 
         {/* FOOTER DATA */}
-        <div className="mt-12 flex justify-between items-center border-t border-white/5 pt-8">
+        <div className="mt-12 flex justify-between items-center gap-6 border-t border-white/5 pt-8">
           <div className="flex gap-12">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">

@@ -94,7 +94,7 @@ export default function LuminaDramaPlayer({
         orientation.lock("landscape").catch(() => {});
       }
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
       const orientation = (window.screen.orientation ||
         (window.screen as any).mozOrientation ||
         (window.screen as any).msOrientation) as any;
@@ -102,6 +102,10 @@ export default function LuminaDramaPlayer({
         orientation.unlock();
       }
     }
+    // UI FIX: never leave the page scroll-locked when the player unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isCustomFullscreen]);
 
   const handleSourceChange = (source: Provider) => {

@@ -113,7 +113,7 @@ export default function LuminaAnimePlayer({
         orientation.lock("landscape").catch(() => {});
       }
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
       const orientation = (window.screen.orientation ||
         (window.screen as any).mozOrientation ||
         (window.screen as any).msOrientation) as any;
@@ -121,6 +121,10 @@ export default function LuminaAnimePlayer({
         orientation.unlock();
       }
     }
+    // UI FIX: never leave the page scroll-locked when the player unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isCustomFullscreen]);
 
   const handleSourceChange = (source: Provider) => {
@@ -136,10 +140,10 @@ export default function LuminaAnimePlayer({
     <GuardProtocol>
       <div className="w-full space-y-8 animate-in fade-in duration-1000">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-2">
-          <div className="flex items-center gap-1.5 p-1.5 bg-zinc-900/40 border border-white/5 backdrop-blur-md rounded-2xl">
+          <div className="flex max-w-full items-center gap-1.5 p-1.5 bg-zinc-900/40 border border-white/5 backdrop-blur-md rounded-2xl">
             <button
               onClick={() => handleTabChange("VO")}
-              className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
+              className={`px-3 sm:px-8 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-wider sm:tracking-widest whitespace-nowrap transition-all duration-500 ${
                 activeTab === "VO"
                   ? "bg-white text-black"
                   : "text-zinc-500 hover:text-zinc-300"
@@ -149,7 +153,7 @@ export default function LuminaAnimePlayer({
             </button>
             <button
               onClick={() => handleTabChange("FR")}
-              className={`px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
+              className={`px-3 sm:px-8 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-wider sm:tracking-widest whitespace-nowrap transition-all duration-500 ${
                 activeTab === "FR"
                   ? "bg-cyan-500 text-black"
                   : "text-zinc-500 hover:text-zinc-300"

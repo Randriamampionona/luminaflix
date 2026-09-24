@@ -39,15 +39,15 @@ export default async function TrailerPage({
   const watchLink = `${baseRoute}/${id}?fallback=${fallback}`;
 
   return (
-    <div className="relative min-h-screen bg-[#020202] text-white font-geist overflow-x-hidden selection:bg-cyan-500/30">
+    <div className="relative isolate min-h-screen bg-[#020202] text-white overflow-x-hidden selection:bg-cyan-500/30">
       {/* 1. TOP NAVIGATION HUD */}
       <header className="w-full max-w-6xl mx-auto mt-32 p-6 md:p-10 flex items-center justify-between bg-linear-to-b from-[#020202] to-transparent">
-        <CustomLink href="/" className="flex items-center gap-6 group">
+        <CustomLink href="/" className="flex items-center gap-4 md:gap-6 group min-w-0">
           <div className="p-2 border border-white/10 rounded-xl group-hover:border-cyan-500 transition-all group-hover:bg-cyan-500/5">
             <ChevronLeft className="w-5 h-5 text-zinc-600 group-hover:text-cyan-500" />
           </div>
-          <div className="flex flex-col border-l border-white/10 pl-6 space-y-1">
-            <span className="text-[12px] font-black uppercase tracking-[0.6em] text-white">
+          <div className="flex flex-col border-l border-white/10 pl-4 md:pl-6 space-y-1">
+            <span className="text-[12px] font-black uppercase tracking-[0.3em] md:tracking-[0.6em] text-white">
               LUMINA//CORE
             </span>
             <div className="flex items-center gap-2">

@@ -35,7 +35,7 @@ export default async function TVShowsPage({
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 space-y-20">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
         <div className="space-y-2">
           <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Series <span className="text-white/20">Vault</span>
@@ -49,7 +49,7 @@ export default async function TVShowsPage({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-start lg:self-end">
+        <div className="flex flex-wrap items-center gap-3 self-start lg:self-end">
           {/* Note: In a real app, you'd pass a "type" prop to filter if the genre IDs differ */}
           <AdvancedFilter />
           <div className="w-px h-6 bg-white/10 mx-1" />

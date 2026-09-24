@@ -3,12 +3,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@tailwind utilities;
-
+/* UI FIX: removed duplicate "@tailwind utilities" (already included by @import "tailwindcss")
+   and the Arial override that was hiding the Geist font loaded in layout.tsx */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* UI FIX: these classes were used in components but never defined */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @theme inline {
@@ -90,7 +107,8 @@ body {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  color-scheme: dark;
+  --background: #020202;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -222,4 +240,18 @@ body {
 }
 .fluid_controls_container {
   color: #06b6d4 !important; /* Cyan accents */
+}
+
+/* 404 page progress bar (moved from styled-jsx, whose scoped keyframe name
+   could not be reached by the Tailwind animate-[loading_...] class) */
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }

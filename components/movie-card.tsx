@@ -16,14 +16,21 @@ export default function MovieCard({ movie, type = "movie" }: MovieCardProps) {
 
   return (
     <MovieDetails movie={movie} type={type}>
-      <div className="relative flex-none group cursor-pointer w-37.5 md:w-50">
+      <div className="relative flex-none group cursor-pointer w-full">
         {/* Poster Container */}
         <div className="relative aspect-2/3 rounded-md overflow-hidden bg-zinc-900 border border-white/5 shadow-lg">
-          <img
-            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-            alt={displayName}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {movie.poster_path ? (
+            <img
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+              alt={displayName}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-600">
+              {displayName}
+            </div>
+          )}
 
           {/* Quality/Type Tag - Updated logic */}
           <div className="absolute top-2 right-2 bg-cyan-500 px-2 py-0.5 rounded text-[8px] font-black text-black uppercase tracking-tighter">

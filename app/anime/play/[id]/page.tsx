@@ -76,7 +76,7 @@ export default async function AnimePlayPage({
                   Live Anime Stream Connection Established
                 </span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
+              <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
                 {anime.name}
                 <span className="text-cyan-500">.</span>
               </h1>

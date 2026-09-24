@@ -31,7 +31,7 @@ export default async function FavoritesPage({
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="space-y-2">
-              <h1 className="text-7xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+              <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
                 My{" "}
                 <span className="text-white/10 group-hover:text-white/20 transition-colors">
                   Vault

@@ -52,9 +52,9 @@ export const metadata: Metadata = {
     description: "Watch the latest movies and TV shows together.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
+        url: "/og-image.png",
+        width: 1024,
+        height: 1024,
         alt: "LuminaFlix Preview",
       },
     ],
@@ -68,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className="dark">
 
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}

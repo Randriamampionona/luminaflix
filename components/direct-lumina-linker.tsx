@@ -148,7 +148,7 @@ export default function DirectLuminaLinker({
       {/* SYNC MODAL (PC ONLY) */}
       {showQR && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="relative w-full max-w-100 bg-zinc-900 border border-white/10 rounded-[3rem] p-10 shadow-2xl text-center overflow-hidden">
+          <div className="relative w-full max-w-100 max-h-full overflow-y-auto no-scrollbar bg-zinc-900 border border-white/10 rounded-[3rem] p-6 sm:p-10 shadow-2xl text-center">
             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
 
             <button

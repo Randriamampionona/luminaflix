@@ -76,11 +76,11 @@ export default function SearchHub() {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl bg-black/80 backdrop-blur-3xl border-white/10 p-0 overflow-hidden shadow-[0_0_100px_rgba(6,182,212,0.2)] rounded-md outline-none z-100">
+        <DialogContent className="max-w-2xl sm:max-w-2xl bg-black/80 backdrop-blur-3xl border-white/10 p-0 overflow-hidden shadow-[0_0_100px_rgba(6,182,212,0.2)] rounded-md outline-none z-100">
           <DialogTitle className="sr-only">Lumina Command Center</DialogTitle>
 
           <form onSubmit={handleSearch} className="relative">
-            <div className="absolute top-8 left-8">
+            <div className="absolute top-1/2 left-8 -translate-y-1/2 pointer-events-none">
               {isSearching ? (
                 <Loader2 className="w-6 h-6 text-cyan-500 animate-spin" />
               ) : (
@@ -93,7 +93,7 @@ export default function SearchHub() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="QUERY DATABASE..."
-              className="w-full bg-transparent border-none outline-none pt-12 pb-10 px-8 pl-20 text-3xl font-black uppercase italic tracking-tighter text-white placeholder:text-zinc-900"
+              className="w-full bg-transparent border-none outline-none py-11 pl-20 pr-14 text-3xl font-black uppercase italic tracking-tighter text-white placeholder:text-zinc-700"
             />
           </form>
 
@@ -121,8 +121,10 @@ export default function SearchHub() {
                   </div>
                 </button>
               ))}
-              <CustomLink href="/genres">
-                <button className="group/item relative flex flex-col p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden">
+              <CustomLink href="/genres" className="block">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="group/item relative flex flex-col w-full h-full p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden">
                   <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
                     See all...
                   </span>

@@ -32,7 +32,7 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
     <main className="min-h-screen pt-32 pb-20 px-8 md:px-16 bg-black text-white">
       <div className="max-w-425 mx-auto">
         {/* SECTOR HEADER */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16 border-l-2 border-cyan-500 pl-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16 border-l-2 border-cyan-500 pl-6 md:pl-8">
           <div>
             <div className="flex items-center gap-2 text-cyan-500 mb-2">
               <Terminal className="w-4 h-4" />
@@ -42,13 +42,13 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
             </div>
 
             {/* DYNAMIC TITLE */}
-            <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
+            <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
               ARCHIVE: <span className="text-cyan-500">{genreName}.</span>
             </h1>
           </div>
 
           {/* STATUS CARD */}
-          <div className="flex items-center gap-4 bg-zinc-900/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md">
+          <div className="flex items-center gap-4 self-start lg:self-auto bg-zinc-900/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md">
             <Activity className="w-5 h-5 text-cyan-500" />
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
@@ -82,7 +82,7 @@ export default async function GenreSectorPage({ params, searchParams }: Props) {
         ) : (
           <div className="h-[40vh] flex flex-col items-center justify-center border border-dashed border-white/10 rounded-[2rem]">
             <ShieldCheck className="w-8 h-8 text-zinc-800 mb-4" />
-            <span className="text-zinc-700 text-[10px] font-black uppercase italic tracking-[0.5em]">
+            <span className="text-zinc-700 text-[10px] font-black uppercase italic tracking-[0.5em] text-center px-6">
               No intelligence found in sector {genreName}
             </span>
           </div>

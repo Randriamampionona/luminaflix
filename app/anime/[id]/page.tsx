@@ -26,7 +26,7 @@ export default async function AnimeDetailsPage({
 
   if (!anime)
     return (
-      <div className="text-white pt-40 text-center uppercase font-black">
+      <div className="min-h-screen bg-black text-white pt-40 px-8 text-center uppercase font-black">
         Signal Lost: Anime data not found.
       </div>
     );
@@ -34,7 +34,7 @@ export default async function AnimeDetailsPage({
   return (
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Hero Backdrop Section */}
-      <div className="relative h-[69vh] w-full">
+      <div className="relative h-[69vh] min-h-130 w-full">
         <Image
           src={`https://image.tmdb.org/t/p/original${anime.backdrop_path}`}
           alt={anime.name}
@@ -55,7 +55,7 @@ export default async function AnimeDetailsPage({
             </div>
           </div>
 
-          <h1 className="flex flex-col space-y-6 text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="flex flex-col space-y-6 text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
             <span>{anime.name}</span>
             <span className="text-zinc-600 not-italic text-2xl md:text-3xl">
               {anime.original_name}

@@ -58,10 +58,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isActive = (path: string) => pathname === path;
-
   const getHref = (item: string) =>
     `/${item.toLowerCase().replace(" & ", "-").replace(" ", "-")}`;
+
+  // UI FIX: keep the menu item highlighted on nested pages (e.g. /movies/123)
+  const isActive = (path: string) =>
+    pathname === path || pathname.startsWith(`${path}/`);
+  const isMoreActive = hiddenMenus.some((item) => isActive(getHref(item)));
 
   const handleMobileSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -116,7 +119,11 @@ export default function Navbar() {
 
             {hiddenMenus.length > 0 && (
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-cyan-500 outline-none transition-colors group">
+                <DropdownMenuTrigger
+                  className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] hover:text-cyan-500 outline-none transition-colors group cursor-pointer ${
+                    isMoreActive ? "text-cyan-500" : "text-zinc-500"
+                  }`}
+                >
                   More
                   <ChevronDown className="w-3 h-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                 </DropdownMenuTrigger>
@@ -153,7 +160,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile */}
-          <div className="xl:hidden flex items-center justify-center">
+          <div className="lg:hidden flex items-center justify-center">
             <SignedIn>
               <UserButton />
             </SignedIn>
@@ -167,7 +174,8 @@ export default function Navbar() {
 
             <SheetContent
               side="right"
-              className="w-full sm:w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100 flex flex-col"
+              showCloseButton={false}
+              className="w-full sm:w-100 sm:max-w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100 flex flex-col"
             >
               <div className="flex items-center justify-between w-full p-6 shrink-0">
                 <SheetClose asChild>

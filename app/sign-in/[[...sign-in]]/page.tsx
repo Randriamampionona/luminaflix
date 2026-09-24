@@ -10,7 +10,7 @@ export default async function Page({
   const { fallback_redirect_url } = await searchParams;
 
   return (
-    <main className="w-full min-h-screen flex items-center justify-center bg-black">
+    <main className="w-full min-h-screen flex items-center justify-center bg-black px-4 pt-32 pb-16">
       <SignIn fallbackRedirectUrl={fallback_redirect_url || "/"} />
     </main>
   );

@@ -23,14 +23,14 @@ export default async function KDramaDetailsPage({
   const initialEpisodes = await getSeasonEpisodes(id, 1, display_lang);
   if (!drama)
     return (
-      <div className="text-white pt-40 text-center uppercase font-black">
+      <div className="min-h-screen bg-black text-white pt-40 px-8 text-center uppercase font-black">
         Signal Lost: Drama not found.
       </div>
     );
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
-      <div className="relative h-[69vh] w-full">
+      <div className="relative h-[69vh] min-h-130 w-full">
         <Image
           src={`https://image.tmdb.org/t/p/original${drama.backdrop_path}`}
           alt={drama.name}
@@ -50,7 +50,7 @@ export default async function KDramaDetailsPage({
               <span className="text-sm">{drama.vote_average.toFixed(1)}</span>
             </div>
           </div>
-          <h1 className="flex flex-col space-y-6 text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="flex flex-col space-y-6 text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
             <span>{drama.name}</span>
             <span className="text-zinc-600 not-italic text-2xl md:text-3xl">
               {drama.original_name}

@@ -31,12 +31,12 @@ export default function Pagination({ currentPage, totalPages }: Props) {
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-16">
+    <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-16">
       {/* PREVIOUS */}
       {currentPage > 1 && (
         <CustomLink
           href={createPageUrl(currentPage - 1)}
-          className="p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
+          className="p-2 sm:p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
         >
           <ChevronLeft className="w-5 h-5" />
         </CustomLink>
@@ -47,7 +47,7 @@ export default function Pagination({ currentPage, totalPages }: Props) {
         <CustomLink
           key={p}
           href={createPageUrl(p)}
-          className={`w-12 h-12 flex items-center justify-center rounded-xl font-bold transition-all duration-300 ${
+          className={`w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${
             p === currentPage
               ? "bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.3)]"
               : "bg-zinc-900 text-zinc-500 hover:text-white border border-white/5"
@@ -61,7 +61,7 @@ export default function Pagination({ currentPage, totalPages }: Props) {
       {currentPage < safeTotalPages && (
         <CustomLink
           href={createPageUrl(currentPage + 1)}
-          className="p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
+          className="p-2 sm:p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
         >
           <ChevronRight className="w-5 h-5" />
         </CustomLink>

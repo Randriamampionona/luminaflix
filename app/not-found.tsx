@@ -16,7 +16,7 @@ export default function NotFound() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-black flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <main className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-32 relative overflow-hidden">
       {/* BACKGROUND DECORATION */}
       <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/20 blur-[120px] rounded-full" />
@@ -80,7 +80,7 @@ export default function NotFound() {
       </div>
 
       {/* FOOTER STATUS */}
-      <div className="absolute bottom-12 left-0 w-full flex justify-center gap-12 opacity-30">
+      <div className="absolute bottom-12 left-0 w-full flex flex-wrap justify-center gap-x-12 gap-y-2 px-6 opacity-30">
         <div className="flex items-center gap-2">
           <Zap className="w-3 h-3 text-cyan-500" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
@@ -95,19 +95,6 @@ export default function NotFound() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes loading {
-          0% {
-            transform: translateX(-100%);
-          }
-          50% {
-            transform: translateX(200%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-      `}</style>
     </main>
   );
 }

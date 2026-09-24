@@ -49,7 +49,7 @@ export default function EpisodeExplorer({
         </div>
 
         {/* SEASON SELECTOR GRID */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {visibleSeasons.map((s: any) => (
             <button
               key={s.id}

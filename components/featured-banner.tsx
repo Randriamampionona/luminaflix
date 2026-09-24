@@ -11,7 +11,7 @@ interface FeaturedBannerProps {
 export default function FeaturedBanner({ movie }: FeaturedBannerProps) {
   return (
     <div className="px-8 md:px-16 py-10">
-      <div className="relative w-full h-75 md:h-100 rounded-xl overflow-hidden group border border-white/10">
+      <div className="relative w-full min-h-75 md:min-h-100 rounded-xl overflow-hidden group border border-white/10">
         {/* Background Image */}
         <img
           src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
@@ -23,7 +23,7 @@ export default function FeaturedBanner({ movie }: FeaturedBannerProps) {
         <div className="absolute inset-0 bg-linear-to-r from-black via-black/60 to-transparent" />
 
         {/* Content */}
-        <div className="relative h-full flex flex-col justify-center p-8 md:p-12 max-w-2xl space-y-4">
+        <div className="relative min-h-75 md:min-h-100 flex flex-col justify-center p-8 md:p-12 max-w-2xl space-y-4">
           <div className="flex items-center gap-2">
             <span className="bg-cyan-500 text-black text-[10px] font-black px-2 py-0.5 rounded tracking-tighter uppercase">
               Coup de coeur

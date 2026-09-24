@@ -71,7 +71,7 @@ export default async function LibraryPage({
       </div>
 
       {/* 2. CONTROL BAR */}
-      <div className="flex flex-wrap items-center justify-between mb-10 space-y-4 lg:space-y-0 border-b border-white/5 pb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-white/5 pb-8">
         <div className="flex items-center gap-4">
           <div className="px-4 py-1.5 bg-cyan-500 rounded-full text-black text-[10px] font-black uppercase tracking-widest">
             All Content

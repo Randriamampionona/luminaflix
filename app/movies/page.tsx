@@ -43,7 +43,7 @@ export default async function MoviesPage({
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 space-y-20">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
         <div className="space-y-2">
           <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
             Lumina <span className="text-white/20">Libs</span>
@@ -52,7 +52,7 @@ export default async function MoviesPage({
           <div className="flex items-center gap-3">
             <div className="h-px w-8 bg-cyan-500" />
             <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-              {data.total_results.toLocaleString()} Global Series
+              {data.total_results.toLocaleString()} Global Movies
             </p>
           </div>
         </div>

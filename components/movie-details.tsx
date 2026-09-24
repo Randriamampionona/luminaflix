@@ -43,7 +43,7 @@ export default function MovieDetails({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-175 bg-zinc-950/95 text-white backdrop-blur-2xl font-geist rounded-[2rem] overflow-hidden z-100 p-0 border-white/5">
+      <DialogContent className="sm:max-w-175 max-h-[calc(100dvh-2rem)] bg-zinc-950/95 text-white backdrop-blur-2xl rounded-[2rem] overflow-x-hidden overflow-y-auto no-scrollbar z-100 p-0 border-white/5">
         {/* Main Wrapper: Relative so children can absolute position on mobile */}
         <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 p-6 min-h-137.5 md:min-h-0">
           {/* 1. Poster Section: Background on Mobile / Column on Desktop */}
@@ -72,7 +72,7 @@ export default function MovieDetails({
           {/* 2. Details Content: Floats over poster on mobile */}
           <div className="relative flex flex-col justify-end md:justify-between py-4 z-10">
             <div>
-              <DialogHeader>
+              <DialogHeader className="text-left">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300 md:text-zinc-500">

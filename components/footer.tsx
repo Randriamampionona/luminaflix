@@ -15,7 +15,7 @@ export default function Footer() {
       links: [
         "Help Center",
         "Terms of Use",
-        "Privacy Provider",
+        "Privacy Policy",
         "Contact Us",
         "FAQ",
       ],
@@ -33,9 +33,9 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-zinc-950 border-t border-white/5 pt-24 pb-12 px-8 md:px-16">
+    <footer className="mt-auto bg-zinc-950 border-t border-white/5 pt-24 pb-12 px-8 md:px-16">
       <div className="max-w-450 mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
           {/* Brand Column */}
           <div className="col-span-2 space-y-6">
             <CustomLink href="/" className="flex items-center gap-2 group">
@@ -49,7 +49,7 @@ export default function Footer() {
             <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-sm">
               The ultimate destination for cinema lovers. Experience
               high-definition storytelling and exclusive premieres in the
-              world's most advanced library.
+              world&apos;s most advanced library.
             </p>
             <div className="flex items-center gap-4">
               {[Facebook, Twitter, Instagram, Youtube, Github].map(
@@ -79,7 +79,7 @@ export default function Footer() {
                       href={
                         link === "Home"
                           ? "/"
-                          : `/${link.toLowerCase().replace(" & ", " ").replace(" ", "-")}`
+                          : `/${link.toLowerCase().replace(" & ", " ").replace(/\s+/g, "-")}`
                       }
                       className="text-zinc-500 hover:text-white text-xs font-bold transition-colors uppercase tracking-widest"
                     >
@@ -94,7 +94,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
               © {currentYear} LuminaFlix Media Inc.
             </p>

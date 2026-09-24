@@ -37,7 +37,7 @@ export default async function AnimeSearchPage({
         </CustomLink>
 
         <div className="space-y-2">
-          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
             Results <span className="text-white/20">for</span> {decodedQuery}
             <span className="text-cyan-500">.</span>
           </h1>
@@ -65,7 +65,7 @@ export default async function AnimeSearchPage({
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-40 border border-dashed border-white/10 rounded-3xl">
-          <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
+          <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm text-center px-6 wrap-break-word">
             Signal Lost: No Anime found for "{decodedQuery}"
           </p>
           <CustomLink

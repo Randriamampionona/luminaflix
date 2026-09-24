@@ -49,9 +49,9 @@ export default async function WatchPage({
           {/* Fallback Section */}
           <div className="pt-12 space-y-8">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
-                <Sparkles className="w-4 h-4 text-cyan-500" />
-                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400">
+              <div className="flex items-center gap-3 min-w-0">
+                <Sparkles className="w-4 h-4 text-cyan-500 shrink-0" />
+                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400 text-left wrap-break-word min-w-0">
                   Recommended for: {fallback || "Current Session"}
                 </h2>
               </div>
@@ -117,7 +117,7 @@ export default async function WatchPage({
               Now Playing
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
+          <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
             {movie.title}
             <span className="text-cyan-500">.</span>
           </h1>

@@ -127,7 +127,7 @@ export default function StreamActionSuite({
   };
 
   return (
-    <div className="flex items-center gap-2 p-1 w-fit">
+    <div className="flex flex-wrap items-center justify-end gap-2 p-1 w-fit max-w-full">
       {/* FAVORITE BUTTON */}
       <button
         disabled={isPending || isLoading}
