@@ -1,81 +1,56 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Tv2,
   Globe2,
   Zap,
-  Play,
-  Loader2,
-  ShieldCheck,
   Languages,
   FastForward,
-  CloudLightning,
-  Layers,
   Activity,
   Cpu,
-  Volume2,
-  AlertTriangle,
   Maximize,
   Minimize,
+  Play,
 } from "lucide-react";
 import SignalMonitor from "../signal-monitor";
 import DirectLuminaLinker from "../direct-lumina-linker";
 import StreamActionSuite from "../stream-action-suite";
 import GuardProtocol from "../guard-protocol";
 
-// --- PROVIDER CONFIGURATION ---
 interface Provider {
   name: string;
   id: string;
   url: (movieId: string, imdbId?: string) => string;
   icon: any;
-  isExternal?: boolean;
 }
 
 const FR_PROVIDERS: Provider[] = [
   {
     name: "Lumina frembed.surf TMBD",
     id: "frembed_surf_TMBD",
-    url: (id) => `https://frembed.surf/embed/movie/603692?id${id}`,
+    url: (id) => `https://frembed.surf/embed/movie/${id}`,
     icon: Tv2,
-    isExternal: true,
   },
   {
     name: "Lumina frembed.surf IMDB",
     id: "frembed_surf_IMDB",
-    url: (_, imdbId) => `https://frembed.surf/embed/movie/603692?id${imdbId}`,
+    url: (_, imdbId) => `https://frembed.surf/embed/movie/${imdbId}`,
     icon: Tv2,
-    isExternal: true,
-  },
-  {
-    name: "FrenchCloud (Ultra)",
-    id: "frenchcloud",
-    url: (_, imdbId) => `https://frenchcloud.cam/movie/${imdbId}`,
-    icon: CloudLightning,
-    isExternal: true,
-  },
-  {
-    name: "Lumina 4K (Stream)",
-    id: "4khub",
-    url: (id) => `https://4khdhub.store/watch/${id}`,
-    icon: Layers,
-    isExternal: true,
-  },
-  {
-    name: "Lumina Best (Legacy)",
-    id: "frembed",
-    url: (id) => `https://play.frembed.best/api/film.php?id=${id}`,
-    icon: Tv2,
-    isExternal: true,
   },
 ];
 
 const EN_PROVIDERS: Provider[] = [
   {
+    name: "videasy (Flash)",
+    id: "videasy",
+    url: (id) => `https://player.videasy.ws/embed/movie/${id}`,
+    icon: FastForward,
+  },
+  {
     name: "VidFast (Flash)",
     id: "vidfast",
-    url: (id) => `https://vidfast.pro/movie/${id}?autoPlay=true`,
+    url: (id) => `https://vidfast.vc/movie/${id}?autoPlay=true`,
     icon: FastForward,
   },
   {
@@ -87,111 +62,44 @@ const EN_PROVIDERS: Provider[] = [
   {
     name: "VidSrc (Global)",
     id: "vidsrc",
-    url: (id) => `https://vidsrc.to/embed/movie/${id}`,
+    url: (id) => `https://vidsrc.sbs/embed/movie/${id}`,
     icon: Zap,
   },
 ];
 
-const IS_PROD = process.env.NODE_ENV === "production";
-
 export default function VideoPlayer({
   movieId,
   imdbId,
+  backdropPath,
+  posterPath,
+  title,
 }: {
   movieId: string;
   imdbId?: string;
+  backdropPath?: string;
+  posterPath?: string;
+  title?: string;
 }) {
   const [activeTab, setActiveTab] = useState<"FR" | "EN">("FR");
   const [activeSource, setActiveSource] = useState<Provider>(FR_PROVIDERS[0]);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showTheater, setShowTheater] = useState(false);
   const [isCustomFullscreen, setIsCustomFullscreen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // --- AD ENGINE STATES ---
-  const [isAdPlaying, setIsAdPlaying] = useState(false);
-  const [adInitialized, setAdInitialized] = useState(false);
-  const [adStarted, setAdStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(IS_PROD ? 15 : 3);
-  const [showSkip, setShowSkip] = useState(false);
+  const backdropUrl = backdropPath
+    ? `https://image.tmdb.org/t/p/original${backdropPath}`
+    : posterPath
+    ? `https://image.tmdb.org/t/p/original${posterPath}`
+    : null;
 
-  // --- WATCHDOG PROTOCOL STATES ---
-  const [watchdogTime, setWatchdogTime] = useState(IS_PROD ? 45 : 5);
-  const [syncFailed, setSyncFailed] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playerInstance = useRef<any>(null);
-
-  const AD_URL =
-    "https://creamymouth.com/dYmCF.zCdOGIN/vUZTGiUn/Weomq9au/ZEU_l/kFPXToYe4tMiD/kf2FMzjKUttHN_jIgEwgOwTbYOypObQi";
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js";
-    script.async = true;
-    document.head.appendChild(script);
-
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css";
-    document.head.appendChild(style);
-
-    return () => {
-      if (playerInstance.current) playerInstance.current.destroy();
-    };
-  }, []);
-
-  // Timer logic - Checks if video is actually playing
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (adStarted && timeLeft > 0) {
-      timer = setInterval(() => {
-        if (
-          videoRef.current &&
-          !videoRef.current.paused &&
-          !videoRef.current.ended
-        ) {
-          setTimeLeft((prev) => prev - 1);
-        }
-      }, 1000);
-    } else if (adStarted && timeLeft === 0) {
-      setShowSkip(true);
-    }
-    return () => clearInterval(timer);
-  }, [adStarted, timeLeft]);
-
-  // Watchdog Timer logic - Triggers if ad fails to start
-  useEffect(() => {
-    let watchdog: NodeJS.Timeout;
-    if (isAdPlaying && !adStarted && !syncFailed) {
-      watchdog = setInterval(() => {
-        setWatchdogTime((prev) => {
-          if (prev <= 1) {
-            setSyncFailed(true);
-            clearInterval(watchdog);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(watchdog);
-  }, [isAdPlaying, adStarted, syncFailed]);
-
-  // Prevent scrolling and handle orientation lock logic for mobile
   useEffect(() => {
     if (isCustomFullscreen) {
       document.body.style.overflow = "hidden";
-
-      // Cast orientation to 'any' to bypass TS errors for .lock()
       const orientation = (window.screen.orientation ||
         (window.screen as any).mozOrientation ||
         (window.screen as any).msOrientation) as any;
 
       if (orientation && orientation.lock) {
-        orientation.lock("landscape").catch(() => {
-          // Fallback handled by CSS rotation in the JSX
-        });
+        orientation.lock("landscape").catch(() => {});
       }
     } else {
       document.body.style.overflow = "auto";
@@ -204,78 +112,8 @@ export default function VideoPlayer({
     }
   }, [isCustomFullscreen]);
 
-  const handleAdFinished = () => {
-    if (playerInstance.current) {
-      playerInstance.current.destroy();
-      playerInstance.current = null;
-    }
-    setIsAdPlaying(false);
-    setAdInitialized(false);
-    setAdStarted(false);
-    setSyncFailed(false);
-    setWatchdogTime(IS_PROD ? 45 : 5);
-    setIsUnlocked(true);
-    setIsLoading(true);
-  };
-
-  const startAdSequence = () => {
-    setIsAdPlaying(true);
-    setTimeLeft(IS_PROD ? 15 : 3);
-    setWatchdogTime(IS_PROD ? 45 : 5);
-    setSyncFailed(false);
-    setShowSkip(false);
-    setAdStarted(false);
-  };
-
-  useEffect(() => {
-    let monitor: NodeJS.Timeout;
-    if (adInitialized && !adStarted) {
-      monitor = setInterval(() => {
-        if (videoRef.current && videoRef.current.currentTime > 0.1) {
-          setAdStarted(true);
-          clearInterval(monitor);
-        }
-      }, 500);
-    }
-    return () => clearInterval(monitor);
-  }, [adInitialized, adStarted]);
-
-  const triggerActualAd = () => {
-    // @ts-ignore
-    if (window.fluidPlayer && videoRef.current) {
-      setAdInitialized(true);
-      // @ts-ignore
-      playerInstance.current = window.fluidPlayer(videoRef.current, {
-        layoutControls: {
-          fillToContainer: true,
-          primaryColor: "#06b6d4",
-          autoPlay: true,
-          playButtonShowing: false,
-          mute: false,
-        },
-        vastOptions: {
-          adList: [{ roll: "preRoll", vastTag: AD_URL }],
-          adStartedCallback: () => setAdStarted(true),
-          adFinishedCallback: handleAdFinished,
-          adErrorCallback: handleAdFinished,
-        },
-      });
-      videoRef.current.play().catch((e) => console.error("Playback failed", e));
-    } else {
-      handleAdFinished();
-    }
-  };
-
   const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
-    setIsUnlocked(false);
-    setIsAdPlaying(false);
-    setAdInitialized(false);
-    setAdStarted(false);
-    setSyncFailed(false);
-    setWatchdogTime(IS_PROD ? 45 : 5);
-    setIsLoading(true);
-    setShowTheater(false);
     setIsCustomFullscreen(false);
   };
 
@@ -320,164 +158,63 @@ export default function VideoPlayer({
                 : "relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full"
             }`}
           >
-            {/* THEATER MODE */}
-            {showTheater && (
-              <div className="absolute inset-0 z-50 bg-black flex flex-col">
-                <div className="flex-1">
-                  <iframe
-                    src={activeSource.url(movieId, imdbId)}
-                    className="w-full h-full grayscale-[0.1]"
-                    allowFullScreen
-                    allow="autoplay; encrypted-media"
-                    onLoad={() => setIsLoading(false)}
+            {/* DIRECT MEDIA EMBED OR SPLASH POSTER */}
+            {isPlaying ? (
+              <iframe
+                src={activeSource.url(movieId, imdbId)}
+                className="w-full h-full"
+                allowFullScreen
+                allow="autoplay; encrypted-media"
+              />
+            ) : (
+              <div className="relative w-full h-full flex items-center justify-center group overflow-hidden">
+                {backdropUrl ? (
+                  <img
+                    src={backdropUrl}
+                    alt={title || "Poster"}
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
                   />
-                </div>
-              </div>
-            )}
-
-            {/* AD PLAYER CONTAINER */}
-            {isAdPlaying && (
-              <div className="absolute inset-0 z-75 bg-black flex flex-col items-center justify-center">
-                <video
-                  ref={videoRef}
-                  className="w-full h-full"
-                  playsInline
-                  preload="auto"
-                />
-
-                {/* STAGE 2 TRIGGER BUTTON */}
-                {!adInitialized && !syncFailed && (
-                  <div className="absolute inset-0 z-80 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-                    <button
-                      onClick={triggerActualAd}
-                      className="group flex flex-col items-center gap-6"
-                    >
-                      <div className="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.4)] group-hover:scale-110 transition-transform">
-                        <Volume2 className="w-8 h-8 text-black fill-current" />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-500">
-                        Enable Media Stream
-                      </span>
-                    </button>
-                  </div>
+                ) : (
+                  <div className="absolute inset-0 bg-linear-to-tr from-zinc-950 via-zinc-900 to-zinc-950" />
                 )}
 
-                <div className="absolute top-1 left-1 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                  <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">
-                    Sponsored Bypass Protocol
-                  </span>
-                </div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/60" />
 
-                {/* SYNCED TIMER / WATCHDOG OVERLAY */}
-                <div className="absolute bottom-12 right-0 z-20">
-                  {syncFailed ? (
-                    <div className="flex flex-col items-end gap-2 px-6 py-4 bg-red-500/10 border border-red-500/50 backdrop-blur-xl">
-                      <div className="flex items-center gap-3">
-                        <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
-                        <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                          Ad Protocol Sync Failed
-                        </span>
-                      </div>
-                      <button
-                        onClick={handleAdFinished}
-                        className="mt-2 px-6 py-2 bg-white text-black font-black text-[9px] uppercase tracking-[0.2em] hover:bg-cyan-500 transition-all"
-                      >
-                        Bypass & Start Movie
-                      </button>
-                    </div>
-                  ) : !adStarted ? (
-                    <div className="flex items-center gap-3 px-6 py-4 bg-black/80 border border-cyan-500/30 backdrop-blur-md">
-                      <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
-                      <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                        Syncing Ad Signal ({watchdogTime}s)
-                      </span>
-                    </div>
-                  ) : !showSkip ? (
-                    <div className="px-8 py-4 bg-black/80 border border-white/10 backdrop-blur-md text-white font-black text-[10px] uppercase tracking-widest">
-                      Skip in <span className="text-cyan-400">{timeLeft}s</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleAdFinished}
-                      className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-widest hover:bg-cyan-500 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] cursor-pointer"
-                    >
-                      Skip & Play
-                    </button>
+                <div className="relative z-10 flex flex-col items-center text-center px-4 space-y-6">
+                  {title && (
+                    <h2 className="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md max-w-xl">
+                      {title}
+                    </h2>
                   )}
-                </div>
-              </div>
-            )}
 
-            {/* NATIVE PLAYER */}
-            {isUnlocked && !activeSource.isExternal && (
-              <div className="absolute inset-0 z-10">
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-20">
-                    <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
-                  </div>
-                )}
-                <iframe
-                  src={activeSource.url(movieId, imdbId)}
-                  className="w-full h-full"
-                  allowFullScreen
-                  onLoad={() => setIsLoading(false)}
-                />
-              </div>
-            )}
-
-            {/* BYPASS PROTOCOL */}
-            {isUnlocked && activeSource.isExternal && !showTheater && (
-              <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950">
-                <div className="text-center space-y-8">
-                  <ShieldCheck className="w-12 h-12 text-cyan-500 mx-auto animate-pulse" />
-                  <h3 className="text-xl font-black uppercase text-white tracking-tighter italic underline decoration-cyan-500 underline-offset-8">
-                    Protocol Ready
-                  </h3>
                   <button
-                    onClick={() => {
-                      setIsLoading(true);
-                      setShowTheater(true);
-                    }}
-                    className="px-12 py-4 bg-white text-black font-black rounded-2xl hover:bg-cyan-500 transition-all uppercase text-xs tracking-widest shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+                    onClick={() => setIsPlaying(true)}
+                    className="group/btn relative flex items-center gap-4 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-xs tracking-widest rounded-2xl transition-all duration-300 shadow-[0_0_50px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] hover:scale-105 active:scale-95"
                   >
-                    Start Virtual Stream
+                    <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center">
+                      <Play className="w-4 h-4 text-black fill-black transition-transform duration-300 group-hover/btn:scale-110" />
+                    </div>
+                    <span>Play Stream</span>
                   </button>
                 </div>
               </div>
             )}
 
-            {/* INITIAL UNLOCK SPLASH */}
-            {!isUnlocked && !isAdPlaying && (
-              <div
-                onClick={startAdSequence}
-                className="absolute inset-0 z-50 cursor-pointer flex flex-col items-center justify-center bg-black group/unlock"
-              >
-                <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(6,182,212,0.4)] group-hover/unlock:scale-110 transition-all duration-700">
-                  <Play className="w-7 h-7 md:w-12 md:h-12 text-black fill-current translate-x-1" />
-                </div>
-                <p className="mt-8 text-[12px] font-black uppercase italic tracking-[0.5em] text-white/80">
-                  Initialize Lumina{" "}
-                  <span className="text-cyan-500">Theater</span>
-                </p>
-              </div>
-            )}
-
-            {/* MODERN CUSTOM FULLSCREEN BUTTON */}
+            {/* CUSTOM FULLSCREEN BUTTON */}
             <button
               onClick={() => setIsCustomFullscreen(!isCustomFullscreen)}
               className={`
-              absolute top-2 right-2 z-150
-              group flex items-center gap-3 md:gap-0 md:hover:gap-3
-              px-4 py-3 md:px-3 md:py-3 rounded-2xl
-              bg-zinc-950/80 md:bg-zinc-950/60 backdrop-blur-2xl
-              border border-white/10
-              transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
-              hover:border-cyan-500/50 hover:bg-zinc-900/80
-              hover:shadow-[0_0_40px_rgba(6,182,212,0.25)]
-              md:hover:pr-5
-              active:scale-95
-            `}
+                absolute top-2 right-2 z-150
+                group flex items-center gap-3 md:gap-0 md:hover:gap-3
+                px-4 py-3 md:px-3 md:py-3 rounded-2xl
+                bg-zinc-950/80 md:bg-zinc-950/60 backdrop-blur-2xl
+                border border-white/10
+                transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                hover:border-cyan-500/50 hover:bg-zinc-900/80
+                hover:shadow-[0_0_40px_rgba(6,182,212,0.25)]
+                md:hover:pr-5
+                active:scale-95
+              `}
             >
               <div className="absolute inset-0 rounded-2xl bg-cyan-500/5 md:bg-cyan-500/0 md:group-hover:bg-cyan-500/5 transition-colors duration-500" />
 
@@ -492,14 +229,13 @@ export default function VideoPlayer({
                 )}
               </div>
 
-              {/* Label: Always visible on mobile, sliding on desktop */}
               <span
                 className={`
-                overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em]
-                text-cyan-400 md:text-zinc-400 md:group-hover:text-cyan-400
-                max-w-50 md:max-w-0 md:group-hover:max-w-37.5
-                transition-all duration-500 ease-in-out
-              `}
+                  overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em]
+                  text-cyan-400 md:text-zinc-400 md:group-hover:text-cyan-400
+                  max-w-50 md:max-w-0 md:group-hover:max-w-37.5
+                  transition-all duration-500 ease-in-out
+                `}
               >
                 {isCustomFullscreen ? "Exit Terminal" : "Go Fullscreen"}
               </span>
@@ -526,25 +262,33 @@ export default function VideoPlayer({
                   }`}
                 >
                   <div
-                    className={`p-3 rounded-xl ${isActive ? "bg-black text-cyan-500" : "bg-white/5 text-zinc-500"}`}
+                    className={`p-3 rounded-xl ${
+                      isActive
+                        ? "bg-black text-cyan-500"
+                        : "bg-white/5 text-zinc-500"
+                    }`}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col items-start text-left">
                     <span
-                      className={`text-[11px] font-black uppercase tracking-widest ${isActive ? "text-black" : "text-white"}`}
+                      className={`text-[11px] font-black uppercase tracking-widest ${
+                        isActive ? "text-black" : "text-white"
+                      }`}
                     >
                       {provider.name}
                     </span>
                     <span
-                      className={`text-[8px] font-bold uppercase ${isActive ? "text-zinc-500" : "text-zinc-600"}`}
+                      className={`text-[8px] font-bold uppercase ${
+                        isActive ? "text-zinc-500" : "text-zinc-600"
+                      }`}
                     >
-                      {provider.isExternal ? "Tunnel Access" : "Native Player"}
+                      Active Stream
                     </span>
                   </div>
                 </button>
               );
-            },
+            }
           )}
         </div>
 

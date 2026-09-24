@@ -4,7 +4,7 @@ import {
 } from "@/action/get-anime-details.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
-import LuminaAnimePlayer from "@/components/anime-player"; // We will create this below
+import LuminaAnimePlayer from "@/components/anime-player";
 import CustomLink from "@/components/custom-link";
 import {
   ChevronLeft,

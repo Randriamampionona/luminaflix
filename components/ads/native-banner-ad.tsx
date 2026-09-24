@@ -4,9 +4,9 @@ const NativeBannerAd = () => {
 
   return (
     <div
-      className="w-full min-h-25 flex justify-center items-center overflow-hidden"
+      className="w-full min-h-25 flex justify-center items-center overflow-hidden text-muted-foreground"
     >
-      Ad Here
+      Ad has been removed to fulfill user's request.
     </div>
   );
 };
