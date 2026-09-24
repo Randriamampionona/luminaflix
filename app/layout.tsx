@@ -72,6 +72,12 @@ export default function RootLayout({
         <head>
           {/* CLICKADU */}
           <meta name="clckd" content="6f37617a6ebc179967a081299a6194ec" />
+          {/* BIDVERTISER */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `<!-- Bidvertiser2107060 -->`,
+            }}
+          />
         </head>
 
         <body
