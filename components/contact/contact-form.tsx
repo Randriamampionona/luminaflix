@@ -22,11 +22,27 @@ const INITIAL_STATE: ContactFormState = { status: "idle" };
 const inputBase =
   "w-full rounded-2xl border bg-zinc-900/60 px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-60";
 
-export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: string }) {
+interface ContactFormProps {
+  defaultSubject?: string;
+  /** Pre-filled from the signed-in Clerk user (see app/contact/page.tsx). */
+  defaultName?: string;
+  defaultEmail?: string;
+}
+
+/** Name of the hidden anti-spam field — deliberately not something browsers autofill. */
+const HONEYPOT_FIELD = "lf_hp_field";
+
+export default function ContactForm({ defaultSubject = "", defaultName = "", defaultEmail = "" }: ContactFormProps) {
   const t = useTranslations("contact");
   const [state, formAction, isPending] = useActionState(sendContactMessage, INITIAL_STATE);
 
-  const [values, setValues] = useState<ContactValues>({ name: "", email: "", subject: defaultSubject, message: "" });
+  const [values, setValues] = useState<ContactValues>({
+    name: defaultName,
+    email: defaultEmail,
+    subject: defaultSubject,
+    message: "",
+  });
+  const prefilled = Boolean(defaultName || defaultEmail);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [touched, setTouched] = useState<Partial<Record<ContactField, boolean>>>({});
   const [startedAt, setStartedAt] = useState(0);
@@ -45,7 +61,8 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
     if (state.status === "success") {
       toast.success(t("success.title"), { description: t("success.body", { name: state.name, email: state.email }) });
       setShowSuccess(true);
-      setValues({ name: "", email: "", subject: "", message: "" });
+      // Keep the account details for a follow-up message.
+      setValues({ name: defaultName, email: defaultEmail, subject: "", message: "" });
       setErrors({});
       setTouched({});
     } else if (state.status === "error") {
@@ -55,14 +72,17 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
         setTouched({ name: true, email: true, subject: true, message: true });
       }
     }
-  }, [state, t]);
+  }, [state, t, defaultName, defaultEmail]);
 
   const update = (field: ContactField) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
     setValues((v) => ({ ...v, [field]: value }));
     // Re-validate live once the field has been visited.
     if (touched[field]) {
-      setErrors((prev) => ({ ...prev, [field]: validateContactField(field, normalizeContact({ [field]: value })[field]) }));
+      setErrors((prev) => ({
+        ...prev,
+        [field]: validateContactField(field, normalizeContact({ [field]: value })[field]),
+      }));
     }
   };
 
@@ -85,7 +105,10 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
 
   if (showSuccess && state.status === "success") {
     return (
-      <div role="status" className="flex flex-col items-center gap-5 rounded-4xl border border-cyan-500/20 bg-cyan-500/5 px-6 py-16 text-center">
+      <div
+        role="status"
+        className="flex flex-col items-center gap-5 rounded-4xl border border-cyan-500/20 bg-cyan-500/5 px-6 py-16 text-center"
+      >
         <CheckCircle2 className="h-12 w-12 text-cyan-500" aria-hidden />
         <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">{t("success.title")}</h2>
         <p className="max-w-md text-sm leading-relaxed text-zinc-400">
@@ -150,8 +173,20 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
     >
       {/* Anti-spam: honeypot (hidden from people & assistive tech) + time-trap. */}
       <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
-        <label htmlFor="company">Company</label>
-        <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+        {/* BUG FIX: this field used to be called "company", which Chrome and
+            password managers autofill — every autofilled message was then
+            silently rejected as spam. */}
+        <label htmlFor={HONEYPOT_FIELD}>Leave this field empty</label>
+        <input
+          id={HONEYPOT_FIELD}
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          data-1p-ignore
+          data-lpignore="true"
+          defaultValue=""
+        />
       </div>
       <input type="hidden" name="startedAt" value={startedAt || ""} />
 
@@ -182,6 +217,7 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
           {renderError("email")}
         </div>
       </div>
+      {prefilled && <p className="-mt-3 text-xs text-zinc-500">{t("prefilled")}</p>}
 
       <div className="space-y-2">
         {label("subject")}

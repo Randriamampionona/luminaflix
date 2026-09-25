@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "check:locales": "node scripts/check-locales.mjs",
-    "check:unused": "npx knip@5"
+    "check:unused": "npx knip@5",
+    "check:env": "node scripts/check-env.mjs",
+    "cache": "rm -rf .next && echo 'Cache cleared!'"
   },
   "dependencies": {
     "@clerk/localizations": "^3.37.0",

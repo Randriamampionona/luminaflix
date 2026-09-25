@@ -282,7 +282,8 @@
       "removed": "Retiré des favoris",
       "film": "Film",
       "series": "Série",
-      "savedOn": "Enregistré le {date}"
+      "savedOn": "Enregistré le {date}",
+      "loadError": "Impossible de charger vos favoris pour le moment. Réessayez dans un instant."
     }
   },
   "details": {
@@ -431,7 +432,8 @@
       "title": "Message envoyé",
       "body": "Merci, {name}. Nous répondrons bientôt à {email}.",
       "again": "Envoyer un autre message"
-    }
+    },
+    "prefilled": "Nous avons rempli le nom et l'e-mail de votre compte. Vous pouvez les modifier."
   },
   "premium": {
     "badge": "Bientôt disponible",

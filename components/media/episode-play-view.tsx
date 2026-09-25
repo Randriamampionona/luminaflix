@@ -37,7 +37,7 @@ export default async function EpisodePlayView({
   season: number;
   episode: number;
   path: "anime" | "k-drama";
-  interaction: MediaInteraction;
+  interaction: Promise<MediaInteraction>;
 }) {
   const t = await getTranslations("details");
 

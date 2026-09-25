@@ -23,11 +23,9 @@ export async function generateMetadata({
 export default async function KDramaPlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
   const { season, episode } = parseEpisodeParams(s, e);
-  const [drama, episodes, interaction] = await Promise.all([
-    getKDramaDetails(id),
-    getSeasonEpisodes(id, season),
-    getMediaInteraction({ mediaId: id, type: "K_DRAMA", season, episode }),
-  ]);
+  const [drama, episodes] = await Promise.all([getKDramaDetails(id), getSeasonEpisodes(id, season)]);
+  // Not awaited: streams into the player's action bar.
+  const interaction = getMediaInteraction({ mediaId: id, type: "K_DRAMA", season, episode });
 
   return (
     <EpisodePlayView

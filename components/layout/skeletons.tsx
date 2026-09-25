@@ -8,8 +8,19 @@ import { MEDIA_GRID_CLASS } from "./media-grid";
  * (PageShell, Container, MEDIA_GRID_CLASS), so nothing shifts when the
  * content streams in.
  */
+/**
+ * BUG FIX (skeletons "not showing"): the old `bg-zinc-900/80 animate-pulse`
+ * was ~#131316 on the #000 page and faded to half of that — practically
+ * invisible. `.skeleton` (globals.css) uses a lighter base plus a moving
+ * shimmer, and respects prefers-reduced-motion.
+ */
 export function Skeleton({ className }: { className?: string }) {
-  return <div aria-hidden className={cn("animate-pulse rounded-md bg-zinc-900/80", className)} />;
+  return <div aria-hidden className={cn("skeleton rounded-md", className)} />;
+}
+
+/** Inline variant for use inside text (e.g. a count inside a <p>). */
+export function InlineSkeleton({ className }: { className?: string }) {
+  return <span aria-hidden className={cn("skeleton inline-block h-[1em] rounded align-middle", className)} />;
 }
 
 /** Announces the loading state to assistive tech; the shapes are aria-hidden. */

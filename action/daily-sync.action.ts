@@ -4,7 +4,7 @@
 import "server-only";
 import { BrevoClient } from "@getbrevo/brevo";
 import { getAllMovies } from "@/action/get-all-movies.action";
-import { db } from "@/lib/firebase-admin";
+import { getDb } from "@/lib/firebase-admin";
 import type { Movie, TMDBResponse } from "@/typing";
 import { getAllKDramas } from "./get-all-kdramas.action";
 import { getAllAnime } from "./get-all-anime.action";
@@ -53,7 +53,7 @@ export async function triggerDailySync() {
     const d = getRandomItem(dramaData);
     const a = getRandomItem(animeData);
 
-    const usersSnap = await db.collection("USERS").get();
+    const usersSnap = await getDb().collection("USERS").get();
     const recipients = usersSnap.docs
       .map((doc) => doc.data() as { email?: string; firstName?: string })
       .filter((user) => !!user.email);

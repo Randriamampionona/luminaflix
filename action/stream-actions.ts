@@ -1,7 +1,8 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/firebase-admin";
+import { unstable_rethrow } from "next/navigation";
+import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import {
   MEDIA_TYPES,
   reactionDocId,
@@ -70,17 +71,42 @@ function toInteraction(
 
 const EMPTY: MediaInteraction = { likes: 0, dislikes: 0, reaction: null, isFavorite: false };
 
+/** The player must never wait on a stuck Firestore connection. */
+const READ_TIMEOUT_MS = 4000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Firestore read timed out after ${ms}ms`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 /** Initial state for the player buttons (called by the watch pages). */
 export async function getMediaInteraction(input: MediaRef): Promise<MediaInteraction> {
   const ref = normalize(input);
   if (!ref) return EMPTY;
-  const { userId } = await auth();
 
+  // Never rejects: the promise is handed to a client component, so any
+  // failure must resolve to a usable (empty) state instead of an error page.
   try {
-    const [reactionSnap, favoriteSnap] = await Promise.all([
-      db.collection(ref.type).doc(reactionDocId(ref)).get(),
-      userId ? db.collection("FAVORITE").doc(userId).get() : Promise.resolve(null),
-    ]);
+    const { userId } = await auth();
+    const db = getDb();
+    const [reactionSnap, favoriteSnap] = await withTimeout(
+      Promise.all([
+        db.collection(ref.type).doc(reactionDocId(ref)).get(),
+        userId ? db.collection("FAVORITE").doc(userId).get() : Promise.resolve(null),
+      ]),
+      READ_TIMEOUT_MS,
+    );
     const favorites: StoredFavorite[] = favoriteSnap?.data()?.favorites ?? [];
     return toInteraction(
       reactionSnap.data(),
@@ -88,7 +114,8 @@ export async function getMediaInteraction(input: MediaRef): Promise<MediaInterac
       favorites.some((fav) => isSameFavorite(fav, ref)),
     );
   } catch (error) {
-    console.error("[interactions] read failed", error);
+    unstable_rethrow(error);
+    logFirebaseError("interactions", error);
     return EMPTY;
   }
 }
@@ -103,9 +130,9 @@ export async function handleMediaReaction(input: MediaRef & { action: "like" | "
     return { success: false, error: "INVALID" };
   }
 
-  const docRef = db.collection(ref.type).doc(reactionDocId(ref));
-
   try {
+    const db = getDb();
+    const docRef = db.collection(ref.type).doc(reactionDocId(ref));
     // Transaction: two quick clicks can't interleave their read/write.
     const next = await db.runTransaction(async (tx) => {
       const snap = await tx.get(docRef);
@@ -129,7 +156,7 @@ export async function handleMediaReaction(input: MediaRef & { action: "like" | "
     const { likes, dislikes, reaction } = toInteraction(next, userId, false);
     return { success: true, interaction: { likes, dislikes, reaction } };
   } catch (error) {
-    console.error("[reactions] failed", error);
+    logFirebaseError("reactions", error);
     return { success: false, error: "FAILED" };
   }
 }
@@ -142,9 +169,9 @@ export async function toggleFavorite(input: MediaRef): Promise<FavoriteResult> {
   const ref = normalize(input);
   if (!ref) return { success: false, error: "INVALID" };
 
-  const docRef = db.collection("FAVORITE").doc(userId);
-
   try {
+    const db = getDb();
+    const docRef = db.collection("FAVORITE").doc(userId);
     const added = await db.runTransaction(async (tx) => {
       const snap = await tx.get(docRef);
       const favorites: StoredFavorite[] = snap.data()?.favorites ?? [];
@@ -168,7 +195,7 @@ export async function toggleFavorite(input: MediaRef): Promise<FavoriteResult> {
     });
     return { success: true, added };
   } catch (error) {
-    console.error("[favorites] toggle failed", error);
+    logFirebaseError("favorites", error);
     return { success: false, error: "FAILED" };
   }
 }

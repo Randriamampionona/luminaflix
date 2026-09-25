@@ -282,7 +282,8 @@
       "removed": "Removed from favorites",
       "film": "Film",
       "series": "Series",
-      "savedOn": "Saved {date}"
+      "savedOn": "Saved {date}",
+      "loadError": "We couldn't load your favorites right now. Try again in a moment."
     }
   },
   "details": {
@@ -431,7 +432,8 @@
       "title": "Message sent",
       "body": "Thanks, {name}. We'll reply to {email} soon.",
       "again": "Send another message"
-    }
+    },
+    "prefilled": "We filled in your account name and email. You can change them."
   },
   "premium": {
     "badge": "Coming soon",

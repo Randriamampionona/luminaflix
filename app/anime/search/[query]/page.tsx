@@ -18,6 +18,6 @@ export default async function AnimeSearchPage({ params, searchParams }: { params
   const [{ query }, sp] = await Promise.all([params, searchParams]);
   const decoded = safeDecode(query);
   const page = parsePage(sp.page);
-  const data = await getSearchAnime(decoded, page);
+  const data = getSearchAnime(decoded, page); // streamed (not awaited)
   return <SectionSearchResults query={decoded} data={data} page={page} section="anime" />;
 }

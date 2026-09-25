@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { currentUser } from "@clerk/nextjs/server";
+import { unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import { Clock, LifeBuoy } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -12,9 +14,27 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("contact") };
 }
 
-/** `?topic=premium` (from the Premium page) prefills the subject. */
+/** Name and email of the signed-in user, or empty strings for guests. */
+async function getAccountDefaults() {
+  try {
+    const user = await currentUser();
+    if (!user) return { id: null, name: "", email: "" };
+    const name = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "";
+    const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "";
+    return { id: user.id, name, email };
+  } catch (error) {
+    unstable_rethrow(error); // let Next.js handle its own dynamic-rendering signals
+    console.error("[contact] could not load the Clerk user", error);
+    return { id: null, name: "", email: "" };
+  }
+}
+
+/**
+ * `?topic=premium` (from the Premium page) prefills the subject; signed-in
+ * users get their name and email prefilled (still editable).
+ */
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
-  const [{ topic }, t] = await Promise.all([searchParams, getTranslations("contact")]);
+  const [{ topic }, t, account] = await Promise.all([searchParams, getTranslations("contact"), getAccountDefaults()]);
   const defaultSubject = topic === "premium" ? t("topics.premium") : "";
 
   return (
@@ -39,7 +59,13 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           </ul>
         </aside>
         <div className="lg:col-span-7">
-          <ContactForm defaultSubject={defaultSubject} />
+          {/* `key`: remount with the new defaults after signing in/out on this page. */}
+          <ContactForm
+            key={account.id ?? "guest"}
+            defaultSubject={defaultSubject}
+            defaultName={account.name}
+            defaultEmail={account.email}
+          />
         </div>
       </div>
     </PageShell>

@@ -1,17 +1,46 @@
 "use client";
 
+import { Suspense, use } from "react";
+import { Skeleton } from "@/components/layout/skeletons";
 import { useMediaActions } from "@/hooks/use-media-actions";
 import type { MediaInteraction, MediaRef } from "@/lib/media-interactions";
 import DislikeButton from "./dislike-button";
 import FavoriteButton from "./favorite-button";
 import LikeButton from "./like-button";
 
+interface PlayerActionsProps {
+  mediaRef: MediaRef;
+  /**
+   * Started on the server and *not* awaited there: the page and the player
+   * render immediately and only this bar waits (behind its skeleton) for the
+   * Firestore read.
+   */
+  interaction: Promise<MediaInteraction>;
+}
+
 /**
- * Like / Dislike / Favorite bar under the player. Replaces
- * components/stream-action-suite.tsx. Render with a `key` per title/episode
- * so the state resets when the user moves to another episode.
+ * Like / Dislike / Favorite bar under the player. Render with a `key` per
+ * title/episode so the state resets when the user moves to another episode.
  */
-export default function PlayerActions({ mediaRef, initial }: { mediaRef: MediaRef; initial: MediaInteraction }) {
+export default function PlayerActions(props: PlayerActionsProps) {
+  return (
+    <Suspense fallback={<PlayerActionsSkeleton />}>
+      <PlayerActionsBar {...props} />
+    </Suspense>
+  );
+}
+
+function PlayerActionsSkeleton() {
+  return (
+    <div aria-hidden className="flex gap-2 p-1">
+      <Skeleton className="h-12 w-44 rounded-xl" />
+      <Skeleton className="h-12 w-36 rounded-xl" />
+    </div>
+  );
+}
+
+function PlayerActionsBar({ mediaRef, interaction }: PlayerActionsProps) {
+  const initial = use(interaction);
   const { state, pending, ready, like, dislike, favorite } = useMediaActions(mediaRef, initial);
   // Only disabled until Clerk has loaded; while a request is in flight the
   // hook ignores extra clicks, so the optimistic state stays fully visible.

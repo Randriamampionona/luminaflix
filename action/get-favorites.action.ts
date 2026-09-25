@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/firebase-admin";
+import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 
 export type FavoriteType = "MOVIE" | "K_DRAMA" | "ANIME";
@@ -37,12 +37,22 @@ export interface FavoriteItem {
   created_date: string;
 }
 
-export async function getUserFavorites(): Promise<{ results: FavoriteItem[]; total_results: number }> {
+export interface FavoritesResult {
+  results: FavoriteItem[];
+  total_results: number;
+  /**
+   * True when the favorites could not be read (e.g. invalid Firebase
+   * credentials). The page shows an error instead of "your vault is empty".
+   */
+  error: boolean;
+}
+
+export async function getUserFavorites(): Promise<FavoritesResult> {
   const { userId } = await auth();
-  if (!userId) return { results: [], total_results: 0 };
+  if (!userId) return { results: [], total_results: 0, error: false };
 
   try {
-    const snapshot = await db.collection("FAVORITE").doc(userId).get();
+    const snapshot = await getDb().collection("FAVORITE").doc(userId).get();
     const favorites = (snapshot.data()?.favorites ?? []) as StoredFavorite[];
 
     const hydrated = await Promise.all(
@@ -83,9 +93,9 @@ export async function getUserFavorites(): Promise<{ results: FavoriteItem[]; tot
       .filter((item): item is FavoriteItem => item !== null)
       .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime());
 
-    return { results, total_results: results.length };
+    return { results, total_results: results.length, error: false };
   } catch (error) {
-    console.error("[favorites] failed to load", error);
-    return { results: [], total_results: 0 };
+    logFirebaseError("favorites", error);
+    return { results: [], total_results: 0, error: true };
   }
 }

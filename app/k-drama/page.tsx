@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getAllKDramas } from "@/action/get-all-kdramas.action";
-import { MediaListing, parsePage, withOriginalTitle } from "@/components/layout/media-listing";
+import { parsePage, withOriginalTitle } from "@/components/layout/media-listing";
+import { StreamedListing, StreamedText } from "@/components/layout/streamed-listing";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import SectionSearch from "@/components/section-search";
@@ -15,18 +16,20 @@ export default async function KDramaPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const page = parsePage(params.page);
 
-  const [t, tSearch, data] = await Promise.all([
-    getTranslations("pages.kdrama"),
-    getTranslations("search"),
-    getAllKDramas(page),
-  ]);
+  const [t, tSearch] = await Promise.all([getTranslations("pages.kdrama"), getTranslations("search")]);
+  const data = getAllKDramas(page);
+  const streamKey = JSON.stringify(params);
 
   return (
     <PageShell>
       <PageHeader
         title={t("title")}
         accent={t("accent")}
-        meta={t("count", { count: data.total_results })}
+        meta={
+          <StreamedText data={data} streamKey={streamKey}>
+            {(d) => t("count", { count: d.total_results })}
+          </StreamedText>
+        }
         actions={
           <SectionSearch
             basePath="/k-drama/search"
@@ -35,11 +38,12 @@ export default async function KDramaPage({ searchParams }: { searchParams: Promi
           />
         }
       />
-      <MediaListing
-        items={data.results.map(withOriginalTitle)}
+      <StreamedListing
+        data={data}
+        streamKey={streamKey}
+        transform={withOriginalTitle}
         kind="tv"
         page={page}
-        totalPages={data.total_pages}
         basePath="/k-drama"
         searchParams={params}
         emptyTitle={t("empty")}

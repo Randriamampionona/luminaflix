@@ -18,6 +18,6 @@ export default async function KDramaSearchPage({ params, searchParams }: { param
   const [{ query }, sp] = await Promise.all([params, searchParams]);
   const decoded = safeDecode(query);
   const page = parsePage(sp.page);
-  const data = await getSearchKDramas(decoded, page);
+  const data = getSearchKDramas(decoded, page); // streamed (not awaited)
   return <SectionSearchResults query={decoded} data={data} page={page} section="k-drama" />;
 }

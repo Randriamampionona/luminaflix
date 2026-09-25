@@ -23,11 +23,9 @@ export async function generateMetadata({
 export default async function AnimePlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
   const { season, episode } = parseEpisodeParams(s, e);
-  const [anime, episodes, interaction] = await Promise.all([
-    getAnimeDetails(id),
-    getAnimeSeasonEpisodes(id, season),
-    getMediaInteraction({ mediaId: id, type: "ANIME", season, episode }),
-  ]);
+  const [anime, episodes] = await Promise.all([getAnimeDetails(id), getAnimeSeasonEpisodes(id, season)]);
+  // Not awaited: streams into the player's action bar.
+  const interaction = getMediaInteraction({ mediaId: id, type: "ANIME", season, episode });
 
   return (
     <EpisodePlayView

@@ -34,12 +34,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function WatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { fallback }] = await Promise.all([params, searchParams]);
-  const [movie, t, format, interaction] = await Promise.all([
-    getMovieData(id),
-    getTranslations("media"),
-    getFormatter(),
-    getMediaInteraction({ mediaId: id, type: "MOVIE" }),
-  ]);
+  const [movie, t, format] = await Promise.all([getMovieData(id), getTranslations("media"), getFormatter()]);
 
   if (!movie) {
     const alternatives = fallback ? (await getFallbackMovie(fallback)).slice(0, 6) : [];
@@ -115,9 +110,7 @@ export default async function WatchPage({ params, searchParams }: { params: Para
     );
   }
 
-  const released = movie.release_date
-    ? format.dateTime(new Date(movie.release_date), { dateStyle: "medium" })
-    : null;
+  const released = movie.release_date ? format.dateTime(new Date(movie.release_date), { dateStyle: "medium" }) : null;
 
   return (
     <PageShell>
@@ -141,7 +134,8 @@ export default async function WatchPage({ params, searchParams }: { params: Para
         posterPath={movie.poster_path}
         backdropPath={movie.backdrop_path}
         title={movie.title}
-        interaction={interaction}
+        // Not awaited: the player shows now, the action bar streams in.
+        interaction={getMediaInteraction({ mediaId: String(movie.id), type: "MOVIE" })}
       />
 
       <AdWrapper>

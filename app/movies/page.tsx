@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getAllMovies } from "@/action/get-all-movies.action";
-import { ControlDivider, MediaListing, parsePage } from "@/components/layout/media-listing";
+import { ControlDivider, parsePage } from "@/components/layout/media-listing";
+import { StreamedListing, StreamedText } from "@/components/layout/streamed-listing";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import AdvancedFilter from "@/components/movies/advanced-filter";
@@ -22,17 +23,21 @@ export default async function MoviesPage({ searchParams }: { searchParams: Promi
   const genre = params.genre ?? "all";
   const year = params.year ?? "all";
 
-  const [t, data] = await Promise.all([
-    getTranslations("pages.movies"),
-    getAllMovies(page, sort, genre, year, "movie"),
-  ]);
+  const t = await getTranslations("pages.movies");
+  // Not awaited: the header renders now, the results stream in.
+  const data = getAllMovies(page, sort, genre, year, "movie");
+  const streamKey = JSON.stringify(params);
 
   return (
     <PageShell>
       <PageHeader
         title={t("title")}
         accent={t("accent")}
-        meta={t("count", { count: data.total_results })}
+        meta={
+          <StreamedText data={data} streamKey={streamKey}>
+            {(d) => t("count", { count: d.total_results })}
+          </StreamedText>
+        }
         actions={
           <>
             <AdvancedFilter mediaType="movie" />
@@ -41,11 +46,11 @@ export default async function MoviesPage({ searchParams }: { searchParams: Promi
           </>
         }
       />
-      <MediaListing
-        items={data.results}
+      <StreamedListing
+        data={data}
+        streamKey={streamKey}
         kind="movie"
         page={page}
-        totalPages={data.total_pages}
         basePath="/movies"
         searchParams={params}
         resetHref="/movies"

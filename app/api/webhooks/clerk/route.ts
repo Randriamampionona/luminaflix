@@ -1,7 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { db } from "@/lib/firebase-admin";
+import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import admin from "firebase-admin";
 
 export async function POST(req: Request) {
@@ -57,35 +57,40 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   // --- SYNC LOGIC ---
+  try {
+    if (eventType === "user.created" || eventType === "user.updated") {
+      const { email_addresses, image_url, first_name, last_name } = evt.data;
 
-  if (eventType === "user.created" || eventType === "user.updated") {
-    const { email_addresses, image_url, first_name, last_name } = evt.data;
+      // Map Clerk data to Lumina Firebase Schema
+      await getDb()
+        .collection("USERS")
+        .doc(id!)
+        .set(
+          {
+            clerkId: id,
+            email: email_addresses[0]?.email_address,
+            profileImage: image_url,
+            firstName: first_name || "",
+            lastName: last_name || "",
+            fullName: `${first_name || ""} ${last_name || ""}`.trim(),
+            lastActive: admin.firestore.FieldValue.serverTimestamp(),
+            // BUG FIX: `createdAt: undefined` made Firestore reject every
+            // user.updated event ("Cannot use undefined as a Firestore value").
+            ...(eventType === "user.created" && {
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            }),
+          },
+          { merge: true },
+        );
+    }
 
-    // Map Clerk data to Lumina Firebase Schema
-    await db
-      .collection("USERS")
-      .doc(id!)
-      .set(
-        {
-          clerkId: id,
-          email: email_addresses[0]?.email_address,
-          profileImage: image_url,
-          firstName: first_name || "",
-          lastName: last_name || "",
-          fullName: `${first_name || ""} ${last_name || ""}`.trim(),
-          lastActive: admin.firestore.FieldValue.serverTimestamp(),
-          // BUG FIX: `createdAt: undefined` made Firestore reject every
-          // user.updated event ("Cannot use undefined as a Firestore value").
-          ...(eventType === "user.created" && {
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          }),
-        },
-        { merge: true },
-      );
-  }
-
-  if (eventType === "user.deleted") {
-    await db.collection("USERS").doc(id!).delete();
+    if (eventType === "user.deleted") {
+      await getDb().collection("USERS").doc(id!).delete();
+    }
+  } catch (error) {
+    logFirebaseError("clerk-webhook", error);
+    // 500 → Clerk retries the event later.
+    return new Response("Sync failed", { status: 500 });
   }
 
   return new Response("Lumina Sync Handshake Successful", { status: 200 });

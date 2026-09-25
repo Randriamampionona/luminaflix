@@ -18,20 +18,33 @@ function ControlsSkeleton({ controls }: { controls: Controls }) {
 }
 
 /**
+ * Results area only (grid + pagination): the <Suspense> fallback inside
+ * listing pages, so the header and filters stay on screen while a new page,
+ * filter or sort loads.
+ */
+export function ListingBodySkeleton() {
+  return (
+    <LoadingRegion className="space-y-10 sm:space-y-14">
+      <GridSkeleton count={18} />
+      <PaginationSkeleton />
+    </LoadingRegion>
+  );
+}
+
+/**
  * Catalog pages (movies, series, new & popular, anime, K-drama, genre):
  * header with filters/search, 18-poster grid, pagination.
  */
 export function ListingSkeleton({ controls = "filters", eyebrow = false }: { controls?: Controls; eyebrow?: boolean }) {
   return (
     <PageShell>
-      <LoadingRegion className="space-y-10 sm:space-y-14">
+      <div className="space-y-10 sm:space-y-14">
         <HeaderSkeleton
           eyebrow={eyebrow}
           actions={controls === "none" ? undefined : <ControlsSkeleton controls={controls} />}
         />
-        <GridSkeleton count={18} />
-        <PaginationSkeleton />
-      </LoadingRegion>
+        <ListingBodySkeleton />
+      </div>
     </PageShell>
   );
 }
@@ -110,21 +123,30 @@ export function SearchSkeleton({ backLink = false }: { backLink?: boolean }) {
 export function FavoritesSkeleton() {
   return (
     <PageShell>
-      <LoadingRegion className="space-y-10 sm:space-y-14">
+      <div className="space-y-10 sm:space-y-14">
         <HeaderSkeleton eyebrow />
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="flex items-center gap-6 rounded-2xl border border-white/5 bg-white/2 p-4">
-              <Skeleton className="h-32 w-24 shrink-0 rounded-xl" />
-              <div className="min-w-0 grow space-y-3">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </LoadingRegion>
+        <FavoritesGridSkeleton />
+      </div>
     </PageShell>
+  );
+}
+
+/** Favorite cards only: the <Suspense> fallback on /favorites. */
+export function FavoritesGridSkeleton() {
+  return (
+    <LoadingRegion>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="flex items-center gap-6 rounded-2xl border border-white/5 bg-white/2 p-4">
+            <Skeleton className="h-32 w-24 shrink-0 rounded-xl" />
+            <div className="min-w-0 grow space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </LoadingRegion>
   );
 }

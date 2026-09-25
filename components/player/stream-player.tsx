@@ -22,8 +22,8 @@ interface StreamPlayerProps {
   backdropPath?: string | null;
   posterPath?: string | null;
   title?: string;
-  /** Initial like/dislike/favorite state, read on the server. */
-  interaction: MediaInteraction;
+  /** Like/dislike/favorite state, started on the server (not awaited). */
+  interaction: Promise<MediaInteraction>;
 }
 
 type LockableOrientation = ScreenOrientation & {
@@ -235,7 +235,7 @@ export default function StreamPlayer({
           <PlayerActions
             key={`${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`}
             mediaRef={{ mediaId, type: REACTION_TYPE[kind], season, episode }}
-            initial={interaction}
+            interaction={interaction}
           />
         </div>
 

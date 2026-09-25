@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { MediaListing, withOriginalTitle } from "@/components/layout/media-listing";
+import { withOriginalTitle } from "@/components/layout/media-listing";
+import { StreamedListing, StreamedText } from "@/components/layout/streamed-listing";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import type { TMDBResponse } from "@/typing";
@@ -14,7 +15,7 @@ export default async function SectionSearchResults({
   section,
 }: {
   query: string;
-  data: TMDBResponse;
+  data: Promise<TMDBResponse>;
   page: number;
   section: "anime" | "k-drama";
 }) {
@@ -36,14 +37,19 @@ export default async function SectionSearchResults({
         <PageHeader
           title={t("resultsFor")}
           accent={query}
-          meta={t("matches", { count: data.total_results })}
+          meta={
+            <StreamedText data={data} streamKey={String(page)}>
+              {(d) => t("matches", { count: d.total_results })}
+            </StreamedText>
+          }
         />
       </div>
-      <MediaListing
-        items={data.results.map(withOriginalTitle)}
+      <StreamedListing
+        data={data}
+        streamKey={String(page)}
+        transform={withOriginalTitle}
         kind={section === "anime" ? "anime" : "tv"}
         page={page}
-        totalPages={data.total_pages}
         basePath={`/${section}/search/${encodeURIComponent(query)}`}
         emptyTitle={t("emptyTitle")}
         emptyDescription={t("emptyBody", { query })}

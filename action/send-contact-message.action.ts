@@ -1,12 +1,8 @@
 "use server";
 
-import { BrevoClient } from "@getbrevo/brevo";
+import { BrevoClient, BrevoError } from "@getbrevo/brevo";
 import { headers } from "next/headers";
-import {
-  normalizeContact,
-  validateContact,
-  type ContactFormState,
-} from "@/lib/contact";
+import { normalizeContact, validateContact, type ContactFormState } from "@/lib/contact";
 
 /**
  * Contact form → transactional email via Brevo (already used by the daily
@@ -52,10 +48,39 @@ const escapeHtml = (value: string) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
   );
 
-export async function sendContactMessage(
-  _prev: ContactFormState,
-  formData: FormData,
-): Promise<ContactFormState> {
+/**
+ * Maps Brevo failures to a user-facing code and a log line that says what to
+ * fix. Config problems (bad key, unverified sender, IP blocking) are reported
+ * as "config" so users see "temporarily unavailable" rather than "try again".
+ */
+function describeBrevoError(error: unknown): { code: "config" | "server"; detail: string } {
+  if (error instanceof BrevoError) {
+    const body = error.body as { code?: string; message?: string } | undefined;
+    const message = body?.message ?? error.message;
+    const status = error.statusCode;
+    if (status === 401) {
+      return {
+        code: "config",
+        detail: `401 ${message}. Check BREVO_API_KEY, and if "Authorised IPs" is enabled in Brevo (Security settings), add your server's IP or disable the restriction.`,
+      };
+    }
+    if (status === 400 && /sender/i.test(message)) {
+      return {
+        code: "config",
+        detail: `400 ${message}. CONTACT_FROM_EMAIL (${FROM_EMAIL}) must be a verified sender in Brevo (Senders, Domains & Dedicated IPs).`,
+      };
+    }
+    if (status === 403)
+      return {
+        code: "config",
+        detail: `403 ${message}. The Brevo account may be suspended or not activated for transactional email.`,
+      };
+    return { code: "server", detail: `${status ?? "?"} ${message}` };
+  }
+  return { code: "server", detail: error instanceof Error ? error.message : String(error) };
+}
+
+export async function sendContactMessage(_prev: ContactFormState, formData: FormData): Promise<ContactFormState> {
   const values = normalizeContact({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -64,9 +89,18 @@ export async function sendContactMessage(
   });
 
   // Bots fill every field and submit instantly.
-  const honeypot = formData.get("company");
+  const honeypot = formData.get("lf_hp_field");
   const startedAt = Number(formData.get("startedAt"));
-  if ((typeof honeypot === "string" && honeypot.length > 0) || !startedAt || Date.now() - startedAt < MIN_FILL_MS) {
+  const spamReason =
+    typeof honeypot === "string" && honeypot.length > 0
+      ? "honeypot filled"
+      : !startedAt
+        ? "missing start time (form submitted before hydration)"
+        : Date.now() - startedAt < MIN_FILL_MS
+          ? "submitted too fast"
+          : null;
+  if (spamReason) {
+    console.warn(`[contact] rejected by spam filter: ${spamReason}`);
     return { status: "error", error: "spam", values };
   }
 
@@ -132,7 +166,8 @@ ${values.message}`;
     });
     return { status: "success", name: values.name, email: values.email };
   } catch (error) {
-    console.error("[contact] Brevo error:", error instanceof Error ? error.message : error);
-    return { status: "error", error: "server", values };
+    const { code, detail } = describeBrevoError(error);
+    console.error(`[contact] Brevo send failed (${code}): ${detail}`);
+    return { status: "error", error: code, values };
   }
 }

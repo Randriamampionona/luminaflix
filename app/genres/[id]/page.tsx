@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getGenreName } from "@/action/get-all-genres.action";
 import { getMoviesByGenre } from "@/action/get-movies-by-genre.action";
-import { MediaListing, parsePage } from "@/components/layout/media-listing";
+import { parsePage } from "@/components/layout/media-listing";
+import { StreamedListing, StreamedText } from "@/components/layout/streamed-listing";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 
@@ -23,24 +24,26 @@ export default async function GenrePage({ params, searchParams }: { params: Para
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const page = parsePage(sp.page);
 
-  const [t, name, data] = await Promise.all([
-    getTranslations("pages.genre"),
-    getGenreName(id),
-    getMoviesByGenre(id, page),
-  ]);
+  const data = getMoviesByGenre(id, page);
+  const [t, name] = await Promise.all([getTranslations("pages.genre"), getGenreName(id)]);
+  const streamKey = JSON.stringify(sp);
 
   return (
     <PageShell>
       <PageHeader
         eyebrow={t("eyebrow")}
         title={name ?? t("unknown")}
-        meta={t("count", { count: data.total_results })}
+        meta={
+          <StreamedText data={data} streamKey={streamKey}>
+            {(d) => t("count", { count: d.total_results })}
+          </StreamedText>
+        }
       />
-      <MediaListing
-        items={data.results}
+      <StreamedListing
+        data={data}
+        streamKey={streamKey}
         kind="movie"
         page={page}
-        totalPages={data.total_pages}
         basePath={`/genres/${id}`}
         searchParams={sp}
         emptyTitle={t("empty")}
