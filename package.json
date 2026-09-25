@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/localizations": "^3.37.0",
     "@clerk/nextjs": "^6.36.10",
     "@emailjs/nodejs": "^5.0.2",
     "@getbrevo/brevo": "^4.0.1",
@@ -22,11 +23,13 @@
     "firebase-admin": "^13.6.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.4",
+    "next-intl": "^4.14.0",
     "nextjs-toploader": "^3.9.17",
     "qrcode.react": "^4.2.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sonner": "^2.0.8",
     "svix": "^1.84.1",
     "tailwind-merge": "^3.4.0"
   },

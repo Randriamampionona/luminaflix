@@ -1,159 +1,123 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { ShieldAlert, RefreshCcw, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { RefreshCcw, ShieldAlert } from "lucide-react";
 
 const IS_PROD = process.env.NODE_ENV === "production";
+const OVERLAY_ID = "lumina-guard-overlay";
+type BlockReason = "adblock" | "idm";
 
-export default function GuardProtocol({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [reason, setReason] = useState<"ADBLOCK" | "IDM" | null>(null);
-
-  // --- LOCKDOWN: DISALLOW INTERFACE MANIPULATION ---
-  const enforceLockdown = useCallback((e: any) => {
-    if (!IS_PROD) return;
-    if (e.type === "contextmenu") {
-      e.preventDefault();
-      return false;
-    }
-    if (
-      e.keyCode === 123 || // F12
-      (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.keyCode === 85) // Ctrl+U
-    ) {
-      e.preventDefault();
-      return false;
-    }
-  }, []);
+/**
+ * Blocks the player when an ad blocker or a download-manager extension is
+ * detected. Listeners are registered once and removed on unmount.
+ */
+export default function GuardProtocol({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("guard");
+  const [reason, setReason] = useState<BlockReason | null>(null);
 
   useEffect(() => {
-    document.addEventListener("contextmenu", enforceLockdown);
-    document.addEventListener("keydown", enforceLockdown);
+    let cancelled = false;
 
-    const detectInterference = async () => {
-      // 1. ADBLOCK DETECTION (Honey-pot fetch)
-      const googleAdUrl =
-        "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+    const onContextMenu = (e: MouseEvent) => {
+      if (IS_PROD) e.preventDefault();
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!IS_PROD) return;
+      const key = e.key.toUpperCase();
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (key === "I" || key === "J")) ||
+        (e.ctrlKey && key === "U")
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", onContextMenu);
+    document.addEventListener("keydown", onKeyDown);
+
+    (async () => {
       try {
-        await fetch(new Request(googleAdUrl), {
+        await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
           method: "HEAD",
           mode: "no-cors",
           cache: "no-store",
         });
-      } catch (error) {
-        setReason("ADBLOCK");
-        setIsBlocked(true);
+      } catch {
+        if (!cancelled) setReason("adblock");
         return;
       }
-
-      // 2. IDM DETECTION (Attribute Probe)
-      const checkIDM = () => {
-        const idmAttributes = ["__idm_id__", "idm_extension"];
-        const hasIDM = document.body
-          .getAttributeNames()
-          .some((attr) => idmAttributes.includes(attr));
-        if (hasIDM) {
-          setReason("IDM");
-          setIsBlocked(true);
-        }
-      };
-      checkIDM();
-    };
-
-    detectInterference();
+      const idmAttributes = ["__idm_id__", "idm_extension"];
+      if (!cancelled && document.body.getAttributeNames().some((a) => idmAttributes.includes(a))) {
+        setReason("idm");
+      }
+    })();
 
     return () => {
-      document.removeEventListener("contextmenu", enforceLockdown);
-      document.removeEventListener("keydown", enforceLockdown);
+      cancelled = true;
+      document.removeEventListener("contextmenu", onContextMenu);
+      document.removeEventListener("keydown", onKeyDown);
     };
-  }, [enforceLockdown]);
+  }, []);
 
-  // --- DOM INTEGRITY: RELOAD IF OVERLAY IS TAMPERED WITH ---
+  // Reload if the overlay is removed from the DOM by hand.
   useEffect(() => {
-    if (isBlocked) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          mutation.removedNodes.forEach((node: any) => {
-            if (node.id === "lumina-guard-overlay") {
-              window.location.reload();
-            }
-          });
-        });
-      });
+    if (!reason) return;
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of Array.from(mutation.removedNodes)) {
+          if (node instanceof HTMLElement && node.id === OVERLAY_ID) {
+            window.location.reload();
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [reason]);
 
-      observer.observe(document.body, { childList: true });
-      return () => observer.disconnect();
-    }
-  }, [isBlocked]);
+  if (!reason) return <>{children}</>;
 
-  if (isBlocked) {
-    return (
-      <div
-        id="lumina-guard-overlay"
-        className="fixed inset-0 w-screen h-screen z-999999 bg-zinc-950 flex flex-col items-center justify-center p-8 text-center select-none overflow-hidden"
-      >
-        {/* Background Decorative Element */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-red-500/20 via-transparent to-transparent" />
+  return (
+    <div
+      id={OVERLAY_ID}
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="lumina-guard-title"
+      className="fixed inset-0 z-999999 flex h-screen w-screen select-none flex-col items-center justify-center overflow-hidden bg-zinc-950 p-8 text-center"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.12),transparent_60%)]" />
+
+      <div className="relative z-10 max-w-md space-y-8 animate-in fade-in zoom-in duration-500">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-red-500/40 bg-red-500/10 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+          <ShieldAlert className="h-12 w-12 text-red-500" />
         </div>
 
-        <div className="relative z-10 space-y-8 animate-in fade-in zoom-in duration-500">
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center border border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
-                <ShieldAlert className="w-12 h-12 text-red-500" />
-              </div>
-              <Terminal className="absolute -bottom-2 -right-2 w-8 h-8 text-white bg-black p-1.5 rounded-lg border border-white/20" />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter italic">
-              Terminal <span className="text-red-500">Lockdown</span>
-            </h1>
-            <div className="inline-block px-4 py-1.5 bg-red-500/20 border border-red-500/50 rounded-full">
-              <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.3em]">
-                Protocol Error: {reason}_INTERFERENCE
-              </span>
-            </div>
-          </div>
-
-          <div className="max-w-md space-y-6">
-            <p className="text-zinc-400 text-xs md:text-sm uppercase tracking-widest font-bold leading-relaxed">
-              Lumina Architecture has detected{" "}
-              <span className="text-white underline decoration-red-500 underline-offset-4">
-                {reason === "ADBLOCK" ? "an Ad-Blocker" : "IDM Interception"}
-              </span>
-              . To maintain secure link integrity, please{" "}
-              <span className="text-cyan-400">disable the extension</span> and
-              initiate a system rescan.
-            </p>
-
-            <button
-              onClick={() => window.location.reload()}
-              className="group relative flex items-center gap-3 mx-auto px-12 py-5 bg-white hover:bg-cyan-500 transition-all duration-500 rounded-2xl"
-            >
-              <RefreshCcw className="w-4 h-4 text-black group-hover:rotate-180 transition-transform duration-700" />
-              <span className="text-black font-black text-xs uppercase tracking-[0.2em]">
-                Rescan & Reload Link
-              </span>
-              <div className="absolute -inset-1 bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-          </div>
-
-          <div className="pt-12">
-            <span className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.5em]">
-              Lumina Core Security Division — v4.0.2
-            </span>
-          </div>
+        <div className="space-y-4">
+          <h1
+            id="lumina-guard-title"
+            className="text-3xl font-black uppercase italic tracking-tighter text-white md:text-4xl"
+          >
+            {t("title")}
+          </h1>
+          <span className="inline-block rounded-full border border-red-500/50 bg-red-500/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-red-400">
+            {t("code", { reason: t(reason) })}
+          </span>
         </div>
+
+        <p className="text-sm leading-relaxed text-zinc-400">{t("body", { what: t(reason) })}</p>
+
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="group mx-auto flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-12 py-5 transition-all duration-500 hover:bg-cyan-500"
+        >
+          <RefreshCcw className="h-4 w-4 text-black transition-transform duration-700 group-hover:rotate-180" />
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-black">{t("reload")}</span>
+        </button>
       </div>
-    );
-  }
-
-  return <>{children}</>;
+    </div>
+  );
 }

@@ -1,285 +1,252 @@
 "use client";
 
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { ArrowRight, ChevronDown, Loader2, Menu, Search, X, Zap } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, Suspense } from "react";
-import {
-  ArrowRight,
-  Menu,
-  Search,
-  X,
-  Zap,
-  Loader2,
-  ChevronDown,
-} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-  SheetClose,
-} from "@/components/ui/sheet";
+import { useTranslations } from "next-intl";
+import { memo, useCallback, useState } from "react";
+import SignInLink from "@/components/auth/sign-in-link";
+import LanguageSwitcher from "@/components/i18n/language-switcher";
+import { Container } from "@/components/layout/container";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useScrolled } from "@/hooks/use-scrolled";
+import { NAV_INLINE_COUNT, NAV_ITEMS } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 import NavbarActions from "./navbar-actions";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import LanguageSelector from "./language-selector";
-import CustomLink from "./custom-link";
+
+const inlineItems = NAV_ITEMS.slice(0, NAV_INLINE_COUNT);
+const overflowItems = NAV_ITEMS.slice(NAV_INLINE_COUNT);
+
+export const Logo = memo(function Logo({ size = "md" }: { size?: "sm" | "md" }) {
+  const t = useTranslations("common");
+  return (
+    <Link href="/" className="group flex items-center gap-2" aria-label={`${t("brandFirst")}${t("brandSecond")} — ${t("home")}`}>
+      <span
+        className={cn(
+          "flex rotate-3 items-center justify-center rounded-xl bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-transform duration-300 group-hover:rotate-0",
+          size === "md" ? "h-10 w-10" : "h-8 w-8 rounded-lg",
+        )}
+      >
+        <span className={cn("font-black italic leading-none text-black", size === "md" ? "text-xl" : "text-base")}>L</span>
+      </span>
+      <span className="text-2xl font-black uppercase italic tracking-tighter text-white">
+        {t("brandFirst")}
+        <span className="text-cyan-500">{t("brandSecond")}</span>
+      </span>
+    </Link>
+  );
+});
 
 export default function Navbar() {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useScrolled(20);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  const MENUS = [
-    "Movies",
-    "New & Popular",
-    "K-Drama",
-    "Library",
-    "Genres",
-    "Anime",
-    "TV Shows",
-    "Favorites",
-  ];
+  // Keep the item highlighted on nested pages (e.g. /movies/123).
+  const isActive = useCallback(
+    (href: string) => pathname === href || pathname.startsWith(`${href}/`),
+    [pathname],
+  );
+  const isMoreActive = overflowItems.some((item) => isActive(item.href));
 
-  const visibleMenus = MENUS.slice(0, 3);
-  const hiddenMenus = MENUS.slice(3);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const getHref = (item: string) =>
-    `/${item.toLowerCase().replace(" & ", "-").replace(" ", "-")}`;
-
-  // UI FIX: keep the menu item highlighted on nested pages (e.g. /movies/123)
-  const isActive = (path: string) =>
-    pathname === path || pathname.startsWith(`${path}/`);
-  const isMoreActive = hiddenMenus.some((item) => isActive(getHref(item)));
-
-  const handleMobileSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleMobileSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!searchQuery.trim() || isSearching) return;
+    const query = searchQuery.trim();
+    if (!query || isSearching) return;
     setIsSearching(true);
-    router.push(`/search/${encodeURIComponent(searchQuery.trim())}`);
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsSearching(false);
-      setSearchQuery("");
-    }, 300);
+    router.push(`/search/${encodeURIComponent(query)}`);
+    setIsOpen(false);
+    setIsSearching(false);
+    setSearchQuery("");
   };
 
   return (
     <nav
-      className={`fixed top-0 w-full z-100 transition-all duration-500 ${
-        isScrolled
-          ? "py-4 bg-black/80 backdrop-blur-xl border-b border-white/5"
-          : "py-6 bg-transparent"
-      }`}
+      aria-label={t("nav.mainNavigation")}
+      className={cn(
+        "fixed top-0 z-100 w-full transition-[padding,background-color,border-color] duration-500",
+        isScrolled ? "border-b border-white/5 bg-black/80 py-4 backdrop-blur-xl" : "bg-transparent py-6",
+      )}
     >
-      <div className="max-w-360 mx-auto px-6 md:px-12 flex items-center justify-between">
-        <div className="flex items-center gap-12">
-          <CustomLink href="/" className="group flex items-center gap-2">
-            <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
-              <span className="text-black font-black text-xl italic leading-none">
-                L
-              </span>
-            </div>
-            <span className="text-2xl font-black uppercase italic tracking-tighter text-white">
-              Lumina<span className="text-cyan-500">Flix</span>
-            </span>
-          </CustomLink>
+      {/* UI STANDARD: same container as every page and the footer. */}
+      <Container className="flex items-center justify-between gap-6">
+        <div className="flex items-center gap-10">
+          <Logo />
 
-          {/* Desktop Menu */}
-          <div className="hidden xl:flex items-center gap-8">
-            {visibleMenus.map((item) => {
-              const href = getHref(item);
-              const active = isActive(href);
-              return (
-                <CustomLink
-                  key={item}
-                  href={href}
-                  className={`relative text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 hover:text-cyan-500 ${
-                    active ? "text-cyan-500" : "text-zinc-500"
-                  }`}
-                >
-                  {item}
-                </CustomLink>
-              );
-            })}
+          <div className="hidden items-center gap-8 xl:flex">
+            {inlineItems.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-[0.2em] transition-colors hover:text-cyan-500",
+                  isActive(item.href) ? "text-cyan-500" : "text-zinc-500",
+                )}
+              >
+                {t(`nav.${item.key}`)}
+              </Link>
+            ))}
 
-            {hiddenMenus.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] hover:text-cyan-500 outline-none transition-colors group cursor-pointer ${
-                    isMoreActive ? "text-cyan-500" : "text-zinc-500"
-                  }`}
-                >
-                  More
-                  <ChevronDown className="w-3 h-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950/95 border border-white/10 backdrop-blur-2xl p-2 min-w-45 rounded-md z-100">
-                  {hiddenMenus.map((item) => {
-                    const href = getHref(item);
-                    const active = isActive(href);
-                    return (
-                      <DropdownMenuItem key={item} asChild>
-                        <CustomLink
-                          href={href}
-                          className={`flex items-center justify-between px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all focus:bg-cyan-500 focus:text-black ${
-                            active
-                              ? "text-cyan-500 bg-white/5"
-                              : "text-zinc-400"
-                          }`}
-                        >
-                          {item}
-                          {active && <Zap className="w-3 h-3 fill-current" />}
-                        </CustomLink>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  "group flex cursor-pointer items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] outline-none transition-colors hover:text-cyan-500 focus-visible:text-cyan-500",
+                  isMoreActive ? "text-cyan-500" : "text-zinc-500",
+                )}
+              >
+                {t("nav.more")}
+                <ChevronDown className="h-3 w-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-100 min-w-45 rounded-md border border-white/10 bg-zinc-950/95 p-2 backdrop-blur-2xl">
+                {overflowItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <DropdownMenuItem key={item.key} asChild>
+                      <Link
+                        href={item.href}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex items-center justify-between rounded-md px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors focus:bg-cyan-500 focus:text-black",
+                          active ? "bg-white/5 text-cyan-500" : "text-zinc-400",
+                        )}
+                      >
+                        {t(`nav.${item.key}`)}
+                        {active && <Zap className="h-3 w-3 fill-current" />}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <NavbarActions />
-          <div className="hidden xl:flex items-center justify-center">
-            <LanguageSelector />
+          <div className="hidden xl:block">
+            <LanguageSwitcher />
           </div>
 
-          {/* Mobile */}
-          <div className="lg:hidden flex items-center justify-center">
+          <div className="flex items-center lg:hidden">
             <SignedIn>
               <UserButton />
             </SignedIn>
           </div>
+
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <button className="xl:hidden p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white hover:bg-zinc-800 transition-all">
-                <Menu className="w-5 h-5" />
+              <button
+                type="button"
+                aria-label={t("nav.openMenu")}
+                className="rounded-xl border border-white/10 bg-zinc-900/50 p-3 text-white transition-colors hover:bg-zinc-800 xl:hidden"
+              >
+                <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
 
             <SheetContent
               side="right"
               showCloseButton={false}
-              className="w-full sm:w-100 sm:max-w-100 bg-black/95 border-zinc-800 backdrop-blur-2xl p-0 z-100 flex flex-col"
+              className="z-100 flex w-full flex-col border-zinc-800 bg-black/95 p-0 backdrop-blur-2xl sm:w-100 sm:max-w-100"
             >
-              <div className="flex items-center justify-between w-full p-6 shrink-0">
+              <div className="flex w-full shrink-0 items-center justify-between p-6">
                 <SheetClose asChild>
-                  <button className="p-3 bg-zinc-900/50 border border-white/10 rounded-xl text-white outline-none">
-                    <X className="w-5 h-5" />
+                  <button
+                    type="button"
+                    aria-label={t("nav.closeMenu")}
+                    className="rounded-xl border border-white/10 bg-zinc-900/50 p-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                  >
+                    <X className="h-5 w-5" />
                   </button>
                 </SheetClose>
-                <div className="flex xl:hidden items-center justify-center">
-                  <LanguageSelector />
-                </div>
+                <LanguageSwitcher />
               </div>
 
-              <div className="p-8 flex-1 overflow-y-auto no-scrollbar flex flex-col">
-                <form
-                  onSubmit={handleMobileSearch}
-                  className="relative mb-12 group shrink-0"
-                >
+              <div className="flex flex-1 flex-col overflow-y-auto p-8 no-scrollbar">
+                <form onSubmit={handleMobileSearch} role="search" className="group relative mb-12 shrink-0">
                   <div
-                    className={`absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur transition duration-1000 ${
-                      searchQuery ? "opacity-40" : "opacity-10"
-                    }`}
+                    aria-hidden
+                    className={cn(
+                      "absolute -inset-0.5 rounded-2xl bg-linear-to-r from-cyan-500 to-blue-600 blur transition duration-1000",
+                      searchQuery ? "opacity-40" : "opacity-10",
+                    )}
                   />
-                  <div className="relative flex items-center bg-zinc-950 rounded-2xl border border-white/10 transition-all overflow-hidden">
-                    <Search
-                      className={`ml-4 w-5 h-5 ${
-                        searchQuery ? "text-cyan-400" : "text-zinc-500"
-                      }`}
-                    />
+                  <div className="relative flex items-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950">
+                    <Search className={cn("ml-4 h-5 w-5", searchQuery ? "text-cyan-400" : "text-zinc-500")} />
                     <input
-                      type="text"
+                      type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search Lumina..."
-                      className="w-full bg-transparent border-none outline-none py-5 px-4 text-sm font-bold uppercase tracking-widest text-white placeholder:text-zinc-700"
+                      placeholder={t("search.mobilePlaceholder")}
+                      aria-label={t("search.placeholder")}
+                      className="w-full border-none bg-transparent px-4 py-5 text-sm font-bold uppercase tracking-widest text-white outline-none placeholder:text-zinc-700"
                     />
-                    <button
-                      type="submit"
-                      className="mr-2 p-3 bg-white text-black rounded-xl"
-                    >
-                      {isSearching ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <ArrowRight className="w-4 h-4" />
-                      )}
+                    <button type="submit" aria-label={t("search.submit")} className="mr-2 rounded-xl bg-white p-3 text-black">
+                      {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                     </button>
                   </div>
                 </form>
 
-                <SheetTitle className="text-3xl font-black uppercase italic tracking-tighter text-white mb-12">
-                  Navigation<span className="text-cyan-500">.</span>
+                <SheetTitle className="mb-12 text-3xl font-black uppercase italic tracking-tighter text-white">
+                  {t("nav.menu")}
+                  <span className="text-cyan-500">.</span>
                 </SheetTitle>
 
-                <div className="flex flex-col gap-6 mb-12">
-                  {MENUS.map((item) => {
-                    const href = getHref(item);
-                    const active = isActive(href);
+                <div className="mb-12 flex flex-col gap-6">
+                  {NAV_ITEMS.map((item) => {
+                    const active = isActive(item.href);
                     return (
-                      <SheetClose key={item} asChild>
-                        <CustomLink
-                          href={href}
-                          className={`group flex items-center justify-between font-black uppercase italic tracking-tighter transition-all ${
-                            active
-                              ? "text-white text-2xl"
-                              : "text-zinc-500 hover:text-white"
-                          }`}
+                      <SheetClose key={item.key} asChild>
+                        <Link
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "group flex items-center justify-between font-black uppercase italic tracking-tighter transition-colors",
+                            active ? "text-2xl text-white" : "text-zinc-500 hover:text-white",
+                          )}
                         >
-                          <span>{item}</span>
+                          <span>{t(`nav.${item.key}`)}</span>
                           <Zap
-                            className={`w-6 h-6 text-cyan-500 ${
-                              active
-                                ? "opacity-100 scale-125 shadow-cyan-500"
-                                : "opacity-0 group-hover:opacity-100"
-                            }`}
+                            className={cn(
+                              "h-6 w-6 text-cyan-500",
+                              active ? "scale-125 opacity-100" : "opacity-0 group-hover:opacity-100",
+                            )}
                           />
-                        </CustomLink>
+                        </Link>
                       </SheetClose>
                     );
                   })}
                 </div>
 
-                {/* --- RESTORED FOOTER ACTIONS --- */}
-                <div className="mt-auto pb-12 space-y-6 shrink-0">
+                <div className="mt-auto shrink-0 space-y-6 pb-12">
                   <div className="h-px w-full bg-white/5" />
                   <SignedOut>
                     <div className="flex flex-col gap-4">
-                      {/* Wrap Sign In Link */}
-                      <SheetClose asChild>
-                        <CustomLink
-                          href="/sign-in"
-                          className="w-full py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white text-center"
-                        >
-                          Sign In
-                        </CustomLink>
-                      </SheetClose>
-
-                      {/* Wrap Join Lumina Link */}
-                      <SheetClose asChild>
-                        <CustomLink
-                          href="/sign-up"
-                          className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-cyan-500 hover:text-white transition-all text-center"
-                        >
-                          Join Lumina Now
-                        </CustomLink>
-                      </SheetClose>
+                      <SignInLink
+                        onNavigate={() => setIsOpen(false)}
+                        className="w-full py-4 text-center text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white"
+                      >
+                        {t("auth.signIn")}
+                      </SignInLink>
+                      <SignInLink
+                        route="/sign-up"
+                        onNavigate={() => setIsOpen(false)}
+                        className="w-full rounded-2xl bg-white py-5 text-center text-xs font-black uppercase tracking-widest text-black transition-colors hover:bg-cyan-500 hover:text-white"
+                      >
+                        {t("auth.joinNow")}
+                      </SignInLink>
                     </div>
                   </SignedOut>
                 </div>
@@ -287,7 +254,7 @@ export default function Navbar() {
             </SheetContent>
           </Sheet>
         </div>
-      </div>
+      </Container>
     </nav>
   );
 }

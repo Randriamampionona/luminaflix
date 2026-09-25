@@ -1,54 +1,43 @@
-"use server";
+import { REVALIDATE, tmdb } from "@/lib/tmdb";
+import type { Genre, GenreResponse, TMDBResponse } from "@/typing";
 
-import { Genre } from "@/typing";
-
-export async function getAllGenres({
-  display_lang,
-}: {
-  display_lang?: string;
-}): Promise<(Genre & { backdrop?: string })[]> {
-  const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL;
-
-  try {
-    const [movieRes, tvRes] = await Promise.all([
-      fetch(
-        `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
-        { next: { revalidate: 60 * 24 } },
-      ),
-      fetch(
-        `${BASE_URL}/genre/tv/list?api_key=${API_KEY}&language=${display_lang || "en-US"}`,
-        { next: { revalidate: 60 * 24 } },
-      ),
-    ]);
-
-    const movieData = await movieRes.json();
-    const tvData = await tvRes.json();
-
-    const uniqueGenresMap = new Map();
-    [...movieData.genres, ...tvData.genres].forEach((genre) => {
-      uniqueGenresMap.set(genre.id, genre);
-    });
-
-    const genres = Array.from(uniqueGenresMap.values());
-
-    // PRO STEP: Fetch a backdrop for each genre
-    const genresWithImages = await Promise.all(
-      genres.map(async (genre) => {
-        const discoverRes = await fetch(
-          `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genre.id}&sort_by=popularity.desc&include_adult=true&page=1`,
-        );
-        const discoverData = await discoverRes.json();
-        return {
-          ...genre,
-          backdrop: discoverData.results?.[0]?.backdrop_path || null,
-        };
-      }),
-    );
-
-    return genresWithImages.sort((a, b) => a.name.localeCompare(b.name));
-  } catch (error) {
-    console.error("Lumina Archive Error:", error);
-    return [];
+/** Movie + TV genres merged and de-duplicated (cached for a day). */
+export async function getGenreList(): Promise<Genre[]> {
+  const [movie, tv] = await Promise.all([
+    tmdb<GenreResponse>("/genre/movie/list", {}, { revalidate: REVALIDATE.long }),
+    tmdb<GenreResponse>("/genre/tv/list", {}, { revalidate: REVALIDATE.long }),
+  ]);
+  const unique = new Map<number, Genre>();
+  for (const genre of [...(movie?.genres ?? []), ...(tv?.genres ?? [])]) {
+    unique.set(genre.id, genre);
   }
+  return [...unique.values()];
+}
+
+/**
+ * PERF: /genres/[id] used to call getAllGenres() — ~27 uncached discover
+ * requests — only to print one genre name. This reads the cached list.
+ */
+export async function getGenreName(id: string): Promise<string | null> {
+  const genres = await getGenreList();
+  return genres.find((genre) => String(genre.id) === id)?.name ?? null;
+}
+
+export async function getAllGenres(): Promise<(Genre & { backdrop: string | null })[]> {
+  const genres = await getGenreList();
+
+  // One backdrop per genre. The artwork doesn't depend on the language, so
+  // it is fetched unlocalized and cached for a day across all users.
+  const withImages = await Promise.all(
+    genres.map(async (genre) => {
+      const discover = await tmdb<TMDBResponse>(
+        "/discover/movie",
+        { with_genres: genre.id, sort_by: "popularity.desc", page: 1 },
+        { revalidate: REVALIDATE.long, localized: false },
+      );
+      return { ...genre, backdrop: discover?.results?.[0]?.backdrop_path ?? null };
+    }),
+  );
+
+  return withImages.sort((a, b) => a.name.localeCompare(b.name));
 }

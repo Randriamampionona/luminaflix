@@ -1,28 +1,8 @@
-"use server";
+import { REVALIDATE, tmdb } from "@/lib/tmdb";
+import type { Movie, TMDBResponse } from "@/typing";
 
-import { Movie, TMDBResponse } from "@/typing";
-
-export async function getFeatured({
-  display_lang,
-}: {
-  display_lang?: string;
-}): Promise<Movie | null> {
-  const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL;
-
-  try {
-    const res = await fetch(
-      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=${display_lang || "en-US"}&page=1`,
-      { cache: "no-store" },
-    );
-
-    if (!res.ok) throw new Error("Failed to fetch Coup de Coeur");
-
-    const data: TMDBResponse = await res.json();
-    // We take the first one or you can do Math.random() * 5
-    return data.results[0] || null;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+/** "Coup de coeur": the best rated title that has a backdrop. */
+export async function getFeatured(): Promise<Movie | null> {
+  const data = await tmdb<TMDBResponse>("/movie/top_rated", { page: 1 }, { revalidate: REVALIDATE.long });
+  return data?.results.find((movie) => movie.backdrop_path) ?? null;
 }

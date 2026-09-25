@@ -1,58 +1,66 @@
-"use client";
-
-import { Movie } from "@/typing";
-import { Star, Play } from "lucide-react";
+import { Play, Star } from "lucide-react";
+import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import { Container } from "@/components/layout/container";
+import { tmdbImage } from "@/lib/media";
+import { type as typo } from "@/lib/typography";
+import { cn } from "@/lib/utils";
+import type { Movie } from "@/typing";
 import MovieDetails from "./movie-details";
 
-interface FeaturedBannerProps {
-  movie: Movie;
-}
+export default async function FeaturedBanner({ movie }: { movie: Movie }) {
+  const t = await getTranslations("home");
+  const backdrop = tmdbImage(movie.backdrop_path);
 
-export default function FeaturedBanner({ movie }: FeaturedBannerProps) {
   return (
-    <div className="px-8 md:px-16 py-10">
-      <div className="relative w-full min-h-75 md:min-h-100 rounded-xl overflow-hidden group border border-white/10">
-        {/* Background Image */}
-        <img
-          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-          alt={movie.title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+    <section className="py-10 sm:py-14">
+      <Container>
+        <div className="group relative min-h-75 w-full overflow-hidden rounded-xl border border-white/10 md:min-h-100">
+          {backdrop && (
+            <Image
+              src={backdrop}
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 1216px, 100vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          )}
+          <div className="absolute inset-0 bg-linear-to-r from-black via-black/60 to-transparent" />
 
-        {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-r from-black via-black/60 to-transparent" />
+          <div className="relative flex min-h-75 max-w-2xl flex-col justify-center space-y-4 p-6 sm:p-8 md:min-h-100 md:p-12">
+            <div className="flex items-center gap-3">
+              <span className="rounded bg-cyan-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter text-black">
+                {t("featuredBadge")}
+              </span>
+              <span className="flex items-center gap-1 text-xs font-bold text-yellow-400">
+                <Star className="h-3 w-3 fill-current" />
+                {t("featuredRating", { rating: movie.vote_average.toFixed(1) })}
+              </span>
+            </div>
 
-        {/* Content */}
-        <div className="relative min-h-75 md:min-h-100 flex flex-col justify-center p-8 md:p-12 max-w-2xl space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="bg-cyan-500 text-black text-[10px] font-black px-2 py-0.5 rounded tracking-tighter uppercase">
-              Coup de coeur
-            </span>
-            <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
-              <Star className="w-3 h-3 fill-current" />
-              {movie.vote_average.toFixed(1)} Rating
+            <h2 className={cn(typo.h1)}>
+              {movie.title}
+              <span className="not-italic text-cyan-500">.</span>
+            </h2>
+
+            <p className="line-clamp-2 max-w-lg text-sm leading-relaxed text-zinc-300 md:text-base">
+              {movie.overview}
+            </p>
+
+            <div className="pt-2">
+              <MovieDetails movie={movie}>
+                <button
+                  type="button"
+                  className="flex cursor-pointer items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs font-bold uppercase text-black shadow-lg transition-colors hover:bg-cyan-500 hover:text-white"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  {t("viewDetails")}
+                </button>
+              </MovieDetails>
             </div>
           </div>
-
-          <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
-            {movie.title}
-            <span className="text-cyan-500 not-italic">.</span>
-          </h2>
-
-          <p className="text-zinc-300 text-sm md:text-base line-clamp-2 max-w-lg leading-relaxed">
-            {movie.overview}
-          </p>
-
-          <div className="flex items-center gap-4 pt-2">
-            <MovieDetails movie={movie}>
-              <button className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold text-xs uppercase hover:bg-cyan-500 hover:text-white transition-all shadow-lg">
-                <Play className="w-4 h-4 fill-current" />
-                View Details
-              </button>
-            </MovieDetails>
-          </div>
         </div>
-      </div>
-    </div>
+      </Container>
+    </section>
   );
 }

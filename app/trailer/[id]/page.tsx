@@ -1,185 +1,98 @@
-import {
-  X,
-  ShieldAlert,
-  ChevronLeft,
-  MonitorPlay,
-  Cpu,
-  Binary,
-  Globe,
-} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ChevronLeft, Globe, MonitorPlay, ShieldAlert, X } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getMovieTrailer } from "@/action/get-movie-trailer.action";
-import CustomLink from "@/components/custom-link";
-import TrailerAdEngine from "@/components/trailer-ad-engine";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
+import { PageShell } from "@/components/layout/page-shell";
+import TrailerAdEngine from "@/components/trailer-ad-engine";
+import { localeMeta, isLocale, type Locale } from "@/i18n/config";
+import { getWatchHref, type MediaKind } from "@/lib/media";
 
-export const dynamic = "force-dynamic";
+type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ type?: string; fallback?: string; lang?: string }>;
 
-export default async function TrailerPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{
-    type?: string;
-    fallback?: string;
-    lang?: string;
-    display_lang?: string;
-  }>;
-}) {
-  const { id } = await params;
-  const { type, fallback, lang, display_lang } = await searchParams;
+const toKind = (value?: string): MediaKind => (value === "anime" ? "anime" : value === "tv" ? "tv" : "movie");
 
-  const trailerData = await getMovieTrailer(id, lang, type);
-  const currentLang = trailerData?.lang === "fr" ? "fr" : "en";
-  const nextLang = currentLang === "fr" ? "en" : "fr";
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata.pages");
+  return { title: t("trailer"), robots: { index: false } };
+}
 
-  const baseRoute =
-    type === "anime" ? "/anime" : type === "tv" ? "/k-drama" : "/movies";
-  const watchLink = `${baseRoute}/${id}?fallback=${fallback}`;
+export default async function TrailerPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  const [{ id }, sp, uiLocale, t] = await Promise.all([params, searchParams, getLocale(), getTranslations("trailer")]);
+  const kind = toKind(sp.type);
+  const requested: Locale = isLocale(sp.lang) ? sp.lang : (uiLocale as Locale);
+
+  const trailer = await getMovieTrailer(id, requested, kind);
+  const currentLang: Locale = trailer?.lang === "fr" ? "fr" : trailer?.lang === "en" ? "en" : requested;
+  const nextLang: Locale = currentLang === "fr" ? "en" : "fr";
+
+  // BUG FIX: `fallback=undefined` used to be appended literally when missing.
+  const watchHref = getWatchHref(id, kind, sp.fallback);
+  const switchParams = new URLSearchParams({ lang: nextLang, type: kind });
+  if (sp.fallback) switchParams.set("fallback", sp.fallback);
 
   return (
-    <div className="relative isolate min-h-screen bg-[#020202] text-white overflow-x-hidden selection:bg-cyan-500/30">
-      {/* 1. TOP NAVIGATION HUD */}
-      <header className="w-full max-w-6xl mx-auto mt-32 p-6 md:p-10 flex items-center justify-between bg-linear-to-b from-[#020202] to-transparent">
-        <CustomLink href="/" className="flex items-center gap-4 md:gap-6 group min-w-0">
-          <div className="p-2 border border-white/10 rounded-xl group-hover:border-cyan-500 transition-all group-hover:bg-cyan-500/5">
-            <ChevronLeft className="w-5 h-5 text-zinc-600 group-hover:text-cyan-500" />
-          </div>
-          <div className="flex flex-col border-l border-white/10 pl-4 md:pl-6 space-y-1">
-            <span className="text-[12px] font-black uppercase tracking-[0.3em] md:tracking-[0.6em] text-white">
-              LUMINA//CORE
-            </span>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-              <span className="text-[8px] text-zinc-600 uppercase font-black tracking-[0.2em]">
-                System: Secure
-              </span>
-            </div>
-          </div>
-        </CustomLink>
-
-        <div className="flex items-center gap-12">
-          <div className="hidden lg:flex items-center gap-12">
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-[7px] text-zinc-600 uppercase font-black tracking-[0.3em]">
-                Sector
-              </span>
-              <span className="text-[10px] text-white font-mono uppercase tracking-widest">
-                {type || "01"}
-              </span>
-            </div>
-            <div className="flex flex-col items-end gap-1 text-right">
-              <span className="text-[7px] text-zinc-600 uppercase font-black tracking-[0.3em]">
-                Node_ID
-              </span>
-              <span className="text-[10px] text-cyan-500 font-mono uppercase">
-                {id.slice(0, 8)}
-              </span>
-            </div>
-          </div>
-          <CustomLink
-            href="/"
-            className="group p-2 bg-white/5 rounded-full hover:bg-red-500/10 transition-colors"
-          >
-            <X className="w-6 h-6 text-zinc-700 group-hover:text-red-500 group-hover:rotate-90 transition-all duration-300" />
-          </CustomLink>
-        </div>
+    <PageShell containerClassName="max-w-6xl">
+      <header className="flex items-center justify-between gap-4">
+        <Link href="/" className="group flex min-w-0 items-center gap-4">
+          <span className="rounded-xl border border-white/10 p-2 transition-all group-hover:border-cyan-500 group-hover:bg-cyan-500/5">
+            <ChevronLeft className="h-5 w-5 text-zinc-500 group-hover:text-cyan-500" />
+          </span>
+          <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white">{t("back")}</span>
+        </Link>
+        <Link
+          href={watchHref}
+          aria-label={t("start")}
+          className="group rounded-full bg-white/5 p-2 transition-colors hover:bg-red-500/10"
+        >
+          <X className="h-6 w-6 text-zinc-600 transition-all duration-300 group-hover:rotate-90 group-hover:text-red-500" />
+        </Link>
       </header>
 
-      {/* 2. MAIN MISSION CENTER */}
-      <main className="w-full flex flex-col items-center mb-32 px-6">
-        <div className="w-full max-w-6xl relative">
-          {/* THE PLAYER CONTAINER */}
-          <div className="relative aspect-video max-h-[73vh] md:max-h-[77vh] w-full overflow-hidden bg-black border border-white/5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)] transition-all duration-700">
-            {trailerData?.key ? (
-              <TrailerAdEngine
-                trailerKey={trailerData.key}
-                lang={currentLang}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-4 bg-[#050505]">
-                <ShieldAlert className="w-10 h-10 text-zinc-800" />
-                <span className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-700 underline decoration-red-900 underline-offset-8">
-                  Signal Encryption Failure
-                </span>
-              </div>
-            )}
-
-            {/* AMBIENT CRT OVERLAY */}
-            <div className="absolute inset-0 pointer-events-none z-10 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_2px,3px_100%]" />
+      <div className="relative aspect-video max-h-[77vh] w-full overflow-hidden border border-white/5 bg-black shadow-[0_0_80px_-20px_rgba(6,182,212,0.15)]">
+        {trailer?.key ? (
+          <TrailerAdEngine trailerKey={trailer.key} lang={currentLang} />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-4 bg-[#050505] px-6 text-center">
+            <ShieldAlert className="h-10 w-10 text-zinc-700" aria-hidden />
+            <p className="text-sm text-zinc-500">{t("unavailable")}</p>
           </div>
+        )}
+      </div>
 
-          {/* LOWER HUD MODULES */}
-          <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* MODULE A: ENGINE DATA */}
-            <div className="lg:col-span-3 p-8 bg-white/2 border border-white/5 rounded-[2rem] flex flex-col justify-between group backdrop-blur-sm">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Cpu className="w-4 h-4 text-cyan-500" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-cyan-500 transition-colors">
-                    Processor_01
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[7px] font-black text-zinc-500 uppercase">
-                    <span>Buffer</span>
-                    <span>98%</span>
-                  </div>
-                  <div className="h-0.5 w-full bg-zinc-900 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-500 w-[98%] animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MODULE B: MAIN ACTION (WATCH) */}
-            <div className="lg:col-span-6 p-8 bg-white/5 border border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 shadow-xl shadow-cyan-500/5">
-              <CustomLink
-                href={watchLink}
-                className="group relative w-full py-6 bg-white text-black rounded-2xl flex items-center justify-center gap-4 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-[0.98]"
-              >
-                <MonitorPlay className="w-5 h-5" />
-                <span className="text-xs font-black uppercase tracking-[0.4em]">
-                  Start Watching
-                </span>
-              </CustomLink>
-              <div className="flex items-center gap-3">
-                <Binary className="w-3 h-3 text-cyan-500" />
-                <span className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-500">
-                  Secure Playback Authorized
-                </span>
-              </div>
-            </div>
-
-            {/* MODULE C: LOCALE OVERRIDE */}
-            <div className="lg:col-span-3 p-8 bg-white/2 border border-white/5 rounded-[2rem] flex flex-col items-center justify-center gap-6 backdrop-blur-sm">
-              <CustomLink
-                href={`/trailer/${id}?lang=${nextLang}&type=${type}&fallback=${fallback}`}
-                className="w-full py-3 border border-white/10 rounded-xl text-center text-[9px] font-black uppercase tracking-widest hover:border-cyan-500 hover:bg-cyan-500/5 hover:text-cyan-500 transition-all"
-              >
-                Switch to {nextLang.toUpperCase()}
-              </CustomLink>
-              <div className="flex items-center gap-4">
-                <Globe className="w-3 h-3 text-zinc-700" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">
-                  {currentLang} / VO
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="flex flex-col items-center justify-center gap-6 rounded-[2.5rem] border border-white/10 bg-white/5 p-8 shadow-xl shadow-cyan-500/5 lg:col-span-8">
+          <Link
+            href={watchHref}
+            className="flex w-full items-center justify-center gap-4 rounded-2xl bg-white py-6 text-black transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-[0.98]"
+          >
+            <MonitorPlay className="h-5 w-5" />
+            <span className="text-xs font-black uppercase tracking-[0.4em]">{t("start")}</span>
+          </Link>
         </div>
-      </main>
+
+        <div className="flex flex-col items-center justify-center gap-6 rounded-4xl border border-white/5 bg-white/2 p-8 backdrop-blur-sm lg:col-span-4">
+          <Link
+            href={`/trailer/${id}?${switchParams.toString()}`}
+            className="w-full rounded-xl border border-white/10 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all hover:border-cyan-500 hover:bg-cyan-500/5 hover:text-cyan-500"
+          >
+            {t("switchTo", { lang: localeMeta[nextLang].nativeName })}
+          </Link>
+          <p className="flex items-center gap-3">
+            <Globe className="h-3 w-3 text-zinc-600" aria-hidden />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">
+              {t("language")}: {localeMeta[currentLang].nativeName}
+            </span>
+          </p>
+        </div>
+      </div>
 
       <AdWrapper>
         <NativeBannerAd />
       </AdWrapper>
-
-      {/* BACKGROUND SCENE */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] contrast-150" />
-        <div className="absolute top-0 left-0 w-full h-1/2 bg-linear-to-b from-cyan-950/10 to-transparent" />
-      </div>
-    </div>
+    </PageShell>
   );
 }

@@ -4,6 +4,9 @@ export type Movie = {
   id: number;
   title: string;
   name?: string;
+  original_title?: string;
+  media_type?: "movie" | "tv" | "person";
+  origin_country?: string[];
   backdrop_path: string;
   poster_path: string;
   first_air_date: string;

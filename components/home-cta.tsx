@@ -1,31 +1,27 @@
-"use client";
-
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import CustomLink from "./custom-link";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Container } from "@/components/layout/container";
+import { type as typo } from "@/lib/typography";
+import { cn } from "@/lib/utils";
 
-export default function HomeCTA() {
+export default async function HomeCTA() {
+  const t = await getTranslations("home");
+
   return (
-    <section className="px-8 md:px-16 py-20 flex flex-col items-center text-center">
-      {/* Decorative Line */}
-      <div className="w-24 h-1 bg-cyan-500 mb-8 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
-
-      <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-white mb-6">
-        Ready to dive in<span className="text-cyan-500 not-italic pl-4">?</span>
-      </h2>
-
-      <p className="text-zinc-400 text-lg max-w-2xl mb-10 leading-relaxed">
-        Browse our entire collection of blockbuster movies and award-winning
-        series. Filter by genre, year, or rating to find exactly what
-        you&apos;re looking for.
-      </p>
-
-      <CustomLink href="/library">
-        <button className="group flex items-center gap-3 bg-cyan-500 text-black px-12 py-4 rounded-full font-black uppercase text-sm hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-          Explore the Library
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </CustomLink>
+    <section className="py-16 sm:py-20">
+      <Container className="flex flex-col items-center text-center">
+        <div aria-hidden className="mb-8 h-1 w-24 rounded-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
+        <h2 className={cn(typo.h1, "mb-6")}>{t("ctaTitle")}</h2>
+        <p className={cn(typo.body, "mb-10 max-w-2xl sm:text-lg")}>{t("ctaBody")}</p>
+        <Link
+          href="/library"
+          className="group flex items-center gap-3 rounded-full bg-cyan-500 px-12 py-4 text-sm font-black uppercase text-black shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-colors duration-300 hover:bg-white"
+        >
+          {t("ctaButton")}
+          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </Container>
     </section>
   );
 }

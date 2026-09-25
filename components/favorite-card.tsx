@@ -1,138 +1,120 @@
 "use client";
 
-import Link from "next/link";
+import { ArrowUpRight, BookmarkMinus, Calendar, MonitorPlay, Star } from "lucide-react";
 import Image from "next/image";
-import {
-  Calendar,
-  Star,
-  ArrowUpRight,
-  MonitorPlay,
-  BookmarkMinus,
-} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useFormatter, useTranslations } from "next-intl";
+import { memo, useTransition } from "react";
+import { toast } from "sonner";
+import type { FavoriteItem } from "@/action/get-favorites.action";
 import { toggleFavorite } from "@/action/stream-actions";
+import { tmdbImage } from "@/lib/media";
+import { cn } from "@/lib/utils";
 
-export default function FavoriteCard({ item }: { item: any }) {
+function FavoriteCard({ item }: { item: FavoriteItem }) {
+  const t = useTranslations("pages.favorites");
+  const format = useFormatter();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const poster = tmdbImage(item.poster_path);
 
-  const getHref = () => {
-    if (item.savedType === "MOVIE") return `/movies/${item.id}`;
-    const path = item.savedType === "K_DRAMA" ? "k-drama" : "anime";
-    return `/${path}/play/${item.id}?s=${item.savedSeason}&e=${item.savedEpisode}`;
-  };
+  const href =
+    item.savedType === "MOVIE"
+      ? `/movies/${item.id}`
+      : `/${item.savedType === "K_DRAMA" ? "k-drama" : "anime"}/play/${item.id}?s=${item.savedSeason}&e=${item.savedEpisode}`;
 
-  const handleUnfavorite = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Stop navigation to the play page
-    e.stopPropagation();
-
+  const handleRemove = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     startTransition(async () => {
-      try {
-        await toggleFavorite({
-          mediaId: String(item.id),
-          type: item.savedType,
-          season: item.savedSeason,
-          episode: item.savedEpisode,
-        });
-        router.refresh(); // Refresh server data to remove the card from the list
-      } catch (error) {
-        console.error("Failed to remove favorite:", error);
+      const result = await toggleFavorite({
+        mediaId: String(item.id),
+        type: item.savedType,
+        season: item.savedSeason,
+        episode: item.savedEpisode,
+      });
+      if (result.success) {
+        toast.success(t("removed"));
+        router.refresh();
+      } else {
+        toast.error(t("removeError"));
       }
     });
   };
 
   return (
     <Link
-      href={getHref()}
-      className={`group relative flex items-center gap-6 p-4 rounded-2xl bg-white/2 border border-white/5 hover:border-cyan-500/40 hover:bg-white/5 transition-all duration-500 overflow-hidden ${
-        isPending ? "opacity-50 grayscale pointer-events-none" : ""
-      }`}
+      href={href}
+      className={cn(
+        "group relative flex items-center gap-6 overflow-hidden rounded-2xl border border-white/5 bg-white/2 p-4 outline-none transition-colors duration-500 hover:border-cyan-500/40 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-cyan-500",
+        isPending && "pointer-events-none opacity-50 grayscale",
+      )}
     >
-      {/* Dynamic Cyan Glow Effect */}
-      <div className="absolute -right-12 -bottom-12 w-32 h-32 bg-cyan-500/5 blur-2xl group-hover:bg-cyan-500/15 transition-all duration-500" />
-
-      {/* Media Poster */}
-      <div className="relative h-32 w-24 shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-        <Image
-          src={`https://image.tmdb.org/t/p/w300${item.poster_path}`}
-          alt={item.title}
-          fill
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div className="absolute bottom-1 right-1">
-          <div className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-[7px] font-black uppercase text-white/70 tracking-widest border border-white/5">
-            {item.savedType === "MOVIE" ? "Film" : "Series"}
-          </div>
-        </div>
+      <div className="relative h-32 w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-2xl">
+        {poster && (
+          <Image src={poster} alt="" fill sizes="96px" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+        )}
+        <span className="absolute bottom-1 right-1 rounded border border-white/5 bg-black/60 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest text-white/70 backdrop-blur-md">
+          {item.savedType === "MOVIE" ? t("film") : t("series")}
+        </span>
       </div>
 
-      {/* Content Metadata */}
-      <div className="grow min-w-0 py-1">
+      <div className="min-w-0 grow py-1">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-lg font-black uppercase italic tracking-tighter leading-none truncate group-hover:text-cyan-400 transition-colors pr-2">
+          <h3 className="truncate pr-2 text-lg font-black uppercase italic leading-none tracking-tighter transition-colors group-hover:text-cyan-400">
             {item.title}
           </h3>
-          <div className="flex items-center gap-3 shrink-0">
-            {/* UNFAVORITE BUTTON */}
+          <div className="flex shrink-0 items-center gap-3">
             <button
-              onClick={handleUnfavorite}
+              type="button"
+              onClick={handleRemove}
               disabled={isPending}
-              className="p-2 rounded-lg bg-white/5 border border-white/5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-300"
-              title="Remove from Vault"
+              aria-label={t("remove")}
+              title={t("remove")}
+              className="rounded-lg border border-white/5 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-500"
             >
-              <BookmarkMinus
-                className={`w-4 h-4 ${isPending ? "animate-pulse" : ""}`}
-              />
+              <BookmarkMinus className={cn("h-4 w-4", isPending && "animate-pulse")} />
             </button>
-            <ArrowUpRight className="w-4 h-4 text-zinc-700 group-hover:text-cyan-400 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            <ArrowUpRight className="h-4 w-4 text-zinc-700 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-cyan-400" />
           </div>
         </div>
 
         {item.episode_title && (
-          <p className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-wider italic mt-1.5 mb-2 truncate">
+          <p className="mb-2 mt-1.5 truncate text-[10px] font-bold uppercase italic tracking-wider text-cyan-400/80">
             {item.episode_title}
           </p>
         )}
 
-        <div className="flex items-center gap-3 mt-2 mb-3">
-          <div className="flex items-center gap-1.5">
-            <Star className="w-3 h-3 fill-cyan-500 text-cyan-500" />
-            <span className="text-[11px] font-black tabular-nums">
-              {item.vote_average.toFixed(1)}
-            </span>
-          </div>
-          <div className="w-px h-3 bg-white/10" />
-          <div className="flex items-center gap-1.5 text-zinc-500">
-            <Calendar className="w-3 h-3" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">
-              {item.release_date?.split("-")[0] || "N/A"}
-            </span>
-          </div>
+        <div className="mb-3 mt-2 flex items-center gap-3">
+          <span className="flex items-center gap-1.5">
+            <Star className="h-3 w-3 fill-cyan-500 text-cyan-500" />
+            <span className="text-[11px] font-black tabular-nums">{item.vote_average.toFixed(1)}</span>
+          </span>
+          <span aria-hidden className="h-3 w-px bg-white/10" />
+          <span className="flex items-center gap-1.5 text-zinc-500">
+            <Calendar className="h-3 w-3" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">{item.release_date?.split("-")[0] || "—"}</span>
+          </span>
         </div>
 
         {item.savedType !== "MOVIE" && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-            <MonitorPlay className="w-3 h-3" />
+          <span className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-cyan-400">
+            <MonitorPlay className="h-3 w-3" />
             <span className="text-[10px] font-black uppercase tracking-tighter">
-              S{item.savedSeason} <span className="text-white/30 mx-1">•</span>{" "}
-              E{item.savedEpisode}
+              S{item.savedSeason} <span className="mx-1 text-white/30">•</span> E{item.savedEpisode}
             </span>
-          </div>
+          </span>
         )}
 
-        <div className="mt-4 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500/40" />
-          <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
-            Vault Entry:{" "}
-            {new Date(item.created_date).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
-        </div>
+        {/* Locale-aware date via next-intl: no server/client hydration mismatch. */}
+        <p className="mt-4 flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-600">
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-cyan-500/40" />
+          {t("savedOn", { date: format.dateTime(new Date(item.created_date), { dateStyle: "medium" }) })}
+        </p>
       </div>
     </Link>
   );
 }
+
+export default memo(FavoriteCard);

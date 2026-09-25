@@ -1,153 +1,139 @@
 "use server";
 
-import { db } from "@/lib/firebase-admin";
 import { auth } from "@clerk/nextjs/server";
 import admin from "firebase-admin";
+import { db } from "@/lib/firebase-admin";
 
-export async function handleMediaReaction({
-  mediaId,
-  type,
-  season,
-  episode,
-  action,
-}: {
+type MediaType = "MOVIE" | "K_DRAMA" | "ANIME";
+const MEDIA_TYPES: MediaType[] = ["MOVIE", "K_DRAMA", "ANIME"];
+
+interface MediaRef {
   mediaId: string;
-  type: "MOVIE" | "K_DRAMA" | "ANIME";
-  season?: number;
-  episode?: number;
-  action: "like" | "dislike";
-}) {
-  const { userId } = await auth();
+  type: MediaType;
+  season?: number | null;
+  episode?: number | null;
+}
 
-  if (!userId) {
-    throw new Error("You must be logged in to react.");
+type ActionResult = { success: true; added?: boolean } | { success: false; error: "UNAUTHORIZED" | "INVALID" | "FAILED" };
+
+/**
+ * BUG FIX: movies are always stored with season/episode = null. Previously a
+ * caller passing a season for a MOVIE created a duplicate entry because the
+ * existence check compared against the raw value.
+ */
+function normalize({ mediaId, type, season, episode }: MediaRef) {
+  if (!MEDIA_TYPES.includes(type) || !/^\d+$/.test(String(mediaId))) return null;
+  const isMovie = type === "MOVIE";
+  const s = isMovie ? null : Number(season ?? NaN);
+  const e = isMovie ? null : Number(episode ?? NaN);
+  if (!isMovie && (!Number.isInteger(s) || !Number.isInteger(e))) return null;
+  return { mediaId: String(mediaId), type, season: s, episode: e };
+}
+
+export async function handleMediaReaction(
+  input: MediaRef & { action: "like" | "dislike" },
+): Promise<ActionResult> {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "UNAUTHORIZED" };
+
+  const ref = normalize(input);
+  if (!ref || (input.action !== "like" && input.action !== "dislike")) {
+    return { success: false, error: "INVALID" };
   }
 
-  const docId =
-    type === "MOVIE" ? mediaId : `${mediaId}_S${season}_E${episode}`;
-  const docRef = db.collection(type).doc(docId);
+  const docId = ref.type === "MOVIE" ? ref.mediaId : `${ref.mediaId}_S${ref.season}_E${ref.episode}`;
+  const docRef = db.collection(ref.type).doc(docId);
+  const { arrayUnion, arrayRemove } = admin.firestore.FieldValue;
 
   try {
-    const docSnap = await docRef.get();
+    // Transaction: two quick clicks can no longer interleave read/write.
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(docRef);
+      const data = snap.data() ?? {};
+      const likes: string[] = data.likes ?? [];
+      const dislikes: string[] = data.dislikes ?? [];
 
-    // 1. If doc doesn't exist, initialize it and add the reaction
-    if (!docSnap.exists) {
-      await docRef.set({
-        likes: action === "like" ? [userId] : [],
-        dislikes: action === "dislike" ? [userId] : [],
-      });
-      return { success: true };
-    }
-
-    const data = docSnap.data();
-    const likes = data?.likes || [];
-    const dislikes = data?.dislikes || [];
-
-    const isAlreadyLiked = likes.includes(userId);
-    const isAlreadyDisliked = dislikes.includes(userId);
-
-    // 2. Logic for "LIKE" click
-    if (action === "like") {
-      if (isAlreadyLiked) {
-        // UNLIKE: User clicked like again
-        await docRef.update({
-          likes: admin.firestore.FieldValue.arrayRemove(userId),
+      if (!snap.exists) {
+        tx.set(docRef, {
+          likes: input.action === "like" ? [userId] : [],
+          dislikes: input.action === "dislike" ? [userId] : [],
         });
-      } else {
-        // LIKE: Add to likes, and ensure they are removed from dislikes
-        await docRef.update({
-          likes: admin.firestore.FieldValue.arrayUnion(userId),
-          dislikes: admin.firestore.FieldValue.arrayRemove(userId),
-        });
+        return;
       }
-    }
 
-    // 3. Logic for "DISLIKE" click
-    else if (action === "dislike") {
-      if (isAlreadyDisliked) {
-        // UNDISLIKE: User clicked dislike again
-        await docRef.update({
-          dislikes: admin.firestore.FieldValue.arrayRemove(userId),
-        });
+      if (input.action === "like") {
+        tx.update(
+          docRef,
+          likes.includes(userId)
+            ? { likes: arrayRemove(userId) }
+            : { likes: arrayUnion(userId), dislikes: arrayRemove(userId) },
+        );
       } else {
-        // DISLIKE: Add to dislikes, and ensure they are removed from likes
-        await docRef.update({
-          dislikes: admin.firestore.FieldValue.arrayUnion(userId),
-          likes: admin.firestore.FieldValue.arrayRemove(userId),
-        });
+        tx.update(
+          docRef,
+          dislikes.includes(userId)
+            ? { dislikes: arrayRemove(userId) }
+            : { dislikes: arrayUnion(userId), likes: arrayRemove(userId) },
+        );
       }
-    }
-
+    });
     return { success: true };
   } catch (error) {
-    console.error("Firestore Error:", error);
-    return { error: "Failed to sync reaction." };
+    console.error("[reactions] failed", error);
+    return { success: false, error: "FAILED" };
   }
 }
 
-export async function toggleFavorite({
-  mediaId,
-  type,
-  season,
-  episode,
-}: {
-  mediaId: string;
-  type: "MOVIE" | "K_DRAMA" | "ANIME";
-  season?: number;
-  episode?: number;
-}) {
+export async function toggleFavorite(input: MediaRef): Promise<ActionResult> {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return { success: false, error: "UNAUTHORIZED" };
 
-  const userFavRef = db.collection("FAVORITE").doc(userId);
+  const ref = normalize(input);
+  if (!ref) return { success: false, error: "INVALID" };
+
+  const docRef = db.collection("FAVORITE").doc(userId);
 
   try {
-    const docSnap = await userFavRef.get();
+    const added = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(docRef);
+      const favorites: { id: string; type: MediaType; season: number | null; episode: number | null }[] =
+        snap.data()?.favorites ?? [];
 
-    // Create the new object data
-    // Note: We use a Date object here because serverTimestamp()
-    // can be finicky inside arrays depending on the Admin SDK version.
-    const newFavorite = {
-      type,
-      id: mediaId,
-      season: type === "MOVIE" ? null : (season ?? null),
-      episode: type === "MOVIE" ? null : (episode ?? null),
-      created_date: new Date().toISOString(),
-    };
-
-    if (!docSnap.exists) {
-      // First time: Create doc with the array containing the first item
-      await userFavRef.set({ favorites: [newFavorite] });
-      return { success: true, added: true };
-    }
-
-    const favorites = docSnap.data()?.favorites || [];
-
-    // Check for existence
-    const existingIndex = favorites.findIndex(
-      (fav: any) =>
-        fav.id === mediaId &&
-        fav.type === type &&
-        fav.season === (season ?? null) &&
-        fav.episode === (episode ?? null),
-    );
-
-    if (existingIndex > -1) {
-      // TOGGLE OFF: Remove the item
-      const updatedFavs = favorites.filter(
-        (_: any, i: number) => i !== existingIndex,
+      const exists = favorites.some(
+        (fav) =>
+          String(fav.id) === ref.mediaId &&
+          fav.type === ref.type &&
+          (fav.season ?? null) === ref.season &&
+          (fav.episode ?? null) === ref.episode,
       );
-      await userFavRef.update({ favorites: updatedFavs });
-      return { success: true, added: false };
-    } else {
-      // TOGGLE ON: Add the item
-      await userFavRef.update({
-        favorites: admin.firestore.FieldValue.arrayUnion(newFavorite),
-      });
-      return { success: true, added: true };
-    }
+
+      const next = exists
+        ? favorites.filter(
+            (fav) =>
+              !(
+                String(fav.id) === ref.mediaId &&
+                fav.type === ref.type &&
+                (fav.season ?? null) === ref.season &&
+                (fav.episode ?? null) === ref.episode
+              ),
+          )
+        : [
+            ...favorites,
+            {
+              id: ref.mediaId,
+              type: ref.type,
+              season: ref.season,
+              episode: ref.episode,
+              created_date: new Date().toISOString(),
+            },
+          ];
+
+      tx.set(docRef, { favorites: next }, { merge: true });
+      return !exists;
+    });
+    return { success: true, added };
   } catch (error) {
-    console.error("Favorite Error:", error);
-    return { error: "Failed to update favorite" };
+    console.error("[favorites] toggle failed", error);
+    return { success: false, error: "FAILED" };
   }
 }

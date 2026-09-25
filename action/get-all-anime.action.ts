@@ -1,35 +1,25 @@
-"use server";
-
-import { TMDBResponse } from "@/typing";
+import { resolveSort } from "@/lib/filters";
+import { EMPTY_PAGE, REVALIDATE, tmdb, yearParams } from "@/lib/tmdb";
+import type { TMDBResponse } from "@/typing";
 
 export async function getAllAnime(
-  page: number = 1,
-  sortBy: string = "popularity.desc",
-  genreId: string = "all",
-  year: string = "All",
-  display_lang?: string,
-) {
-  const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL;
-
-  // Build filters
-  // Note: Genre 16 is 'Animation'. To ensure it's Anime, we filter by Japan (JP)
-  const genreFilter =
-    genreId !== "all" ? `&with_genres=${genreId}` : "&with_genres=16";
-  const yearFilter = year !== "All" ? `&first_air_date_year=${year}` : "";
-
-  try {
-    const res = await fetch(
-      `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=${sortBy}&page=${page}${genreFilter}${yearFilter}&with_origin_country=JP&with_original_language=ja&language=${display_lang || "en-US"}`,
-      { cache: "no-store" },
-    );
-
-    if (!res.ok) throw new Error("Failed to fetch Anime");
-
-    const data: TMDBResponse = await res.json();
-    return data;
-  } catch (error) {
-    console.error(error);
-    return { results: [], total_pages: 0, total_results: 0, page: 1 };
-  }
+  page = 1,
+  sortBy = "popularity.desc",
+  genreId = "all",
+  year = "all",
+): Promise<TMDBResponse> {
+  // Genre 16 = Animation; origin JP + original language ja narrows to anime.
+  const data = await tmdb<TMDBResponse>(
+    "/discover/tv",
+    {
+      sort_by: resolveSort(sortBy, "tv", "popularity.desc"),
+      page,
+      with_genres: genreId !== "all" && /^\d+$/.test(genreId) ? genreId : "16",
+      with_origin_country: "JP",
+      with_original_language: "ja",
+      ...yearParams(year, "tv"),
+    },
+    { revalidate: REVALIDATE.default },
+  );
+  return data ?? EMPTY_PAGE;
 }

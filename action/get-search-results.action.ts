@@ -1,59 +1,30 @@
-"use server";
+import { REVALIDATE, tmdb } from "@/lib/tmdb";
+import type { Movie, TMDBResponse } from "@/typing";
 
-import { Movie, TMDBResponse } from "@/typing";
+export async function getSearchResults(query: string, genreId?: string): Promise<Movie[]> {
+  const trimmed = query?.trim();
+  const genre = genreId && genreId !== "all" ? Number(genreId) : null;
 
-export async function getSearchResults(
-  query: string,
-  genreId?: string,
-  display_lang?: string,
-): Promise<Movie[]> {
-  const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL;
-
-  try {
-    let url = "";
-
-    // Build the URL based on the logic
-    if (query && query.trim() !== "") {
-      url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=true&language=${display_lang || "en-US"}`;
-    } else if (genreId && genreId !== "all") {
-      // url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`;
-      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&language=${display_lang || "en-US"}`;
-    } else {
-      return [];
-    }
-
-    // Double check url is valid before fetching
-    if (!url || url.includes("undefined")) {
-      console.error("Lumina Auth Error: API Key or Base URL is missing.");
-      return [];
-    }
-
-    const res = await fetch(url, { cache: "no-store" });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      console.error("TMDB API Error:", errorData);
-      return [];
-    }
-
-    const data: TMDBResponse = await res.json();
-
-    // Clean and filter results
-    let results = data.results.filter(
-      (item: any) => item.media_type !== "person",
+  let data: TMDBResponse | null = null;
+  if (trimmed) {
+    data = await tmdb<TMDBResponse>(
+      "/search/multi",
+      { query: trimmed, include_adult: true },
+      { revalidate: REVALIDATE.default },
     );
-
-    // Manually filter by genre if a query was used (since /search/multi doesn't support with_genres)
-    if (genreId && genreId !== "all" && query) {
-      results = results.filter((movie) =>
-        movie.genre_ids?.includes(parseInt(genreId)),
-      );
-    }
-
-    return results || [];
-  } catch (error) {
-    console.error("Lumina Search Engine Critical Failure:", error);
+  } else if (genre) {
+    // BUG FIX: the genre was previously commented out of this request.
+    data = await tmdb<TMDBResponse>(
+      "/discover/movie",
+      { sort_by: "popularity.desc", with_genres: genre },
+      { revalidate: REVALIDATE.default },
+    );
+  } else {
     return [];
   }
+
+  let results = (data?.results ?? []).filter((item) => item.media_type !== "person");
+  // /search/multi has no genre filter, so apply it locally.
+  if (trimmed && genre) results = results.filter((item) => item.genre_ids?.includes(genre));
+  return results;
 }

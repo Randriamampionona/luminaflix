@@ -2,7 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/lib/firebase-admin";
-import admin from "firebase-admin"; // Added this to fix the 'admin' error
+import admin from "firebase-admin";
 
 export async function POST(req: Request) {
   // Use the secret from your Clerk Dashboard -> Webhooks -> Endpoint -> Signing Secret
@@ -12,9 +12,8 @@ export async function POST(req: Request) {
       : process.env.CLERK_WEBHOOK_SECRET_PROD;
 
   if (!WEBHOOK_SECRET) {
-    throw new Error(
-      "Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local",
-    );
+    console.error("[clerk-webhook] CLERK_WEBHOOK_SECRET_(DEV|PROD) is not set");
+    return new Response("Webhook secret not configured", { status: 500 });
   }
 
   // Get the headers for Svix verification
@@ -30,9 +29,9 @@ export async function POST(req: Request) {
     });
   }
 
-  // Get the body
-  const payload = await req.json();
-  const body = JSON.stringify(payload);
+  // Verify against the raw body: re-serialising parsed JSON can change the
+  // bytes (key order / whitespace) and break the signature check.
+  const body = await req.text();
 
   // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET);
@@ -74,11 +73,12 @@ export async function POST(req: Request) {
           firstName: first_name || "",
           lastName: last_name || "",
           fullName: `${first_name || ""} ${last_name || ""}`.trim(),
-          lastActive: admin.firestore.FieldValue.serverTimestamp(), // Fixed 'admin' reference
-          createdAt:
-            eventType === "user.created"
-              ? admin.firestore.FieldValue.serverTimestamp()
-              : undefined,
+          lastActive: admin.firestore.FieldValue.serverTimestamp(),
+          // BUG FIX: `createdAt: undefined` made Firestore reject every
+          // user.updated event ("Cannot use undefined as a Firestore value").
+          ...(eventType === "user.created" && {
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          }),
         },
         { merge: true },
       );

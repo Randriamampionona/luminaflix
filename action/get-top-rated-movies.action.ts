@@ -1,27 +1,7 @@
-"use server";
+import { REVALIDATE, tmdb } from "@/lib/tmdb";
+import type { Movie, TMDBResponse } from "@/typing";
 
-import { Movie, TMDBResponse } from "@/typing";
-
-export async function getTopRatedMovies({
-  display_lang,
-}: {
-  display_lang?: string;
-}): Promise<Movie[]> {
-  const API_KEY = process.env.TMDB_API_KEY;
-  const BASE_URL = process.env.BASE_URL;
-
-  try {
-    const res = await fetch(
-      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=${display_lang || "en-US"}&page=1`,
-      { cache: "no-store" },
-    );
-
-    if (!res.ok) throw new Error("Failed to fetch top rated movies");
-
-    const data: TMDBResponse = await res.json();
-    return data.results;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
+export async function getTopRatedMovies(): Promise<Movie[]> {
+  const data = await tmdb<TMDBResponse>("/movie/top_rated", { page: 1 }, { revalidate: REVALIDATE.long });
+  return data?.results ?? [];
 }

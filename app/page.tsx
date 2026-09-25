@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { getFeatured } from "@/action/get-featured.action";
 import { getGenres } from "@/action/get-genres.action";
 import { getLatestMovies } from "@/action/get-latest-movies.action";
@@ -6,85 +9,84 @@ import { getTrendingHero } from "@/action/get-trending-hero.action";
 import { getTrendingTV } from "@/action/get-trending-TV.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
-import CustomLink from "@/components/custom-link";
 import FeaturedBanner from "@/components/featured-banner";
 import GenreCard from "@/components/genre-card";
 import HeroSlider from "@/components/hero-slider";
 import HomeCTA from "@/components/home-cta";
+import { Container } from "@/components/layout/container";
+import { EmptyState } from "@/components/layout/empty-state";
+import { PageShell } from "@/components/layout/page-shell";
+import { SectionHeader } from "@/components/layout/page-header";
 import MovieRow from "@/components/movie-row";
-import { ArrowRight } from "lucide-react";
+import { spacing } from "@/lib/typography";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ display_lang?: string }>;
-}) {
-  const { display_lang } = await searchParams;
+const HOME_GENRES = 10;
 
-  const heroMovie = await getTrendingHero({ display_lang });
-  const topMovies = await getTopRatedMovies({ display_lang });
-  const genres = await getGenres({ display_lang });
-  const topTV = await getTrendingTV({ display_lang });
-  const featured = await getFeatured({ display_lang });
-  const latestMovies = await getLatestMovies({ display_lang });
+export default async function HomePage() {
+  const t = await getTranslations("home");
 
-  if (!heroMovie)
+  // PERF: the six TMDB requests used to run one after another (waterfall).
+  // They now run in parallel and are cached with `revalidate`.
+  const [heroMovies, topMovies, genres, topTV, featured, latestMovies] = await Promise.all([
+    getTrendingHero(),
+    getTopRatedMovies(),
+    getGenres(HOME_GENRES),
+    getTrendingTV(),
+    getFeatured(),
+    getLatestMovies(),
+  ]);
+
+  if (heroMovies.length === 0 && topMovies.length === 0) {
     return (
-      <div className="bg-black min-h-screen text-white p-10">
-        Error loading movie...
-      </div>
+      <PageShell>
+        <EmptyState title={t("loadError")} />
+      </PageShell>
     );
+  }
 
   return (
     <main className="relative min-h-screen bg-black">
-      <HeroSlider trendingMovies={heroMovie} />
+      {heroMovies.length > 0 && <HeroSlider trendingMovies={heroMovies} />}
 
       <div className="relative">
-        <MovieRow title="Top Films" movies={topMovies} />
+        <MovieRow title={t("topFilms")} movies={topMovies} type="movie" priority />
+
         <AdWrapper>
           <NativeBannerAd />
         </AdWrapper>
 
-        <section className="px-8 md:px-16 my-20">
-          {/* Header with Title and Link */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-3">
-                <div className="h-0.5 w-8 bg-cyan-500" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-500">
-                  Database Index
-                </span>
+        {genres.length > 0 && (
+          <section className={spacing.section} aria-labelledby="home-genres">
+            <Container className="space-y-8">
+              <SectionHeader
+                id="home-genres"
+                eyebrow={t("genresEyebrow")}
+                title={t("genresTitle")}
+                action={
+                  <Link
+                    href="/genres"
+                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 transition-colors hover:border-cyan-500/50 sm:px-5"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 transition-colors group-hover:text-white">
+                      {t("genresViewAll")}
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5 text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-400" />
+                  </Link>
+                }
+              />
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-5">
+                {genres.map((genre) => (
+                  <GenreCard key={genre.id} genre={genre} />
+                ))}
               </div>
-              <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white mt-2">
-                Browse by <span className="text-cyan-500">Category.</span>
-              </h2>
-            </div>
+            </Container>
+          </section>
+        )}
 
-            {/* PRO "VIEW ALL" LINK */}
-            <CustomLink
-              href="/genres"
-              className="group flex items-center justify-between gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:border-cyan-500/50 transition-all duration-300"
-            >
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
-                View All Archives
-              </span>
-              <div className="p-2 bg-zinc-900 rounded-lg group-hover:bg-cyan-500 transition-colors">
-                <ArrowRight className="w-3 h-3 text-white group-hover:scale-110 transition-transform" />
-              </div>
-            </CustomLink>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {genres.slice(0, 10).map((genre) => (
-              <GenreCard key={genre.id} genre={genre} />
-            ))}
-          </div>
-        </section>
-
-        <MovieRow title="Top 10 TV Series This Week" movies={topTV} />
+        <MovieRow title={t("topTv")} movies={topTV} type="tv" />
         {featured && <FeaturedBanner movie={featured} />}
         <HomeCTA />
-        <MovieRow title="Latest Movies" movies={latestMovies} />
+        <MovieRow title={t("latest")} movies={latestMovies} type="movie" />
       </div>
     </main>
   );

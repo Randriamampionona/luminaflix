@@ -1,180 +1,176 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { getFallbackMovie } from "@/action/get-fallback-movies.action";
 import { getMovieData } from "@/action/get-movie-data.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
-import CustomLink from "@/components/custom-link";
-import VideoPlayer from "@/components/movies/video-player";
-import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
+import { PageShell } from "@/components/layout/page-shell";
+import StreamPlayer from "@/components/player/stream-player";
+import { getReleaseYear, tmdbImage } from "@/lib/media";
+import { type } from "@/lib/typography";
+import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ fallback?: string }>;
 
-export default async function WatchPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ fallback?: string; display_lang?: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
-  const { fallback, display_lang } = await searchParams;
-
-  // Attempt to fetch the primary movie data
-  const movie = await getMovieData(id, display_lang);
-
-  // IF MOVIE NOT FOUND: Display the "Discovery" UI
+  const movie = await getMovieData(id);
   if (!movie) {
-    // This calls your Server Action securely
-    const alternatives = fallback
-      ? await getFallbackMovie(fallback, display_lang)
-      : [];
+    const t = await getTranslations("media");
+    return { title: t("notFoundTitle"), robots: { index: false } };
+  }
+  const image = tmdbImage(movie.backdrop_path || movie.poster_path);
+  return {
+    title: movie.title,
+    description: movie.overview?.slice(0, 160),
+    openGraph: image ? { images: [{ url: image }] } : undefined,
+  };
+}
+
+export default async function WatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  const [{ id }, { fallback }] = await Promise.all([params, searchParams]);
+  const [movie, t, format] = await Promise.all([getMovieData(id), getTranslations("media"), getFormatter()]);
+
+  if (!movie) {
+    const alternatives = fallback ? (await getFallbackMovie(fallback)).slice(0, 6) : [];
 
     return (
-      <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white flex flex-col items-center">
-        <div className="max-w-4xl w-full text-center space-y-8">
-          {/* Signal Lost Icon with Pulse Effect */}
-          <div className="relative inline-block">
-            <div className="absolute -inset-4 bg-red-500/20 blur-2xl rounded-full animate-pulse" />
-            <AlertCircle className="w-16 h-16 text-red-500 relative" />
+      <PageShell containerClassName="max-w-4xl">
+        <div className="space-y-4 text-center">
+          <div className="relative mx-auto w-fit">
+            <div className="absolute -inset-4 animate-pulse rounded-full bg-red-500/20 blur-2xl" />
+            <AlertCircle className="relative h-16 w-16 text-red-500" />
           </div>
+          <h1 className={type.h1}>
+            {t("notFoundTitle")}
+            <span className="text-red-500 not-italic">.</span>
+          </h1>
+          <p className={cn(type.body, "mx-auto max-w-xl")}>{t("notFoundBody", { id })}</p>
+        </div>
 
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
-              Signal Lost<span className="text-red-500">.</span>
-            </h1>
-            <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-              Archive ID #{id} is currently unreachable
-            </p>
-          </div>
-
-          {/* Fallback Section */}
-          <div className="pt-12 space-y-8">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <Sparkles className="w-4 h-4 text-cyan-500 shrink-0" />
-                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400 text-left wrap-break-word min-w-0">
-                  Recommended for: {fallback || "Current Session"}
-                </h2>
-              </div>
+        <section className="space-y-8">
+          {fallback && (
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <Sparkles className="h-4 w-4 shrink-0 text-cyan-500" />
+              <h2 className={cn(type.meta, "min-w-0 wrap-break-word")}>{t("similarTo", { query: fallback })}</h2>
             </div>
+          )}
 
-            {/* Alternatives Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {alternatives.length > 0 ? (
-                alternatives.slice(0, 6).map((item: any) => (
-                  <CustomLink
+          {alternatives.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {alternatives.map((item) => {
+                const image = tmdbImage(item.backdrop_path || item.poster_path);
+                const title = item.title || item.name || "";
+                return (
+                  <Link
                     key={item.id}
-                    href={`/movies/${item.id}?fallback=${encodeURIComponent(item.title)}`}
-                    className="group bg-zinc-900/40 border border-white/5 rounded-[2rem] p-4 hover:bg-zinc-800/60 transition-all hover:scale-[1.02]"
+                    href={`/movies/${item.id}?fallback=${encodeURIComponent(title.toLowerCase())}`}
+                    className="group rounded-4xl border border-white/5 bg-zinc-900/40 p-4 transition-all hover:scale-[1.02] hover:bg-zinc-800/60"
                   >
-                    <div className="aspect-video rounded-2xl overflow-hidden mb-4 relative">
-                      <img
-                        src={`https://image.tmdb.org/t/p/w500${item.backdrop_path || item.poster_path}`}
-                        alt={item.title}
-                        className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-500"
-                      />
+                    <div className="relative mb-4 aspect-video overflow-hidden rounded-2xl bg-zinc-900">
+                      {image && (
+                        <Image
+                          src={image}
+                          alt=""
+                          fill
+                          sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 90vw"
+                          className="object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
                     </div>
-                    <h3 className="text-sm font-black uppercase italic tracking-tight text-left truncate">
-                      {item.title}
-                    </h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] font-bold text-cyan-500">
-                        {item.release_date?.split("-")[0] || "N/A"}
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-zinc-600 group-hover:text-white transition-colors" />
+                    <h3 className="truncate text-left text-sm font-black uppercase italic tracking-tight">{title}</h3>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-cyan-500">{getReleaseYear(item) || "—"}</span>
+                      <ArrowRight className="h-3 w-3 text-zinc-600 transition-colors group-hover:text-white" />
                     </div>
-                  </CustomLink>
-                ))
-              ) : (
-                <div className="col-span-full py-20 text-zinc-600 font-black uppercase tracking-widest text-xs">
-                  No similar archives found
-                </div>
-              )}
+                  </Link>
+                );
+              })}
             </div>
+          ) : (
+            <p className={cn(type.meta, "py-16 text-center")}>{t("noSimilar")}</p>
+          )}
 
-            <CustomLink
+          <div className="text-center">
+            <Link
               href="/"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-cyan-500"
             >
-              Return to Library
-            </CustomLink>
+              {t("backHome")}
+            </Link>
           </div>
-        </div>
-      </div>
+        </section>
+      </PageShell>
     );
   }
 
-  // NORMAL PAGE IF MOVIE EXISTS
+  const released = movie.release_date
+    ? format.dateTime(new Date(movie.release_date), { dateStyle: "medium" })
+    : null;
+
   return (
-    <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
-      <div className="max-w-350 mx-auto space-y-12">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-cyan-500 rounded-lg text-black text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-              Premium 4K
-            </span>
-            <span className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">
-              Now Playing
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
-            {movie.title}
-            <span className="text-cyan-500">.</span>
-          </h1>
+    <PageShell>
+      <header className="space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="rounded-lg bg-cyan-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+            {t("quality4k")}
+          </span>
+          <span className={type.meta}>{t("nowPlaying")}</span>
+        </div>
+        <h1 className={cn(type.h1, "wrap-break-word")}>
+          {movie.title}
+          <span className="text-cyan-500 not-italic">.</span>
+        </h1>
+      </header>
+
+      <StreamPlayer
+        kind="movie"
+        mediaId={String(movie.id)}
+        imdbId={movie.external_ids?.imdb_id ?? undefined}
+        posterPath={movie.poster_path}
+        backdropPath={movie.backdrop_path}
+        title={movie.title}
+      />
+
+      <AdWrapper>
+        <NativeBannerAd />
+      </AdWrapper>
+
+      <section className="grid grid-cols-1 gap-12 border-t border-white/5 pt-12 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <h2 className={cn(type.meta, "flex items-center gap-2")}>
+            <Search className="h-4 w-4 text-cyan-500" aria-hidden />
+            {t("synopsis")}
+          </h2>
+          {movie.overview && <p className="text-lg italic leading-relaxed text-zinc-400">“{movie.overview}”</p>}
         </div>
 
-        {/* The Advanced Player Component */}
-        <VideoPlayer
-          movieId={movie.id.toString()}
-          imdbId={movie.external_ids?.imdb_id}
-        />
-
-        <AdWrapper>
-          <NativeBannerAd />
-        </AdWrapper>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t border-white/5">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-2">
-              <Search className="w-4 h-4 text-cyan-500" />
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500">
-                Synopsis
-              </h3>
+        <div className="group relative space-y-6 overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-900/30 p-8 backdrop-blur-sm">
+          <Sparkles className="absolute top-4 right-4 h-12 w-12 text-cyan-500 opacity-10 transition-opacity group-hover:opacity-20" />
+          <h2 className={type.meta}>{t("details")}</h2>
+          <dl className="space-y-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("runtime")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-white">
+                {movie.runtime ? t("runtimeValue", { minutes: movie.runtime }) : "—"}
+              </dd>
             </div>
-            <p className="text-zinc-400 leading-relaxed text-lg italic">
-              &ldquo;{movie.overview}&rdquo;
-            </p>
-          </div>
-
-          {/* Details Bento Box */}
-          <div className="bg-zinc-900/30 p-8 rounded-[3rem] border border-white/5 space-y-6 backdrop-blur-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Sparkles className="w-12 h-12 text-cyan-500" />
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("released")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-white">{released ?? "—"}</dd>
             </div>
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500">
-              Archive Details
-            </h3>
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                <p className="text-[10px] font-bold uppercase text-zinc-600 tracking-tighter">
-                  Runtime
-                </p>
-                <p className="text-sm font-bold text-white tracking-widest">
-                  {movie.runtime}m
-                </p>
-              </div>
-              <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                <p className="text-[10px] font-bold uppercase text-zinc-600 tracking-tighter">
-                  Released
-                </p>
-                <p className="text-sm font-bold text-white tracking-widest">
-                  {movie.release_date}
-                </p>
-              </div>
+            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("rating")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-white">{(movie.vote_average ?? 0).toFixed(1)}</dd>
             </div>
-          </div>
+          </dl>
         </div>
-      </div>
-    </div>
+      </section>
+    </PageShell>
   );
 }

@@ -1,117 +1,115 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Play, Loader2, AlertTriangle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { AlertTriangle, Loader2, Play } from "lucide-react";
 
-export default function TrailerAdEngine({
-  trailerKey,
-  lang,
-}: {
-  trailerKey: string;
-  lang: string;
-}) {
+const AD_URL =
+  "https://creamymouth.com/dYmCF.zCdOGIN/vUZTGiUn/Weomq9au/ZEU_l/kFPXToYe4tMiD/kf2FMzjKUttHN_jIgEwgOwTbYOypObQi";
+const FLUID_JS = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js";
+const FLUID_CSS = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css";
+const AD_SECONDS = 15;
+const WATCHDOG_SECONDS = 30;
+
+interface FluidPlayerInstance {
+  destroy: () => void;
+}
+type FluidPlayerFactory = (el: HTMLVideoElement, options: Record<string, unknown>) => FluidPlayerInstance;
+
+declare global {
+  interface Window {
+    fluidPlayer?: FluidPlayerFactory;
+  }
+}
+
+/**
+ * Sponsor pre-roll before the YouTube trailer.
+ * PERF/BUG FIX: the countdown and watchdog intervals used to be torn down and
+ * re-created every second (state in the dependency array); they now run once
+ * per phase and are always cleared on unmount.
+ */
+export default function TrailerAdEngine({ trailerKey, lang }: { trailerKey: string; lang: string }) {
+  const t = useTranslations("trailer");
   const [isAdPlaying, setIsAdPlaying] = useState(false);
   const [adStarted, setAdStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [showSkip, setShowSkip] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(AD_SECONDS);
+  const [watchdogTime, setWatchdogTime] = useState(WATCHDOG_SECONDS);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  // Watchdog States
-  const [watchdogTime, setWatchdogTime] = useState(30);
-  const [showEmergencyBypass, setShowEmergencyBypass] = useState(false);
-  const retryCount = useRef(0);
-
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playerInstance = useRef<any>(null);
+  const playerRef = useRef<FluidPlayerInstance | null>(null);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const AD_URL =
-    "https://creamymouth.com/dYmCF.zCdOGIN/vUZTGiUn/Weomq9au/ZEU_l/kFPXToYe4tMiD/kf2FMzjKUttHN_jIgEwgOwTbYOypObQi";
+  const destroyPlayer = useCallback(() => {
+    if (retryTimer.current) clearTimeout(retryTimer.current);
+    try {
+      playerRef.current?.destroy();
+    } catch {
+      // Fluid Player can throw if its DOM was already removed.
+    }
+    playerRef.current = null;
+  }, []);
 
   useEffect(() => {
-    if (!document.querySelector('script[src*="fluidplayer"]')) {
+    if (!document.querySelector(`script[src="${FLUID_JS}"]`)) {
       const script = document.createElement("script");
-      script.src = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js";
+      script.src = FLUID_JS;
       script.async = true;
       document.head.appendChild(script);
 
       const style = document.createElement("link");
       style.rel = "stylesheet";
-      style.href = "https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css";
+      style.href = FLUID_CSS;
       document.head.appendChild(style);
     }
-    return () => {
-      if (playerInstance.current) playerInstance.current.destroy();
-    };
-  }, []);
+    return destroyPlayer;
+  }, [destroyPlayer]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const video = videoRef.current;
-
-    const handleHeartbeat = () => {
-      if (video && video.currentTime > 0 && !video.paused) {
-        if (!adStarted) setAdStarted(true);
-        // Reset watchdog if video moves
-        setShowEmergencyBypass(false);
-      }
-    };
-
-    if (isAdPlaying && video) {
-      video.addEventListener("timeupdate", handleHeartbeat);
-
-      timer = setInterval(() => {
-        if (adStarted && !video.paused && timeLeft > 0) {
-          setTimeLeft((prev) => prev - 1);
-        } else if (adStarted && timeLeft === 0) {
-          setShowSkip(true);
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (video) video.removeEventListener("timeupdate", handleHeartbeat);
-      clearInterval(timer);
-    };
-  }, [isAdPlaying, adStarted, timeLeft]);
-
-  // WATCHDOG TIMER - Now actively using watchdogTime state
-  useEffect(() => {
-    let watchdog: NodeJS.Timeout;
-    if (isAdPlaying && !adStarted) {
-      watchdog = setInterval(() => {
-        setWatchdogTime((prev) => {
-          if (prev <= 1) {
-            setShowEmergencyBypass(true);
-            clearInterval(watchdog);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      clearInterval(watchdog);
-      // Reset watchdog if component closes or ad starts
-      if (adStarted) setWatchdogTime(30);
-    };
-  }, [isAdPlaying, adStarted]);
-
-  const handleAdFinished = () => {
-    if (playerInstance.current) {
-      playerInstance.current.destroy();
-      playerInstance.current = null;
-    }
+  const finishAd = useCallback(() => {
+    destroyPlayer();
     setIsAdPlaying(false);
     setIsUnlocked(true);
-  };
+  }, [destroyPlayer]);
+
+  // Detect real playback (some VAST tags never call adStartedCallback).
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!isAdPlaying || adStarted || !video) return;
+    const onTime = () => {
+      if (video.currentTime > 0 && !video.paused) setAdStarted(true);
+    };
+    video.addEventListener("timeupdate", onTime);
+    return () => video.removeEventListener("timeupdate", onTime);
+  }, [isAdPlaying, adStarted]);
+
+  // Skip countdown — one interval for the whole ad.
+  useEffect(() => {
+    if (!isAdPlaying || !adStarted) return;
+    const id = setInterval(() => {
+      const video = videoRef.current;
+      if (video && video.paused) return;
+      setTimeLeft((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isAdPlaying, adStarted]);
+
+  // Watchdog — offers a bypass if the ad never starts.
+  useEffect(() => {
+    if (!isAdPlaying || adStarted) return;
+    const id = setInterval(() => setWatchdogTime((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [isAdPlaying, adStarted]);
 
   const triggerAd = () => {
     setIsAdPlaying(true);
-    const initPlayer = () => {
-      // @ts-ignore
+    setAdStarted(false);
+    setTimeLeft(AD_SECONDS);
+    setWatchdogTime(WATCHDOG_SECONDS);
+
+    let attempts = 0;
+    const init = () => {
       if (window.fluidPlayer && videoRef.current) {
-        // @ts-ignore
-        playerInstance.current = window.fluidPlayer(videoRef.current, {
+        playerRef.current = window.fluidPlayer(videoRef.current, {
           layoutControls: {
             fillToContainer: true,
             primaryColor: "#06b6d4",
@@ -121,101 +119,97 @@ export default function TrailerAdEngine({
           },
           vastOptions: {
             adList: [{ roll: "preRoll", vastTag: AD_URL }],
-            adStartedCallback: () => {
-              setAdStarted(true);
-              setShowEmergencyBypass(false);
-            },
-            adFinishedCallback: handleAdFinished,
-            adErrorCallback: handleAdFinished,
+            adStartedCallback: () => setAdStarted(true),
+            adFinishedCallback: finishAd,
+            adErrorCallback: finishAd,
           },
         });
-      } else if (retryCount.current < 10) {
-        retryCount.current++;
-        setTimeout(initPlayer, 300);
+      } else if (attempts++ < 10) {
+        retryTimer.current = setTimeout(init, 300);
       } else {
-        handleAdFinished();
+        finishAd();
       }
     };
-    initPlayer();
+    // Wait one frame so the <video> element is mounted.
+    requestAnimationFrame(init);
   };
 
   if (isUnlocked) {
     return (
       <iframe
+        title={t("playTrailer")}
         src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1&hl=${lang}`}
-        className="w-full h-full grayscale-[0.1] contrast-[1.05]"
+        className="h-full w-full"
         allow="autoplay; encrypted-media"
         allowFullScreen
       />
     );
   }
 
+  const showBypass = watchdogTime === 0;
+  const showSkip = adStarted && timeLeft === 0;
+
   return (
-    <div className="relative w-full h-full bg-black">
+    <div className="relative h-full w-full bg-black">
       {isAdPlaying ? (
-        <div className="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center">
-          <video ref={videoRef} className="w-full h-full" playsInline />
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black">
+          <video ref={videoRef} className="h-full w-full" playsInline />
 
           {!adStarted && (
             <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#020202]/90 backdrop-blur-xl">
-              <Loader2 className="w-12 h-12 text-cyan-500 animate-spin mb-6" />
-              <div className="text-center space-y-4 px-6">
-                <div className="space-y-1">
-                  <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-cyan-500 animate-pulse">
-                    Synchronizing Ad Signal
-                  </span>
-                  {/* UI USE OF WATCHDOG TIME */}
-                  {!showEmergencyBypass && (
-                    <span className="block text-[8px] text-zinc-500 font-mono uppercase tracking-widest">
-                      Timeout in: {watchdogTime}s
-                    </span>
-                  )}
-                </div>
-
-                {showEmergencyBypass && (
+              <Loader2 className="mb-6 h-12 w-12 animate-spin text-cyan-500" />
+              <div className="space-y-4 px-6 text-center" aria-live="polite">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-500">{t("loadingAd")}</p>
+                {!showBypass && (
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+                    {t("timeout", { seconds: watchdogTime })}
+                  </p>
+                )}
+                {showBypass && (
                   <button
-                    onClick={handleAdFinished}
-                    className="flex items-center gap-2 px-6 py-3 bg-red-500/10 border border-red-500/40 text-red-500 text-[9px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-300 mx-auto"
+                    type="button"
+                    onClick={finishAd}
+                    className="mx-auto flex cursor-pointer items-center gap-2 border border-red-500/40 bg-red-500/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-red-400 transition-all duration-300 hover:bg-red-500 hover:text-white"
                   >
-                    <AlertTriangle className="w-3 h-3" />
-                    Emergency Signal Bypass
+                    <AlertTriangle className="h-3 w-3" />
+                    {t("bypass")}
                   </button>
                 )}
               </div>
             </div>
           )}
 
-          <div className="absolute bottom-12 right-0 z-20">
+          <div className="absolute right-0 bottom-12 z-20">
             {adStarted && !showSkip && (
-              <div className="px-8 py-4 bg-black/90 border border-white/10 backdrop-blur-md text-white font-black text-[10px] uppercase tracking-[0.3em] flex items-center gap-4">
-                <div className="w-1 h-1 rounded-full bg-cyan-500 animate-ping" />
-                <span>
-                  Bypass in <span className="text-cyan-400">{timeLeft}s</span>
-                </span>
+              <div className="flex items-center gap-4 border border-white/10 bg-black/90 px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-white backdrop-blur-md">
+                <span className="h-1 w-1 animate-ping rounded-full bg-cyan-500" />
+                {t("skipIn", { seconds: timeLeft })}
               </div>
             )}
             {showSkip && (
               <button
-                onClick={handleAdFinished}
-                className="px-8 py-4 bg-white text-black font-black text-[10px] uppercase tracking-[0.3em] hover:bg-cyan-500 transition-all shadow-[0_0_40px_rgba(6,182,212,0.2)]"
+                type="button"
+                onClick={finishAd}
+                className="cursor-pointer bg-white px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-black shadow-[0_0_40px_rgba(6,182,212,0.2)] transition-all hover:bg-cyan-500"
               >
-                Skip & Play Trailer
+                {t("skipNow")}
               </button>
             )}
           </div>
         </div>
       ) : (
-        <div
+        <button
+          type="button"
           onClick={triggerAd}
-          className="absolute inset-0 z-40 cursor-pointer flex flex-col items-center justify-center group bg-[#050505]"
+          className="group absolute inset-0 z-40 flex cursor-pointer flex-col items-center justify-center bg-[#050505]"
         >
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(6,182,212,0.3)] group-hover:scale-110 transition-all duration-700">
-            <Play className="w-10 h-10 text-black fill-current translate-x-1" />
-          </div>
-          <p className="mt-8 text-[11px] font-black uppercase italic tracking-[0.5em] text-white/70 group-hover:text-cyan-400 transition-colors">
-            Initialize <span className="text-cyan-500">Lumina</span> Trailer
-          </p>
-        </div>
+          <span className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-[0_0_60px_rgba(6,182,212,0.3)] transition-all duration-700 group-hover:scale-110">
+            <Play className="h-10 w-10 translate-x-1 fill-current text-black" />
+          </span>
+          <span className="mt-8 text-[11px] font-black uppercase italic tracking-[0.4em] text-white/70 transition-colors group-hover:text-cyan-400">
+            {t("playTrailer")}
+          </span>
+        </button>
       )}
     </div>
   );

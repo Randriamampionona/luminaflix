@@ -1,71 +1,77 @@
-"use client";
-
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
-import CustomLink from "../custom-link";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { cn } from "@/lib/utils";
 
-interface Props {
+/** TMDB never serves beyond page 500. */
+const MAX_PAGES = 500;
+const WINDOW = 5;
+
+/**
+ * Server component: builds links from the page's own search params, so it no
+ * longer needs useSearchParams (and the client bundle / Suspense it implied).
+ */
+export default async function Pagination({
+  currentPage,
+  totalPages,
+  basePath,
+  searchParams = {},
+}: {
   currentPage: number;
   totalPages: number;
-}
+  basePath: string;
+  searchParams?: Record<string, string | undefined>;
+}) {
+  const t = await getTranslations("pagination");
+  const lastPage = Math.min(totalPages, MAX_PAGES);
+  if (lastPage <= 1) return null;
 
-export default function Pagination({ currentPage, totalPages }: Props) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const start = Math.max(1, Math.min(currentPage - 2, lastPage - WINDOW + 1));
+  const pages = Array.from({ length: Math.min(WINDOW, lastPage) }, (_, i) => start + i);
 
-  const safeTotalPages = Math.min(totalPages, 500);
-
-  const getPages = () => {
-    const pages = [];
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(safeTotalPages, start + 4);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
+  const href = (page: number) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (value && key !== "page") params.set(key, value);
+    }
+    if (page > 1) params.set("page", String(page));
+    const query = params.toString();
+    return query ? `${basePath}?${query}` : basePath;
   };
 
-  const createPageUrl = (pageNumber: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", pageNumber.toString());
-    return `${pathname}?${params.toString()}`;
-  };
+  const arrow =
+    "rounded-xl border border-white/5 bg-zinc-900 p-2 transition-colors duration-300 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black sm:p-3";
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-16">
-      {/* PREVIOUS */}
+    <nav aria-label={t("label")} className="flex flex-wrap items-center justify-center gap-1.5 border-t border-white/5 pt-10 sm:gap-2">
       {currentPage > 1 && (
-        <CustomLink
-          href={createPageUrl(currentPage - 1)}
-          className="p-2 sm:p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </CustomLink>
+        <Link href={href(currentPage - 1)} aria-label={t("previous")} className={arrow}>
+          <ChevronLeft className="h-5 w-5" />
+        </Link>
       )}
 
-      {/* PAGE NUMBERS (No Padding) */}
-      {getPages().map((p) => (
-        <CustomLink
-          key={p}
-          href={createPageUrl(p)}
-          className={`w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${
-            p === currentPage
+      {pages.map((page) => (
+        <Link
+          key={page}
+          href={href(page)}
+          aria-label={t("page", { page })}
+          aria-current={page === currentPage ? "page" : undefined}
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold transition-colors duration-300 sm:h-12 sm:w-12 sm:text-base",
+            page === currentPage
               ? "bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.3)]"
-              : "bg-zinc-900 text-zinc-500 hover:text-white border border-white/5"
-          }`}
+              : "border border-white/5 bg-zinc-900 text-zinc-500 hover:text-white",
+          )}
         >
-          {p}
-        </CustomLink>
+          {page}
+        </Link>
       ))}
 
-      {/* NEXT */}
-      {currentPage < safeTotalPages && (
-        <CustomLink
-          href={createPageUrl(currentPage + 1)}
-          className="p-2 sm:p-3 rounded-xl bg-zinc-900 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black transition-all duration-300"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </CustomLink>
+      {currentPage < lastPage && (
+        <Link href={href(currentPage + 1)} aria-label={t("next")} className={arrow}>
+          <ChevronRight className="h-5 w-5" />
+        </Link>
       )}
-    </div>
+    </nav>
   );
 }

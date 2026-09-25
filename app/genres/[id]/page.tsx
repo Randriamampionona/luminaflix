@@ -1,93 +1,50 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { getGenreName } from "@/action/get-all-genres.action";
 import { getMoviesByGenre } from "@/action/get-movies-by-genre.action";
-import { getAllGenres } from "@/action/get-all-genres.action"; // Using the action we built earlier
-import MovieCard from "@/components/movie-card";
-import Pagination from "@/components/movies/pagination";
-import { ShieldCheck, Activity, Terminal } from "lucide-react";
-import AdWrapper from "@/components/ads/ad-wrapper";
-import NativeBannerAd from "@/components/ads/native-banner-ad";
+import { MediaListing, parsePage } from "@/components/layout/media-listing";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 
-interface Props {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; display_lang?: string }>;
+type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ page?: string }>;
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { id } = await params;
+  const name = await getGenreName(id);
+  return name ? { title: name } : {};
 }
 
-export default async function GenreSectorPage({ params, searchParams }: Props) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
+/**
+ * PERF: used to call getAllGenres() — one discover request per genre (~20)
+ * just to read this genre's name. Now a single cached /genre/movie/list.
+ */
+export default async function GenrePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
+  const page = parsePage(sp.page);
 
-  const id = resolvedParams.id;
-  const page = Number(resolvedSearchParams.page) || 1;
-
-  // 1. Fetch movies and genre list in parallel for maximum speed
-  const [data, allGenres] = await Promise.all([
-    getMoviesByGenre(id, page, resolvedSearchParams.display_lang),
-    getAllGenres({ display_lang: resolvedSearchParams.display_lang }),
+  const [t, name, data] = await Promise.all([
+    getTranslations("pages.genre"),
+    getGenreName(id),
+    getMoviesByGenre(id, page),
   ]);
 
-  // 2. Find the current genre name based on the ID
-  const currentGenre = allGenres.find((g) => g.id.toString() === id);
-  const genreName = currentGenre ? currentGenre.name : "Unknown Sector";
-
   return (
-    <main className="min-h-screen pt-32 pb-20 px-8 md:px-16 bg-black text-white">
-      <div className="max-w-425 mx-auto">
-        {/* SECTOR HEADER */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16 border-l-2 border-cyan-500 pl-6 md:pl-8">
-          <div>
-            <div className="flex items-center gap-2 text-cyan-500 mb-2">
-              <Terminal className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">
-                Categorical Index / {id}
-              </span>
-            </div>
-
-            {/* DYNAMIC TITLE */}
-            <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none wrap-break-word">
-              ARCHIVE: <span className="text-cyan-500">{genreName}.</span>
-            </h1>
-          </div>
-
-          {/* STATUS CARD */}
-          <div className="flex items-center gap-4 self-start lg:self-auto bg-zinc-900/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md">
-            <Activity className="w-5 h-5 text-cyan-500" />
-            <div className="flex flex-col">
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">
-                Global Intelligence
-              </span>
-              <span className="text-xl font-black italic">
-                {data.total_results.toLocaleString()} Reports
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* RESULTS GRID */}
-        {data.results.length > 0 ? (
-          <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12">
-              {data.results.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
-            </div>
-
-            <AdWrapper>
-              <NativeBannerAd />
-            </AdWrapper>
-
-            {/* PAGINATION FOOTER */}
-            <div className="mt-20 border-t border-white/5 pt-10">
-              <Pagination currentPage={page} totalPages={data.total_pages} />
-            </div>
-          </>
-        ) : (
-          <div className="h-[40vh] flex flex-col items-center justify-center border border-dashed border-white/10 rounded-[2rem]">
-            <ShieldCheck className="w-8 h-8 text-zinc-800 mb-4" />
-            <span className="text-zinc-700 text-[10px] font-black uppercase italic tracking-[0.5em] text-center px-6">
-              No intelligence found in sector {genreName}
-            </span>
-          </div>
-        )}
-      </div>
-    </main>
+    <PageShell>
+      <PageHeader
+        eyebrow={t("eyebrow")}
+        title={name ?? t("unknown")}
+        meta={t("count", { count: data.total_results })}
+      />
+      <MediaListing
+        items={data.results}
+        kind="movie"
+        page={page}
+        totalPages={data.total_pages}
+        basePath={`/genres/${id}`}
+        searchParams={sp}
+        emptyTitle={t("empty")}
+      />
+    </PageShell>
   );
 }

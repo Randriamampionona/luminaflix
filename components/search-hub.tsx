@@ -1,171 +1,122 @@
 "use client";
 
-import { Search, Command, Loader2, ArrowRight, Zap, Film } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ArrowRight, Film, Search, Zap } from "lucide-react";
 import Link from "next/link";
-import CustomLink from "./custom-link";
-
-// TMDB Genre IDs mapped to your specific list
-const GENRE_FILTERS = [
-  { id: "28", name: "Action" },
-  { id: "16", name: "Animation" },
-  { id: "99", name: "Documentaire" },
-  { id: "18", name: "Drame" },
-  { id: "27", name: "Horreur" },
-  { id: "10751", name: "Famille" },
-  { id: "14", name: "Fantastique" },
-  { id: "36", name: "Historique" },
-  { id: "10402", name: "Musical" },
-  { id: "878", name: "SF" },
-  { id: "53", name: "Thriller" },
-  { id: "37", name: "Western" },
-  { id: "9648", name: "Mystère" },
-];
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { SEARCH_GENRES } from "@/lib/filters";
 
 export default function SearchHub() {
+  const t = useTranslations();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((value) => !value);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const executeNavigation = (path: string) => {
-    setIsSearching(true);
-    setTimeout(() => {
-      router.push(path);
-      setOpen(false);
-      setIsSearching(false);
-      setQuery("");
-    }, 500);
+  // PERF: navigation used to be wrapped in an artificial 500 ms setTimeout,
+  // which read as lag. We now navigate immediately and close the dialog.
+  const navigate = (path: string) => {
+    setOpen(false);
+    setQuery("");
+    router.push(path);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    executeNavigation(`/search/${encodeURIComponent(query.trim())}`);
-  };
-
-  // Inside SearchHub.tsx
-  const handleGenreClick = (id: string) => {
-    // Direct navigation to the sector page
-    executeNavigation(`/genres/${id}`);
+    const value = query.trim();
+    if (value) navigate(`/search/${encodeURIComponent(value)}`);
   };
 
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
-        className="relative flex items-center gap-4 px-4 py-3 border rounded-2xl border-cyan-500/50 bg-zinc-900 transition-all duration-500 cursor-pointer"
+        aria-keyshortcuts="Control+K Meta+K"
+        className="flex cursor-pointer items-center gap-4 rounded-2xl border border-cyan-500/50 bg-zinc-900 px-4 py-3 transition-colors hover:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-500"
       >
-        <Search className="w-4 h-4  text-cyan-400 transition-colors" />
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-          SEARCH...
-        </span>
+        <Search className="h-4 w-4 text-cyan-400" />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{t("search.trigger")}</span>
+        <kbd className="hidden rounded border border-white/10 bg-black px-1.5 py-0.5 text-[9px] font-bold text-zinc-500 xl:inline">
+          {t("search.shortcut")}
+        </kbd>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl sm:max-w-2xl bg-black/80 backdrop-blur-3xl border-white/10 p-0 overflow-hidden shadow-[0_0_100px_rgba(6,182,212,0.2)] rounded-md outline-none z-100">
-          <DialogTitle className="sr-only">Lumina Command Center</DialogTitle>
+        <DialogContent className="z-100 max-w-2xl overflow-hidden rounded-md border-white/10 bg-black/80 p-0 shadow-[0_0_100px_rgba(6,182,212,0.2)] outline-none backdrop-blur-3xl sm:max-w-2xl">
+          <DialogTitle className="sr-only">{t("search.dialogTitle")}</DialogTitle>
+          <DialogDescription className="sr-only">{t("search.categories")}</DialogDescription>
 
-          <form onSubmit={handleSearch} className="relative">
-            <div className="absolute top-1/2 left-8 -translate-y-1/2 pointer-events-none">
-              {isSearching ? (
-                <Loader2 className="w-6 h-6 text-cyan-500 animate-spin" />
-              ) : (
-                <Search className="w-6 h-6 text-zinc-700" />
-              )}
-            </div>
-
+          <form onSubmit={handleSearch} role="search" className="relative">
+            <Search aria-hidden className="pointer-events-none absolute left-8 top-1/2 h-6 w-6 -translate-y-1/2 text-zinc-700" />
             <input
               autoFocus
+              type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="QUERY DATABASE..."
-              className="w-full bg-transparent border-none outline-none py-11 pl-20 pr-14 text-3xl font-black uppercase italic tracking-tighter text-white placeholder:text-zinc-700"
+              placeholder={t("search.placeholder")}
+              aria-label={t("search.placeholder")}
+              className="w-full border-none bg-transparent py-11 pl-20 pr-14 text-2xl font-black uppercase italic tracking-tighter text-white outline-none placeholder:text-zinc-700 sm:text-3xl"
             />
+            {query.trim().length > 0 && (
+              <p className="pointer-events-none absolute left-20 right-8 top-[calc(50%+1.75rem)] flex items-center gap-2 text-cyan-500">
+                <Zap className="h-3 w-3 fill-current" />
+                <span className="truncate text-[10px] font-black uppercase tracking-widest">
+                  {t("search.runSearch", { query: query.trim() })}
+                </span>
+              </p>
+            )}
           </form>
 
-          {/* CATEGORY GRID */}
           <div className="px-8 pb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Film className="w-3 h-3 text-cyan-500" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                Categorical Access
-              </span>
-            </div>
+            <p className="mb-4 flex items-center gap-2">
+              <Film className="h-3 w-3 text-cyan-500" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">{t("search.categories")}</span>
+            </p>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {GENRE_FILTERS.map((genre) => (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {SEARCH_GENRES.map((id) => (
                 <button
-                  key={genre.id}
-                  onClick={() => handleGenreClick(genre.id)}
-                  className="group/item relative flex flex-col p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden"
+                  key={id}
+                  type="button"
+                  onClick={() => navigate(`/genres/${id}`)}
+                  className="group/item relative flex overflow-hidden rounded-xl border border-white/5 bg-white/5 p-3 text-left transition-colors duration-300 hover:border-white hover:bg-white focus-visible:border-white focus-visible:bg-white"
                 >
-                  <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
-                    {genre.name}
+                  <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 transition-colors group-hover/item:text-black group-focus-visible/item:text-black">
+                    {t(`genres.g${id}` as "genres.g28")}
                   </span>
-                  <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                    <ArrowRight className="w-3 h-3 text-black" />
-                  </div>
+                  <ArrowRight className="absolute bottom-1 right-1 h-3 w-3 text-black opacity-0 transition-opacity group-hover/item:opacity-100" />
                 </button>
               ))}
-              <CustomLink href="/genres" className="block">
-                <button
-                  onClick={() => setOpen(false)}
-                  className="group/item relative flex flex-col w-full h-full p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:border-white transition-all duration-300 overflow-hidden">
-                  <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover/item:text-black transition-colors">
-                    See all...
-                  </span>
-                  <div className="absolute bottom-0 right-0 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                    <ArrowRight className="w-3 h-3 text-black" />
-                  </div>
-                </button>
-              </CustomLink>
+              <Link
+                href="/genres"
+                onClick={() => setOpen(false)}
+                className="group/item relative flex overflow-hidden rounded-xl border border-white/5 bg-white/5 p-3 transition-colors duration-300 hover:border-white hover:bg-white"
+              >
+                <span className="relative z-10 text-[9px] font-black uppercase tracking-widest text-zinc-500 transition-colors group-hover/item:text-black">
+                  {t("search.seeAllGenres")}
+                </span>
+                <ArrowRight className="absolute bottom-1 right-1 h-3 w-3 text-black opacity-0 transition-opacity group-hover/item:opacity-100" />
+              </Link>
             </div>
           </div>
 
-          {/* FOOTER */}
-          <div className="flex items-center justify-between px-8 py-5 bg-zinc-950/50 border-t border-white/5">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">
-                  Lumina Indexer v4.0
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-[9px] font-bold text-zinc-700">
-              <kbd className="px-1.5 py-0.5 rounded bg-zinc-900 border border-white/5 text-zinc-500">
-                ESC
-              </kbd>
-              <span>TO ABORT</span>
-            </div>
+          <div className="flex items-center justify-end gap-2 border-t border-white/5 bg-zinc-950/50 px-8 py-5 text-[9px] font-bold uppercase text-zinc-600">
+            <kbd className="rounded border border-white/5 bg-zinc-900 px-1.5 py-0.5 text-zinc-500">ESC</kbd>
+            <span>{t("search.escHint")}</span>
           </div>
-
-          {/* ACTIVE SEARCH OVERLAY */}
-          {query.length > 0 && !isSearching && (
-            <div className="absolute top-21 left-20 right-8 pointer-events-none">
-              <div className="flex items-center gap-2 text-cyan-500 animate-in fade-in slide-in-from-left-2">
-                <Zap className="w-3 h-3 fill-current" />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Execute Global Search for "{query}"
-                </span>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </>

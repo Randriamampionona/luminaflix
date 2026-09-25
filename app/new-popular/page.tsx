@@ -1,81 +1,48 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getNewAndPopular } from "@/action/get-new-popular.action";
-import AdWrapper from "@/components/ads/ad-wrapper";
-import NativeBannerAd from "@/components/ads/native-banner-ad";
-import MovieCard from "@/components/movie-card";
+import { MediaListing, parsePage } from "@/components/layout/media-listing";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import AdvancedFilter from "@/components/movies/advanced-filter";
-import Pagination from "@/components/movies/pagination";
 
-export const dynamic = "force-dynamic";
+type SearchParams = { page?: string; genre?: string; year?: string };
 
-export default async function NewPopularPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    page?: string;
-    genre?: string;
-    year?: string;
-    display_lang?: string;
-  }>;
-}) {
-  const {
-    page: rawPage,
-    genre: genreId = "all",
-    year = "All",
-    display_lang,
-  } = await searchParams;
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata.pages");
+  return { title: t("newPopular") };
+}
 
-  const page = Number(rawPage) || 1;
+export default async function NewPopularPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const page = parsePage(params.page);
+  const genre = params.genre ?? "all";
+  const year = params.year ?? "all";
+  const filtered = genre !== "all" || year !== "all";
 
-  // Fetch New & Popular data
-  const data = await getNewAndPopular(page, genreId, year, display_lang);
+  const [t, data] = await Promise.all([
+    getTranslations("pages.newPopular"),
+    getNewAndPopular(page, genre, year),
+  ]);
 
   return (
-    <div className="min-h-screen bg-black pt-32 pb-20 px-8 md:px-16 text-white">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
-        <div className="space-y-2">
-          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
-            Hot <span className="text-white/20">Trending</span>
-            <span className="text-cyan-500">.</span>
-          </h1>
-          <div className="flex items-center gap-3">
-            <div className="h-px w-8 bg-cyan-500" />
-            <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px]">
-              What&apos;s buzzing right now on Lumina
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 self-start lg:self-end">
-          <AdvancedFilter />
-        </div>
-      </div>
-
-      {/* Results Grid */}
-      {data.results.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12">
-          {data.results.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-40 border border-dashed border-white/10 rounded-3xl">
-          <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">
-            No trending titles found
-          </p>
-        </div>
-      )}
-
-      <AdWrapper>
-        <NativeBannerAd />
-      </AdWrapper>
-
-      {/* Pagination Footer */}
-      {data.results.length > 0 && (
-        <div className="mt-20 border-t border-white/5 pt-10">
-          <Pagination currentPage={page} totalPages={data.total_pages} />
-        </div>
-      )}
-    </div>
+    <PageShell>
+      <PageHeader
+        title={t("title")}
+        accent={t("accent")}
+        meta={t("subtitle")}
+        actions={<AdvancedFilter mediaType="movie" />}
+      />
+      <MediaListing
+        items={data.results}
+        kind="movie"
+        page={page}
+        totalPages={data.total_pages}
+        basePath="/new-popular"
+        searchParams={params}
+        emptyTitle={filtered ? undefined : t("empty")}
+        resetHref={filtered ? "/new-popular" : undefined}
+      />
+    </PageShell>
   );
 }

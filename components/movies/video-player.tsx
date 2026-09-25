@@ -91,6 +91,8 @@ export default function VideoPlayer({
     ? `https://image.tmdb.org/t/p/original${posterPath}`
     : null;
 
+    console.log({backdropUrl, posterPath, backdropPath})
+
   useEffect(() => {
     if (isCustomFullscreen) {
       document.body.style.overflow = "hidden";
@@ -110,7 +112,6 @@ export default function VideoPlayer({
         orientation.unlock();
       }
     }
-    // UI FIX: never leave the page scroll-locked when the player unmounts
     return () => {
       document.body.style.overflow = "";
     };
@@ -119,6 +120,7 @@ export default function VideoPlayer({
   const handleSourceChange = (source: Provider) => {
     setActiveSource(source);
     setIsCustomFullscreen(false);
+    setIsPlaying(false);
   };
 
   const handleTabChange = (tab: "FR" | "EN") => {
@@ -135,7 +137,7 @@ export default function VideoPlayer({
               <button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
-                className={`px-4 sm:px-8 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-wider sm:tracking-widest whitespace-nowrap transition-all duration-500 ${
+                className={`px-4 sm:px-8 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-wider sm:tracking-widest whitespace-nowrap transition-all duration-500 cursor-pointer ${
                   activeTab === tab
                     ? tab === "FR"
                       ? "bg-white text-black"
@@ -166,7 +168,7 @@ export default function VideoPlayer({
             {isPlaying ? (
               <iframe
                 src={activeSource.url(movieId, imdbId)}
-                className="w-full h-full"
+                className="w-full h-full border-none"
                 allowFullScreen
                 allow="autoplay; encrypted-media"
               />
@@ -193,7 +195,7 @@ export default function VideoPlayer({
 
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="group/btn relative flex items-center gap-4 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-xs tracking-widest rounded-2xl transition-all duration-300 shadow-[0_0_50px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] hover:scale-105 active:scale-95"
+                    className="group/btn relative flex items-center gap-4 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-xs tracking-widest rounded-2xl transition-all duration-300 shadow-[0_0_50px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center">
                       <Play className="w-4 h-4 text-black fill-black transition-transform duration-300 group-hover/btn:scale-110" />
@@ -217,7 +219,7 @@ export default function VideoPlayer({
                 hover:border-cyan-500/50 hover:bg-zinc-900/80
                 hover:shadow-[0_0_40px_rgba(6,182,212,0.25)]
                 md:hover:pr-5
-                active:scale-95
+                active:scale-95 cursor-pointer
               `}
             >
               <div className="absolute inset-0 rounded-2xl bg-cyan-500/5 md:bg-cyan-500/0 md:group-hover:bg-cyan-500/5 transition-colors duration-500" />
@@ -259,7 +261,7 @@ export default function VideoPlayer({
                 <button
                   key={provider.id}
                   onClick={() => handleSourceChange(provider)}
-                  className={`relative flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-500 border ${
+                  className={`relative flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-500 border cursor-pointer ${
                     isActive
                       ? "bg-white border-white"
                       : "bg-zinc-900/40 border-white/5"

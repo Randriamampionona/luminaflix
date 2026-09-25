@@ -1,0 +1,546 @@
+{
+  "metadata": {
+    "defaultTitle": "LuminaFlix | Vos films et séries préférés",
+    "description": "La plateforme de streaming privée pour les amis et la famille.",
+    "ogDescription": "Regardez les derniers films et séries ensemble.",
+    "ogAlt": "Aperçu de LuminaFlix",
+    "pages": {
+      "movies": "Films",
+      "tvShows": "Séries",
+      "library": "Bibliothèque",
+      "newPopular": "Nouveautés et tendances",
+      "anime": "Anime",
+      "kdrama": "K-Drama",
+      "genres": "Genres",
+      "favorites": "Mes favoris",
+      "search": "Recherche : {query}",
+      "help": "Centre d'aide",
+      "privacy": "Politique de confidentialité",
+      "terms": "Conditions d'utilisation",
+      "contact": "Nous contacter",
+      "premium": "Premium",
+      "signIn": "Connexion",
+      "signUp": "Créer un compte",
+      "trailer": "Bande-annonce",
+      "notFound": "Page introuvable"
+    }
+  },
+  "common": {
+    "brandFirst": "Lumina",
+    "brandSecond": "Flix",
+    "home": "Accueil",
+    "back": "Retour",
+    "close": "Fermer",
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "seeAll": "Tout voir",
+    "viewAll": "Tout afficher",
+    "scrollLeft": "Faire défiler vers la gauche",
+    "scrollRight": "Faire défiler vers la droite",
+    "unknown": "Inconnu",
+    "notAvailable": "N/D",
+    "tba": "À venir",
+    "comingSoon": "Bientôt disponible",
+    "loadError": "Impossible de charger ce contenu. Vérifiez votre connexion et réessayez."
+  },
+  "nav": {
+    "movies": "Films",
+    "newPopular": "Nouveautés",
+    "kdrama": "K-Drama",
+    "library": "Bibliothèque",
+    "genres": "Genres",
+    "anime": "Anime",
+    "tvShows": "Séries",
+    "favorites": "Favoris",
+    "more": "Plus",
+    "menu": "Navigation",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mainNavigation": "Navigation principale"
+  },
+  "auth": {
+    "signIn": "Connexion",
+    "join": "Rejoindre Lumina",
+    "joinNow": "Rejoindre Lumina",
+    "account": "Compte",
+    "memberBadge": "Membre"
+  },
+  "language": {
+    "label": "Langue",
+    "change": "Changer de langue",
+    "current": "Langue actuelle : {language}"
+  },
+  "search": {
+    "trigger": "Rechercher…",
+    "shortcut": "Ctrl K",
+    "dialogTitle": "Rechercher sur LuminaFlix",
+    "placeholder": "Rechercher un titre…",
+    "mobilePlaceholder": "Rechercher sur Lumina…",
+    "submit": "Rechercher",
+    "categories": "Parcourir par genre",
+    "seeAllGenres": "Tous les genres",
+    "runSearch": "Appuyez sur Entrée pour rechercher « {query} »",
+    "escHint": "pour fermer",
+    "resultsEyebrow": "Résultats de recherche",
+    "matches": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+    "emptyTitle": "Aucun résultat",
+    "emptyBody": "Rien ne correspond à « {query} ». Vérifiez l'orthographe ou essayez un titre plus court.",
+    "animePlaceholder": "Rechercher un anime…",
+    "kdramaPlaceholder": "Rechercher un K-drama…",
+    "resultsFor": "Résultats pour",
+    "backTo": "Retour à {section}"
+  },
+  "footer": {
+    "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",
+    "sections": {
+      "navigation": "Navigation",
+      "support": "Assistance",
+      "premium": "Premium"
+    },
+    "links": {
+      "home": "Accueil",
+      "movies": "Films",
+      "tvShows": "Séries",
+      "library": "Bibliothèque",
+      "newPopular": "Nouveautés",
+      "help": "Centre d'aide",
+      "faq": "FAQ",
+      "contact": "Nous contacter",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Confidentialité",
+      "plus": "Lumina Plus",
+      "plans": "Comparer les offres",
+      "devices": "Où regarder"
+    },
+    "social": {
+      "facebook": "Facebook",
+      "twitter": "X (Twitter)",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "github": "GitHub"
+    },
+    "copyright": "© {year} LuminaFlix Media Inc.",
+    "by": "Par",
+    "status": "Tous les services sont opérationnels",
+    "tmdb": "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB."
+  },
+  "home": {
+    "heroBadge": "Tendance",
+    "heroLabel": "La sélection du jour",
+    "playNow": "Lecture",
+    "moreInfo": "Plus d'infos",
+    "slide": "Afficher la diapositive {index}",
+    "topFilms": "Films les mieux notés",
+    "topTv": "Top 10 des séries de la semaine",
+    "latest": "Derniers films",
+    "genresEyebrow": "Genres",
+    "genresTitle": "Parcourir par catégorie",
+    "genresViewAll": "Tous les genres",
+    "featuredBadge": "Coup de cœur",
+    "featuredRating": "Note : {rating}",
+    "viewDetails": "Voir les détails",
+    "ctaTitle": "Prêt à plonger ?",
+    "ctaBody": "Parcourez toute la collection de films et de séries. Filtrez par genre, année ou note pour trouver exactement ce qui vous tente.",
+    "ctaButton": "Explorer la bibliothèque",
+    "loadError": "L'accueil est momentanément indisponible. Réessayez dans un instant."
+  },
+  "media": {
+    "movie": "Film",
+    "series": "Série",
+    "anime": "Anime",
+    "kdrama": "K-Drama",
+    "quality4k": "4K",
+    "startWatching": "Regarder",
+    "exploreEpisodes": "Voir les épisodes",
+    "watchTrailer": "Voir la bande-annonce",
+    "openDetails": "Ouvrir les détails de {title}",
+    "play": "Lire {title}",
+    "rating": "Note",
+    "released": "Sortie",
+    "runtime": "Durée",
+    "runtimeValue": "{minutes} min",
+    "synopsis": "Synopsis",
+    "details": "Détails",
+    "genreTitles": "{count, number} films et séries",
+    "nowPlaying": "En lecture",
+    "notFoundTitle": "Titre introuvable",
+    "notFoundBody": "Ce titre (n° {id}) n'est pas disponible. Voici des titres similaires à regarder à la place.",
+    "similarTo": "Similaire à « {query} »",
+    "noSimilar": "Aucun titre similaire trouvé.",
+    "backHome": "Retour à l'accueil"
+  },
+  "filters": {
+    "button": "Filtres",
+    "title": "Affiner",
+    "genres": "Genres",
+    "year": "Année de sortie",
+    "allGenres": "Tous les genres",
+    "allYears": "Toutes",
+    "older": "Plus ancien",
+    "apply": "Appliquer les filtres",
+    "reset": "Réinitialiser les filtres",
+    "sortLabel": "Trier par",
+    "sort": {
+      "recent": "Plus récents",
+      "popular": "Plus populaires",
+      "oldest": "Plus anciens",
+      "topRated": "Mieux notés",
+      "az": "Nom A–Z"
+    },
+    "empty": "Aucun titre ne correspond à ces filtres.",
+    "emptyBody": "Essayez un autre genre ou une autre année, ou réinitialisez les filtres."
+  },
+  "genres": {
+    "g12": "Aventure",
+    "g14": "Fantastique",
+    "g16": "Animation",
+    "g18": "Drame",
+    "g27": "Horreur",
+    "g28": "Action",
+    "g35": "Comédie",
+    "g36": "Histoire",
+    "g37": "Western",
+    "g53": "Thriller",
+    "g80": "Crime",
+    "g99": "Documentaire",
+    "g878": "Science-fiction",
+    "g9648": "Mystère",
+    "g10402": "Musique",
+    "g10749": "Romance",
+    "g10751": "Familial",
+    "g10759": "Action et aventure",
+    "g10765": "Science-fiction et fantastique",
+    "g10768": "Guerre et politique"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "page": "Page {page}"
+  },
+  "pages": {
+    "movies": {
+      "title": "Lumina",
+      "accent": "Films",
+      "count": "{count, number} films"
+    },
+    "tvShows": {
+      "title": "Coffre",
+      "accent": "Séries",
+      "count": "{count, number} séries"
+    },
+    "library": {
+      "title": "Grande",
+      "accent": "Archive",
+      "count": "{count, number} films acclamés",
+      "allContent": "Tout le contenu",
+      "sortedBy": "Tri : {sort}",
+      "shortcuts": {
+        "topRated": "Mieux notés",
+        "popular": "Plus populaires",
+        "favorites": "Mes favoris",
+        "genres": "Tous les genres"
+      }
+    },
+    "newPopular": {
+      "title": "En",
+      "accent": "Tendance",
+      "subtitle": "Ce que tout le monde regarde en ce moment",
+      "empty": "Aucune tendance pour le moment."
+    },
+    "anime": {
+      "title": "Lumina",
+      "accent": "Anime",
+      "count": "{count, number} séries anime",
+      "empty": "Aucun anime trouvé."
+    },
+    "kdrama": {
+      "title": "Lumina",
+      "accent": "K-Drama",
+      "count": "{count, number} séries coréennes",
+      "empty": "Aucune série coréenne trouvée."
+    },
+    "genres": {
+      "eyebrow": "Répertoire",
+      "title": "Carte des genres",
+      "explore": "Explorer",
+      "total": "{count, number} genres"
+    },
+    "genre": {
+      "eyebrow": "Genre",
+      "unknown": "Genre inconnu",
+      "count": "{count, number} titres",
+      "empty": "Aucun titre dans ce genre pour le moment."
+    },
+    "favorites": {
+      "eyebrow": "Votre collection",
+      "title": "Mon",
+      "accent": "Coffre",
+      "count": "{count, plural, =0 {Aucun titre enregistré} one {# titre enregistré} other {# titres enregistrés}}",
+      "emptyTitle": "Votre coffre est vide",
+      "emptyBody": "Enregistrez des films et des épisodes avec « Ajouter aux favoris » pour les retrouver ici.",
+      "emptyCta": "Commencer à explorer",
+      "remove": "Retirer des favoris",
+      "removeError": "Impossible de retirer ce titre. Réessayez.",
+      "removed": "Retiré des favoris",
+      "film": "Film",
+      "series": "Série",
+      "savedOn": "Enregistré le {date}"
+    }
+  },
+  "details": {
+    "seriesBadge": "Série",
+    "kdramaBadge": "K-Drama",
+    "animeBadge": "Série anime",
+    "notFound": "Cette série n'est pas disponible.",
+    "backToSeries": "Retour à la série",
+    "season": "Saison",
+    "episode": "Épisode",
+    "episodeFallback": "Épisode {number}",
+    "nowStreaming": "En cours de lecture",
+    "streamInfoTitle": "À propos de ce flux",
+    "streamInfoBody": "Vous regardez {title} — {episode}. Si la lecture se bloque, changez de serveur sous le lecteur.",
+    "subtitlesNote": "Les sous-titres sont intégrés au flux lorsqu'ils sont disponibles."
+  },
+  "episodes": {
+    "title": "Épisodes",
+    "seasonActive": "Saison {season}",
+    "seasonShort": "S{season}",
+    "seasonLong": "Saison {season}",
+    "moreSeasons": "Plus",
+    "episodeShort": "ÉP {number}",
+    "empty": "Aucun épisode disponible",
+    "emptyBody": "Aucun épisode n'est encore répertorié pour la saison {season}.",
+    "loadError": "Impossible de charger cette saison.",
+    "showing": "{shown} sur {total}",
+    "loadMore": "Afficher plus d'épisodes",
+    "play": "Lire l'épisode {number}"
+  },
+  "player": {
+    "tabs": {
+      "fr": "Canal FR",
+      "en": "Canal EN",
+      "vo": "Original (VO)",
+      "vf": "Français (VF)"
+    },
+    "play": "Lancer la lecture",
+    "playEpisode": "Lire l'épisode",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
+    "advisoryTitle": "Conseil de lecture",
+    "advisoryBody": "Si le flux est indisponible ou saccade, choisissez un autre serveur ci-dessous.",
+    "servers": "Serveurs",
+    "active": "En lecture",
+    "standby": "Disponible",
+    "readyIn": "Audio : {language}",
+    "languages": {
+      "fr": "Français",
+      "en": "Anglais",
+      "vo": "Original",
+      "vf": "Français",
+      "all": "Original"
+    },
+    "episodeTag": "S{season} É{episode}",
+    "sourceId": "ID de la source : {id}",
+    "iframeTitle": "Lecteur : {title}"
+  },
+  "actions": {
+    "addFavorite": "Ajouter aux favoris",
+    "inFavorites": "Dans les favoris",
+    "saving": "Enregistrement…",
+    "like": "J'aime",
+    "dislike": "Je n'aime pas",
+    "error": "L'action a échoué. Réessayez."
+  },
+  "download": {
+    "loginRequired": "Connectez-vous pour télécharger",
+    "download": "Télécharger",
+    "directAccess": "Accès direct",
+    "authNeeded": "Compte requis",
+    "buttonLabel": "Télécharger ce titre",
+    "qrTitle": "Scanner pour télécharger",
+    "qrBody": "Ouvrez l'appareil photo de votre téléphone et scannez le code pour continuer sur mobile.",
+    "qrBadge": "Continuer sur mobile",
+    "close": "Fermer"
+  },
+  "guard": {
+    "title": "Lecture bloquée",
+    "code": "Détecté : {reason}",
+    "adblock": "un bloqueur de publicités",
+    "idm": "une extension de gestionnaire de téléchargement",
+    "body": "Nous avons détecté {what}. Désactivez-la pour ce site, puis rechargez la page.",
+    "reload": "Recharger la page"
+  },
+  "trailer": {
+    "back": "Retour à l'accueil",
+    "unavailable": "Aucune bande-annonce n'est disponible pour ce titre.",
+    "start": "Regarder",
+    "switchTo": "Passer en {lang}",
+    "language": "Langue de la bande-annonce",
+    "playTrailer": "Lire la bande-annonce",
+    "loadingAd": "Chargement du message sponsorisé…",
+    "timeout": "Passage automatique dans {seconds} s",
+    "skipNow": "Passer et lire la bande-annonce",
+    "skipIn": "Passer dans {seconds} s",
+    "bypass": "Lire la bande-annonce maintenant"
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "Cette page n'existe pas",
+    "body": "Le lien est peut-être cassé ou la page a été déplacée.",
+    "cta": "Retour à l'accueil"
+  },
+  "contact": {
+    "eyebrow": "Assistance",
+    "title": "Nous",
+    "accent": "contacter",
+    "description": "Questions, signalements de bugs ou demandes de partenariat : envoyez-nous un message, nous répondrons par e-mail.",
+    "responseTime": "Nous répondons généralement sous 2 jours ouvrés.",
+    "helpPrompt": "Vous cherchez une réponse rapide ?",
+    "helpLink": "Consulter le centre d'aide",
+    "fields": {
+      "name": "Nom",
+      "email": "E-mail",
+      "subject": "Objet",
+      "message": "Message"
+    },
+    "placeholders": {
+      "name": "Votre nom",
+      "email": "vous@exemple.com",
+      "subject": "De quoi s'agit-il ?",
+      "message": "Donnez-nous un maximum de détails…"
+    },
+    "topics": {
+      "premium": "Premium : me prévenir au lancement"
+    },
+    "messageCounter": "{count} / {max}",
+    "submit": "Envoyer le message",
+    "sending": "Envoi…",
+    "errors": {
+      "required": "Ce champ est obligatoire.",
+      "name": "Saisissez entre 2 et 100 caractères.",
+      "email": "Saisissez une adresse e-mail valide.",
+      "subject": "Saisissez entre 3 et 150 caractères.",
+      "message": "Saisissez entre 20 et 5 000 caractères.",
+      "rateLimited": "Trop de messages. Patientez quelques minutes avant de réessayer.",
+      "spam": "Votre message n'a pas pu être envoyé. Rechargez la page et réessayez.",
+      "config": "Le formulaire de contact est momentanément indisponible. Réessayez plus tard.",
+      "server": "Votre message n'a pas pu être envoyé. Réessayez dans un instant.",
+      "fixFields": "Vérifiez les champs signalés."
+    },
+    "success": {
+      "title": "Message envoyé",
+      "body": "Merci, {name}. Nous répondrons bientôt à {email}.",
+      "again": "Envoyer un autre message"
+    }
+  },
+  "premium": {
+    "badge": "Bientôt disponible",
+    "title": "Lumina",
+    "accent": "Plus",
+    "description": "Les offres Premium arrivent : meilleure qualité, plus d'écrans et aucune interruption. Tout ce qui est disponible aujourd'hui reste gratuit.",
+    "notify": "Me prévenir au lancement",
+    "plansTitle": "Offres",
+    "plansDescription": "Les tarifs seront annoncés au lancement.",
+    "current": "Offre actuelle",
+    "priceTba": "Tarif au lancement",
+    "free": "Gratuit",
+    "perMonth": "/ mois",
+    "unavailable": "Bientôt disponible",
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "tagline": "Tout ce que vous utilisez aujourd'hui.",
+        "features": ["Catalogue complet de films, séries, anime et K-dramas", "Favoris synchronisés avec votre compte", "Interface en anglais et en français"]
+      },
+      "plus": {
+        "name": "Plus",
+        "tagline": "Pour celles et ceux qui regardent chaque jour.",
+        "features": ["Aucun message sponsorisé avant les bandes-annonces", "Serveurs prioritaires aux heures de pointe", "Accès anticipé aux nouvelles fonctionnalités"]
+      },
+      "family": {
+        "name": "Famille",
+        "tagline": "Une seule offre pour tout le foyer.",
+        "features": ["Tout le contenu de l'offre Plus", "Jusqu'à 5 profils avec favoris séparés", "Contrôle parental par profil"]
+      }
+    },
+    "recommended": "La plus choisie",
+    "faqTitle": "Questions sur Premium",
+    "faq": [
+      { "q": "L'offre gratuite va-t-elle changer ?", "a": "Non. Tout ce qui est disponible aujourd'hui restera gratuit au lancement de Premium." },
+      { "q": "Quand Premium sera-t-il lancé ?", "a": "Nous annoncerons la date et les tarifs par e-mail à toutes les personnes qui ont demandé à être prévenues." },
+      { "q": "Comment être prévenu ?", "a": "Utilisez « Me prévenir au lancement » pour nous envoyer un message avec votre adresse e-mail." }
+    ]
+  },
+  "help": {
+    "eyebrow": "Assistance",
+    "title": "Centre",
+    "accent": "d'aide",
+    "description": "Les réponses aux questions les plus fréquentes sur les comptes, la lecture et les langues.",
+    "faqTitle": "Questions fréquentes",
+    "devicesTitle": "Où regarder",
+    "devicesBody": "LuminaFlix fonctionne dans tout navigateur récent, sans application à installer.",
+    "devices": [
+      { "title": "Ordinateur", "body": "Chrome, Edge, Firefox ou Safari, sous Windows, macOS ou Linux." },
+      { "title": "Téléphone et tablette", "body": "Safari sur iOS/iPadOS et Chrome sur Android. Tournez l'appareil pour la lecture en plein écran." },
+      { "title": "Télévision", "body": "Diffusez un onglet depuis Chrome, ou ouvrez le site dans le navigateur intégré de votre TV." }
+    ],
+    "categories": [
+      {
+        "title": "Compte",
+        "items": [
+          { "q": "Faut-il un compte pour regarder ?", "a": "Non. Vous pouvez parcourir et regarder sans compte. La connexion permet d'enregistrer des favoris, d'aimer des titres et de télécharger." },
+          { "q": "Comment supprimer mon compte ?", "a": "Ouvrez le menu de votre profil, choisissez « Gérer le compte », puis « Supprimer le compte ». Vos favoris sont supprimés avec lui." }
+        ]
+      },
+      {
+        "title": "Lecture",
+        "items": [
+          { "q": "La vidéo ne démarre pas ou saccade.", "a": "Les flux proviennent de plusieurs serveurs. Choisissez un autre serveur sous le lecteur ; si aucun ne fonctionne, rechargez la page." },
+          { "q": "Pourquoi le message « Lecture bloquée » s'affiche-t-il ?", "a": "Certaines extensions (bloqueurs de publicités, gestionnaires de téléchargement) empêchent le lecteur de se charger. Désactivez-les pour ce site et rechargez." }
+        ]
+      },
+      {
+        "title": "Langue",
+        "items": [
+          { "q": "Comment changer de langue ?", "a": "Utilisez le menu des langues dans la barre de navigation ou le pied de page. Votre choix est mémorisé sur cet appareil." },
+          { "q": "La langue modifie-t-elle les titres et résumés ?", "a": "Oui. Les titres, résumés et genres passent dans la langue choisie lorsqu'une traduction existe." }
+        ]
+      }
+    ],
+    "stillNeedHelp": "Besoin d'aide supplémentaire ?",
+    "stillNeedHelpBody": "Envoyez-nous un message, nous vous répondrons par e-mail.",
+    "contactCta": "Nous contacter"
+  },
+  "legal": {
+    "updated": "Dernière mise à jour : {date}",
+    "contactPrompt": "Des questions sur cette page ?",
+    "contactCta": "Nous contacter",
+    "privacy": {
+      "title": "Politique de",
+      "accent": "confidentialité",
+      "intro": "Cette politique explique quelles informations LuminaFlix collecte, pourquoi, et quels choix s'offrent à vous.",
+      "sections": [
+        { "title": "Informations collectées", "body": "Lorsque vous créez un compte, notre fournisseur d'authentification (Clerk) enregistre votre nom, votre adresse e-mail et votre photo de profil. Nous enregistrons les titres ajoutés à vos favoris et vos mentions « J'aime ». Lorsque vous utilisez le formulaire de contact, nous recevons votre nom, votre e-mail et votre message." },
+        { "title": "Utilisation", "body": "Nous utilisons ces informations pour gérer votre compte, synchroniser vos favoris, répondre à vos messages et envoyer occasionnellement des recommandations par e-mail. Nous ne vendons pas vos données personnelles." },
+        { "title": "Cookies et stockage local", "body": "Nous utilisons des cookies essentiels pour la connexion et pour mémoriser votre langue. Les statistiques (Vercel Analytics) mesurent les pages vues sans suivi intersites." },
+        { "title": "Services tiers", "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies." },
+        { "title": "Vos droits", "body": "Vous pouvez à tout moment accéder à vos données, les corriger ou les supprimer depuis les paramètres de votre compte, ou en nous contactant. Si vous résidez dans l'UE, vous pouvez également saisir votre autorité de protection des données (en France, la CNIL)." },
+        { "title": "Conservation", "body": "Nous conservons vos données tant que votre compte est actif. La suppression du compte efface votre profil et vos favoris sous 30 jours." }
+      ]
+    },
+    "terms": {
+      "title": "Conditions",
+      "accent": "d'utilisation",
+      "intro": "En utilisant LuminaFlix, vous acceptez les présentes conditions. Merci de les lire attentivement.",
+      "sections": [
+        { "title": "Le service", "body": "LuminaFlix est un catalogue qui affiche des informations issues de TMDB et intègre des lecteurs exploités par des tiers. Nous n'hébergeons aucun fichier vidéo et ne contrôlons pas le contenu fourni par ces services." },
+        { "title": "Votre compte", "body": "Vous êtes responsable de l'activité de votre compte et de la sécurité de vos identifiants. Vous devez avoir l'âge requis pour consentir au traitement de vos données dans votre pays." },
+        { "title": "Utilisation acceptable", "body": "N'essayez pas de perturber le service, de l'aspirer à grande échelle ou de l'utiliser à des fins illicites. Nous pouvons suspendre les comptes concernés." },
+        { "title": "Ayants droit", "body": "Si vous estimez qu'un contenu accessible via LuminaFlix porte atteinte à vos droits, contactez-nous avec les détails : nous examinerons votre demande rapidement." },
+        { "title": "Limitation de responsabilité", "body": "Le service est fourni « en l'état », sans garantie de disponibilité ni d'adéquation à un usage particulier, dans les limites autorisées par la loi." },
+        { "title": "Modifications", "body": "Nous pouvons modifier ces conditions. Le cas échéant, la date en haut de cette page sera mise à jour. Continuer à utiliser le service vaut acceptation des conditions modifiées." }
+      ]
+    }
+  }
+}

@@ -1,66 +1,96 @@
 "use client";
 
-import { Movie } from "@/typing";
-import MovieDetails from "./movie-details";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { memo, useCallback } from "react";
+import { getDisplayTitle, getReleaseYear, tmdbImage, type MediaKind } from "@/lib/media";
+import type { Movie } from "@/typing";
+import { useMediaDetails } from "./media/media-details-provider";
+
+/** Poster widths per breakpoint — must mirror MEDIA_GRID_CLASS / MovieRow. */
+export const POSTER_SIZES =
+  "(min-width: 1280px) 200px, (min-width: 1024px) 22vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw";
 
 interface MovieCardProps {
   movie: Movie;
-  type?: "movie" | "tv" | "anime";
+  type?: MediaKind;
+  /** Eager-load and prioritise (first visible row only). */
+  priority?: boolean;
+  sizes?: string;
 }
 
-export default function MovieCard({ movie, type = "movie" }: MovieCardProps) {
-  const displayName = movie.title || movie.name;
-  const displayDate = (movie.release_date || movie.first_air_date)?.split(
-    "-",
-  )[0];
+function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZES }: MovieCardProps) {
+  const t = useTranslations("media");
+  const openDetails = useMediaDetails();
+  const title = getDisplayTitle(movie);
+  const year = getReleaseYear(movie);
+  const poster = tmdbImage(movie.poster_path);
+
+  const open = useCallback(() => openDetails(movie, type), [openDetails, movie, type]);
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    },
+    [open],
+  );
+
+  const badge = type === "anime" ? t("anime") : type === "tv" ? t("series") : t("quality4k");
 
   return (
-    <MovieDetails movie={movie} type={type}>
-      <div className="relative flex-none group cursor-pointer w-full">
-        {/* Poster Container */}
-        <div className="relative aspect-2/3 rounded-md overflow-hidden bg-zinc-900 border border-white/5 shadow-lg">
-          {movie.poster_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={displayName}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="h-full w-full flex items-center justify-center p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-600">
-              {displayName}
-            </div>
-          )}
-
-          {/* Quality/Type Tag - Updated logic */}
-          <div className="absolute top-2 right-2 bg-cyan-500 px-2 py-0.5 rounded text-[8px] font-black text-black uppercase tracking-tighter">
-            {type === "anime" ? "Anime" : type === "tv" ? "Series" : "4K"}
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={t("openDetails", { title })}
+      onClick={open}
+      onKeyDown={onKeyDown}
+      className="group relative w-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+    >
+      <div className="relative aspect-2/3 overflow-hidden rounded-md border border-white/5 bg-zinc-900 shadow-lg">
+        {poster ? (
+          <Image
+            src={poster}
+            alt=""
+            fill
+            sizes={sizes}
+            priority={priority}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-600">
+            {title}
           </div>
+        )}
 
-          {/* Language Tag */}
-          <div className="absolute hidden group-hover:block top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white border border-white/10 uppercase">
+        <span className="absolute right-2 top-2 rounded bg-cyan-500 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter text-black">
+          {badge}
+        </span>
+        {movie.original_language && (
+          <span className="absolute left-2 top-2 hidden rounded border border-white/10 bg-black/60 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-md group-hover:block">
             {movie.original_language}
-          </div>
-        </div>
-
-        {/* Labels below */}
-        <div className="mt-3 space-y-1 px-1">
-          <h3 className="text-white font-bold text-xs truncate uppercase tracking-tight group-hover:text-cyan-400 transition-colors">
-            {displayName}
-          </h3>
-          <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-medium">
-            <span>{displayDate}</span>
-            <span>•</span>
-            <span className="text-cyan-500 font-bold uppercase">
-              {movie.original_language}
-            </span>
-            <span>•</span>
-            <span className="text-white/60">
-              {movie.vote_average.toFixed(1)}
-            </span>
-          </div>
-        </div>
+          </span>
+        )}
       </div>
-    </MovieDetails>
+
+      <div className="mt-3 space-y-1 px-1">
+        <h3 className="truncate text-xs font-bold uppercase tracking-tight text-white transition-colors group-hover:text-cyan-400">
+          {title}
+        </h3>
+        <p className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
+          {year && <span>{year}</span>}
+          {year && movie.original_language && <span aria-hidden>•</span>}
+          {movie.original_language && (
+            <span className="font-bold uppercase text-cyan-500">{movie.original_language}</span>
+          )}
+          <span aria-hidden>•</span>
+          <span className="text-white/60">{(movie.vote_average ?? 0).toFixed(1)}</span>
+        </p>
+      </div>
+    </div>
   );
 }
+
+/** PERF: memoised — cards only re-render when their movie/type changes. */
+export default memo(MovieCard);

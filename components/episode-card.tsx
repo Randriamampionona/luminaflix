@@ -1,62 +1,65 @@
 "use client";
 
+import { Calendar, Play } from "lucide-react";
 import Image from "next/image";
-import { Play, Calendar } from "lucide-react";
 import Link from "next/link";
-import CustomLink from "./custom-link";
+import { useTranslations } from "next-intl";
+import { memo } from "react";
+import { tmdbImage } from "@/lib/media";
+import type { AnimeEpisode } from "@/typing";
 
-interface EpisodeCardProps {
-  ep: any;
-  seriesId: string; // Added this
-  seasonNumber: number; // Added this
-  path: string;
-}
+const FALLBACK_STILL = "https://placehold.co/600x338/111/333?text=No+Preview";
 
-export default function EpisodeCard({
+function EpisodeCard({
   ep,
   seriesId,
   seasonNumber,
   path,
-}: EpisodeCardProps) {
+}: {
+  ep: AnimeEpisode;
+  seriesId: string;
+  seasonNumber: number;
+  path: "anime" | "k-drama";
+}) {
+  const t = useTranslations();
+
+  // A11Y/UX: the whole card is now the link (previously only a hover-only
+  // overlay was clickable, which was invisible on touch screens).
   return (
-    <div className="group relative aspect-video bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all cursor-pointer">
+    <Link
+      href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
+      aria-label={t("episodes.play", { number: ep.episode_number })}
+      className="group relative block aspect-video overflow-hidden rounded-2xl border border-white/5 bg-zinc-900 outline-none transition-colors hover:border-cyan-500/50 focus-visible:ring-2 focus-visible:ring-cyan-500"
+    >
       <Image
-        src={
-          ep.still_path
-            ? `https://image.tmdb.org/t/p/w500${ep.still_path}`
-            : "https://placehold.co/600x400/111/333?text=No+Preview"
-        }
-        alt={ep.name}
+        src={tmdbImage(ep.still_path) ?? FALLBACK_STILL}
+        alt=""
         fill
-        className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+        sizes="(min-width: 1280px) 290px, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+        className="object-cover opacity-60 transition-[opacity,transform] duration-700 group-hover:scale-110 group-hover:opacity-100"
       />
       <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
 
       <div className="absolute bottom-4 left-4 right-4">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-black text-cyan-500 uppercase tracking-widest">
-            EP {ep.episode_number}
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500">
+            {t("episodes.episodeShort", { number: ep.episode_number })}
           </span>
-          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-1">
-            <Calendar className="w-2.5 h-2.5" />{" "}
-            {ep.air_date?.split("-")[0] || "TBA"}
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+            <Calendar className="h-2.5 w-2.5" />
+            {ep.air_date?.split("-")[0] || t("common.tba")}
           </span>
         </div>
-        <h3 className="text-sm font-bold truncate uppercase tracking-tighter">
-          {ep.name}
-        </h3>
+        <h3 className="truncate text-sm font-bold uppercase tracking-tighter text-white">{ep.name}</h3>
       </div>
 
-      {/* Now these variables are accessible via props */}
-      <CustomLink
-        href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
-      >
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_20px_#06b6d4]">
-            <Play className="w-5 h-5 fill-current ml-1" />
-          </div>
-        </div>
-      </CustomLink>
-    </div>
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500 text-black shadow-[0_0_20px_#06b6d4]">
+          <Play className="ml-1 h-5 w-5 fill-current" />
+        </span>
+      </div>
+    </Link>
   );
 }
+
+export default memo(EpisodeCard);

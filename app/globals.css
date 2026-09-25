@@ -255,3 +255,10 @@ body {
     transform: translateX(-100%);
   }
 }
+
+/* PERF: off-screen poster cards skip layout & paint until they scroll into
+   view (keeps 20–40 item grids cheap without a virtualization library). */
+.media-grid > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}

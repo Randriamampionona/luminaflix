@@ -1,72 +1,38 @@
 "use client";
 
-import { Search, ArrowRight, X } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import UserTerminal from "./user-terminal";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import SignInLink from "@/components/auth/sign-in-link";
 import SearchHub from "./search-hub";
+import UserTerminal from "./user-terminal";
 
+/**
+ * CLEANUP: the previous version registered its own Cmd/Ctrl+K listener that
+ * focused an input which no longer existed, racing with SearchHub's listener.
+ * SearchHub owns the shortcut now.
+ */
 export default function NavbarActions() {
-  const [isFocused, setIsFocused] = useState(false);
-  const [query, setQuery] = useState("");
-  const router = useRouter();
-
-  // 1. Create a reference to the input element
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // 2. Keyboard Shortcut Listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault(); // Stop browser search
-        inputRef.current?.focus();
-        setIsFocused(true);
-      }
-
-      // Bonus: Press 'Escape' to close search
-      if (e.key === "Escape") {
-        inputRef.current?.blur();
-        setIsFocused(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    router.push(`/search/${encodeURIComponent(query.trim())}`);
-    setIsFocused(false);
-    inputRef.current?.blur();
-  };
+  const t = useTranslations("auth");
 
   return (
-    <div className="hidden lg:flex items-center gap-3 md:gap-6">
-      {/* THE NEW SEARCH TRIGGER */}
+    <div className="hidden items-center gap-4 lg:flex">
       <SearchHub />
-
-      {/* Rest of your Auth buttons ... */}
-      <div className="h-6 w-px bg-white/10 hidden sm:block" />
+      <div aria-hidden className="h-6 w-px bg-white/10" />
       <div className="flex items-center gap-2">
         <SignedOut>
-          <Link href="/sign-in">
-            <button className="hidden lg:block px-4 py-2.5 text-xs font-black uppercase cursor-pointer tracking-widest text-zinc-400 hover:text-white transition-colors">
-              Sign In
-            </button>
-          </Link>
-          <Link href="/sign-up">
-            <button className="group relative flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white cursor-pointer overflow-hidden rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg">
-              <span className="relative z-10 text-black font-black uppercase italic tracking-tighter text-[10px] md:text-sm whitespace-nowrap">
-                Join Lumina
-              </span>
-              <ArrowRight className="relative z-10 w-3 h-3 md:w-4 md:h-4 text-black" />
-            </button>
-          </Link>
+          <SignInLink className="px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-400 transition-colors hover:text-white">
+            {t("signIn")}
+          </SignInLink>
+          <SignInLink
+            route="/sign-up"
+            className="group flex items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 shadow-lg transition-transform hover:scale-105 active:scale-95"
+          >
+            <span className="whitespace-nowrap text-sm font-black uppercase italic tracking-tighter text-black">
+              {t("join")}
+            </span>
+            <ArrowRight className="h-4 w-4 text-black" />
+          </SignInLink>
         </SignedOut>
         <SignedIn>
           <UserTerminal />

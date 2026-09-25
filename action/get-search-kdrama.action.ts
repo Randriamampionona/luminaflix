@@ -1,36 +1,15 @@
-"use server";
+import { EMPTY_PAGE, REVALIDATE, tmdb } from "@/lib/tmdb";
+import type { TMDBResponse } from "@/typing";
 
-const API_KEY = process.env.TMDB_API_KEY;
-const BASE_URL = process.env.BASE_URL;
-
-export async function getSearchKDramas(
-  query: string,
-  page: number = 1,
-  display_lang?: string,
-) {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(
-        query,
-      )}&language=${display_lang || "en-US"}&page=${page}&include_adult=true`,
-      { cache: "no-store" },
-    );
-
-    const data = await res.json();
-
-    // Filter results to ensure they are Korean to maintain the "K-Drama" section integrity
-    const filteredResults = data.results.filter(
-      (item: any) =>
-        item.origin_country?.includes("KR") || item.original_language === "ko",
-    );
-
-    return {
-      ...data,
-      results: filteredResults,
-      total_results: filteredResults.length, // Simplified for search view
-    };
-  } catch (error) {
-    console.error("Search Error:", error);
-    return { results: [], total_pages: 0, total_results: 0 };
-  }
+export async function getSearchKDramas(query: string, page = 1): Promise<TMDBResponse> {
+  const data = await tmdb<TMDBResponse>(
+    "/search/tv",
+    { query, page, include_adult: true },
+    { revalidate: REVALIDATE.default },
+  );
+  if (!data) return EMPTY_PAGE;
+  const results = data.results.filter(
+    (item) => item.origin_country?.includes("KR") || item.original_language === "ko",
+  );
+  return { ...data, results, total_results: results.length };
 }

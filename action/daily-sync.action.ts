@@ -1,9 +1,11 @@
-"use server";
-
+// SECURITY: no longer a "use server" module. As a server action,
+// triggerDailySync (which emails every user) was exposed as a callable
+// endpoint; it is now only reachable through the authenticated cron route.
+import "server-only";
 import { BrevoClient } from "@getbrevo/brevo";
-import { collection, getDocs } from "firebase/firestore";
 import { getAllMovies } from "@/action/get-all-movies.action";
-import { clientDb } from "@/lib/firebase";
+import { db } from "@/lib/firebase-admin";
+import type { Movie, TMDBResponse } from "@/typing";
 import { getAllKDramas } from "./get-all-kdramas.action";
 import { getAllAnime } from "./get-all-anime.action";
 
@@ -13,10 +15,16 @@ const brevo = new BrevoClient({
   apiKey: process.env.BREVO_API_KEY!,
 });
 
-const truncate = (text: string, length: number) =>
-  text?.length > length ? text.substring(0, length) + "..." : text;
+/** Escapes TMDB / user strings before interpolating them into HTML. */
+const escapeHtml = (value: unknown) =>
+  String(value ?? "").replace(/[&<>"']/g, (char) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] as string,
+  );
 
-const getRandomItem = (data: any) => {
+const truncate = (text: string | undefined, length: number) =>
+  escapeHtml(text && text.length > length ? text.substring(0, length) + "..." : text);
+
+const getRandomItem = (data: TMDBResponse): Movie | null => {
   if (!data?.results || data.results.length === 0) return null;
   const randomIndex = Math.floor(
     Math.random() * Math.min(data.results.length, 15),
@@ -28,39 +36,34 @@ export async function triggerDailySync() {
   const domain = IS_PROD
     ? process.env.NEXT_PUBLIC_DOMAIN
     : "http://localhost:3000";
-  const currentDate = new Date()
-    .toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-    .toUpperCase();
 
   try {
     // Generate a random page between 1 and 100 for each category
-    const moviePage = Math.floor(Math.random() * 100) + 1;
-    const dramaPage = Math.floor(Math.random() * 100) + 1;
-    const animePage = Math.floor(Math.random() * 100) + 1;
+    const moviePage = Math.floor(Math.random() * 50) + 1;
+    const dramaPage = Math.floor(Math.random() * 50) + 1;
+    const animePage = Math.floor(Math.random() * 50) + 1;
 
     const [movieData, dramaData, animeData] = await Promise.all([
-      getAllMovies(moviePage, "popularity.desc", "all", "All", "movie"),
-      getAllKDramas(dramaPage, "popularity.desc", "all", "All"),
-      getAllAnime(animePage, "popularity.desc", "all", "All"),
+      getAllMovies(moviePage, "popularity.desc", "all", "all", "movie"),
+      getAllKDramas(dramaPage, "popularity.desc", "all", "all"),
+      getAllAnime(animePage, "popularity.desc", "all", "all"),
     ]);
 
     const m = getRandomItem(movieData);
     const d = getRandomItem(dramaData);
     const a = getRandomItem(animeData);
 
-    const usersSnap = await getDocs(collection(clientDb, "USERS"));
-    const recipients = usersSnap.docs.map((doc) => doc.data());
+    const usersSnap = await db.collection("USERS").get();
+    const recipients = usersSnap.docs
+      .map((doc) => doc.data() as { email?: string; firstName?: string })
+      .filter((user) => !!user.email);
 
     if (IS_PROD) {
-      const emailPromises = recipients.map((user: any) => {
+      const emailPromises = recipients.map((user) => {
         return brevo.transactionalEmails.sendTransacEmail({
           subject: `[LUMINA] ⚡ Daily Transmission | Intelligence Update`,
           sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
-          to: [{ email: user.email, name: user.firstName }],
+          to: [{ email: user.email as string, name: user.firstName }],
           cc: [{ email: "tojorandriaii474@gmail.com", name: "Ops Manager" }],
           htmlContent: `<div style="background-color: #020405; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
             <div style="max-width: 600px; margin: auto; background: #05080a; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);">
@@ -75,7 +78,7 @@ export async function triggerDailySync() {
 
               <div style="position: relative; padding: 40px 30px; background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);">
                 <h1 style="margin: 0; font-size: 12px; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 12px;">LUMINA OS</h1>
-                <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">${user.firstName || "Operative"}</span>.</h2>
+                <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">${escapeHtml(user.firstName || "Operative")}</span>.</h2>
               </div>
 
               <div style="padding: 0 24px 32px 24px;">
@@ -89,7 +92,7 @@ export async function triggerDailySync() {
                   </div>
                   
                   <div style="padding: 24px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h3>
+                    <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${escapeHtml(m?.title)}</h3>
                     <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
                     
                     <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
@@ -106,7 +109,7 @@ export async function triggerDailySync() {
                       <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
                         <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
                         <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
-                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h4>
+                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(d?.name)}</h4>
                         <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
                       </div>
                     </td>
@@ -115,7 +118,7 @@ export async function triggerDailySync() {
                       <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
                         <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
                         <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
-                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h4>
+                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(a?.name)}</h4>
                         <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
                       </div>
                     </td>
@@ -172,7 +175,7 @@ export async function triggerDailySync() {
               </div>
               
               <div style="padding: 24px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${m?.title}</h3>
+                <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${escapeHtml(m?.title)}</h3>
                 <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
                 
                 <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
@@ -189,7 +192,7 @@ export async function triggerDailySync() {
                   <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
                     <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
                     <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
-                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${d?.name}</h4>
+                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(d?.name)}</h4>
                     <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
                   </div>
                 </td>
@@ -198,7 +201,7 @@ export async function triggerDailySync() {
                   <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
                     <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
                     <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
-                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${a?.name}</h4>
+                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(a?.name)}</h4>
                     <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
                   </div>
                 </td>
@@ -221,11 +224,9 @@ export async function triggerDailySync() {
       });
       return { success: true, count: 1 };
     }
-  } catch (error: any) {
-    console.error(
-      "BREVO ERROR DETAILS:",
-      error.response?.body || error.message,
-    );
-    return { success: false, error: error.message };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[daily-sync] Brevo error:", message);
+    return { success: false, error: message };
   }
 }

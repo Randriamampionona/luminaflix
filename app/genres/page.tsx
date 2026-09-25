@@ -1,115 +1,80 @@
-import { getAllGenres } from "@/action/get-all-genres.action";
-import { ChevronRight, Hash } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
-import CustomLink from "@/components/custom-link";
+import Link from "next/link";
+import { ChevronRight, Hash } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { getAllGenres } from "@/action/get-all-genres.action";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
+import { tmdbImage } from "@/lib/media";
 
-export default async function AllGenresPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ display_lang?: string }>;
-}) {
-  const { display_lang } = await searchParams;
-  const genres = await getAllGenres({ display_lang });
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata.pages");
+  return { title: t("genres") };
+}
+
+export default async function AllGenresPage() {
+  const [t, genres] = await Promise.all([getTranslations("pages.genres"), getAllGenres()]);
 
   return (
-    <main className="min-h-screen pt-32 pb-20 px-6 md:px-12 bg-black text-white">
-      <div className="max-w-400 mx-auto">
-        {/* HEADER SECTION */}
-        <div className="relative mb-24">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-px w-12 bg-cyan-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-cyan-500">
-              System Directory
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
-            GENRE<span className="text-cyan-500">.</span>MAP
-          </h1>
-        </div>
+    <PageShell>
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} meta={t("total", { count: genres.length })} />
 
-        {/* THE GRID UI WITH IMAGES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-l border-t border-white/5">
-          {genres.map((genre, index) => (
-            <CustomLink
+      <div className="media-grid grid grid-cols-1 border-t border-l border-white/5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {genres.map((genre, index) => {
+          const backdrop = tmdbImage(genre.backdrop);
+          return (
+            <Link
               key={genre.id}
               href={`/genres/${genre.id}`}
-              className="group relative aspect-video md:aspect-square flex flex-col justify-between p-8 border-r border-b border-white/5 bg-zinc-950 overflow-hidden transition-all duration-700"
+              className="group relative flex aspect-video flex-col justify-between overflow-hidden border-r border-b border-white/5 bg-zinc-950 p-6 transition-all duration-700 sm:p-8 md:aspect-square"
             >
-              {/* BACKDROP IMAGE */}
-              {genre.backdrop && (
-                <div className="absolute inset-0 z-0">
+              {backdrop && (
+                <div className="absolute inset-0">
                   <Image
-                    src={`https://image.tmdb.org/t/p/w500${genre.backdrop}`}
-                    alt={genre.name}
+                    src={backdrop}
+                    alt=""
                     fill
-                    className="object-cover opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000 ease-out"
+                    sizes="(min-width: 1280px) 300px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover opacity-20 grayscale transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-40 group-hover:grayscale-0"
                   />
-                  {/* GRADIENT OVERLAYS */}
-                  <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-colors duration-700" />
+                  <div className="absolute inset-0 bg-black/60 transition-colors duration-700 group-hover:bg-black/20" />
                   <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
                 </div>
               )}
 
-              {/* NUMBERING */}
-              <div className="relative z-10 flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <Hash className="w-3 h-3 text-cyan-500 opacity-50" />
-                  <span className="text-[10px] font-mono text-zinc-500 group-hover:text-cyan-500 transition-colors">
+              <div className="relative flex items-start justify-between">
+                <span className="flex items-center gap-2">
+                  <Hash className="h-3 w-3 text-cyan-500 opacity-50" aria-hidden />
+                  <span className="font-mono text-[10px] text-zinc-500 transition-colors group-hover:text-cyan-500">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                </div>
-                <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-cyan-500 group-hover:bg-cyan-500 transition-all duration-500 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.5)]">
-                  <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:text-black" />
-                </div>
-              </div>
-
-              {/* MAIN CONTENT */}
-              <div className="relative z-10">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500 group-hover:text-cyan-400 transition-colors">
-                  Initialize Sector
                 </span>
-                <h3 className="text-4xl font-black uppercase italic tracking-tighter mt-2 group-hover:translate-x-2 transition-transform duration-500 wrap-break-word">
-                  {genre.name}
-                </h3>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 transition-all duration-500 group-hover:border-cyan-500 group-hover:bg-cyan-500 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+                  <ChevronRight className="h-5 w-5 text-zinc-500 group-hover:text-black" />
+                </span>
               </div>
 
-              {/* SCANLINE DECORATION */}
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-cyan-500 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 ease-in-out" />
-            </CustomLink>
-          ))}
-        </div>
+              <div className="relative">
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500 transition-colors group-hover:text-cyan-400">
+                  {t("explore")}
+                </span>
+                <h2 className="mt-2 text-3xl font-black uppercase italic tracking-tighter wrap-break-word transition-transform duration-500 group-hover:translate-x-2 sm:text-4xl">
+                  {genre.name}
+                </h2>
+              </div>
 
-        <AdWrapper>
-          <NativeBannerAd />
-        </AdWrapper>
-
-        {/* FOOTER DATA */}
-        <div className="mt-12 flex justify-between items-center gap-6 border-t border-white/5 pt-8">
-          <div className="flex gap-12">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
-                Active Sectors
-              </span>
-              <span className="text-2xl font-black italic">
-                {genres.length}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
-                Database
-              </span>
-              <span className="text-2xl font-black italic text-cyan-500 underline decoration-2 underline-offset-4">
-                Live
-              </span>
-            </div>
-          </div>
-          <div className="hidden md:block font-mono text-[10px] text-zinc-800 animate-pulse">
-            {`// SYSTEM_READY_LOADING_ASSETS...`}
-          </div>
-        </div>
+              <span className="absolute bottom-0 left-0 h-1 w-full -translate-x-full bg-cyan-500 transition-transform duration-700 ease-in-out group-hover:translate-x-0" />
+            </Link>
+          );
+        })}
       </div>
-    </main>
+
+      <AdWrapper>
+        <NativeBannerAd />
+      </AdWrapper>
+    </PageShell>
   );
 }

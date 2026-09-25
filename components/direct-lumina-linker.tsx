@@ -1,41 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useRouter, usePathname } from "next/navigation";
-import { Download, Smartphone, X, Lock } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
+import { Download, Lock, Smartphone, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useAuthGate } from "@/hooks/use-auth-gate";
+import { cn } from "@/lib/utils";
+
+const subscribeNoop = () => () => {};
+const detectMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 interface DirectLuminaLinkerProps {
   embedUrl: string;
   title?: string;
 }
 
-export default function DirectLuminaLinker({
-  embedUrl,
-  title = "Lumina Stream",
-}: DirectLuminaLinkerProps) {
-  const { isSignedIn } = useUser();
-  const router = useRouter();
-  const pathname = usePathname();
+/**
+ * Floating download button.
+ *
+ * BUG FIX (auth redirect state loss): signed-out users used to be pushed to
+ * `/sign-in?fallback_redirect_url=<pathname>`, which lost `?s=&e=` and was
+ * ignored by sign-up / OAuth. `requireAuth()` now captures the full current
+ * URL and hands it to Clerk (plus a sessionStorage safety net).
+ */
+export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: DirectLuminaLinkerProps) {
+  const t = useTranslations("download");
+  const { isSignedIn, requireAuth } = useAuthGate();
 
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useSyncExternalStore(subscribeNoop, detectMobile, () => false);
   const [showQR, setShowQR] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
 
+  // Escape closes the QR dialog; listener only exists while it's open.
   useEffect(() => {
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-    setCurrentUrl(window.location.href);
-  }, []);
+    if (!showQR) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowQR(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showQR]);
 
-  const handleLinkClick = () => {
-    if (!isSignedIn) {
-      const loginUrl = `/sign-in?fallback_redirect_url=${encodeURIComponent(
-        pathname
-      )}`;
-      router.push(loginUrl);
-      return;
-    }
+  const handleClick = () => {
+    if (!requireAuth()) return;
 
     if (isMobile) {
       const intentUrl =
@@ -47,120 +54,114 @@ export default function DirectLuminaLinker({
         `end`;
       window.location.href = intentUrl;
     } else {
+      // Read at click time so the QR code carries the current season/episode.
+      setCurrentUrl(window.location.href);
       setShowQR(true);
     }
   };
 
   return (
     <>
-      {/* FLOATING ACTION AREA */}
-      <div className="fixed bottom-8 right-8 z-100">
+      <div className="fixed right-4 bottom-4 z-100 sm:right-8 sm:bottom-8">
         <div className="group relative flex items-center justify-end">
-          {/* CONTENT LABEL */}
           <div
-            className={`
-              absolute right-0 flex items-center pr-14 transition-all duration-500
-              ${
-                isMobile
-                  ? "opacity-100 scale-100 pointer-events-auto"
-                  : "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 pointer-events-none"
-              }
-            `}
+            className={cn(
+              "absolute right-0 flex items-center pr-14 transition-all duration-500",
+              isMobile
+                ? "pointer-events-auto scale-100 opacity-100"
+                : "pointer-events-none scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100",
+            )}
           >
-            <div className="px-6 py-3 bg-white text-black rounded-md shadow-[0_0_30px_rgba(255,255,255,0.2)] mr-2 whitespace-nowrap">
+            <div className="mr-2 whitespace-nowrap rounded-md bg-white px-6 py-3 text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]">
               <div className="flex flex-col items-start leading-none">
-                <span className="text-[11px] font-black uppercase italic tracking-tighter flex items-center gap-2">
-                  {!isSignedIn ? (
-                    <>
-                      <Lock className="w-3 h-3 text-cyan-600" />
-                      Login Required
-                    </>
+                <span className="flex items-center gap-2 text-[11px] font-black uppercase italic tracking-tighter">
+                  {isSignedIn ? (
+                    <Download className="h-3 w-3 text-cyan-600" />
                   ) : (
-                    <>
-                      <Download className="w-3 h-3 text-cyan-600" />
-                      Download Content
-                    </>
+                    <Lock className="h-3 w-3 text-cyan-600" />
                   )}
+                  {isSignedIn ? t("download") : t("loginRequired")}
                 </span>
-                <span className="text-[7px] font-bold text-cyan-600 uppercase tracking-[0.2em] mt-1">
-                  {isSignedIn ? "DIRECT ACCESS" : "AUTHENTICATION NEEDED"}
+                <span className="mt-1 text-[7px] font-bold uppercase tracking-[0.2em] text-cyan-600">
+                  {isSignedIn ? t("directAccess") : t("authNeeded")}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* THE ORB */}
           <button
-            onClick={handleLinkClick}
-            className="relative flex items-center justify-center w-14 h-14 bg-black border border-white/10 hover:border-cyan-500/50 rounded-md shadow-[0_0_40px_-10px_rgba(0,0,0,1)] transition-all duration-500 cursor-pointer"
+            type="button"
+            onClick={handleClick}
+            aria-label={isSignedIn ? t("buttonLabel") : t("loginRequired")}
+            className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-black shadow-[0_0_40px_-10px_rgba(0,0,0,1)] transition-all duration-500 hover:border-cyan-500/50 focus-visible:border-cyan-500"
           >
-            <div
-              className={`absolute inset-0 rounded-md animate-pulse group-hover:hidden ${
-                isSignedIn ? "bg-cyan-500/10" : "bg-white/5"
-              }`}
+            <span
+              aria-hidden
+              className={cn(
+                "absolute inset-0 animate-pulse rounded-md group-hover:hidden",
+                isSignedIn ? "bg-cyan-500/10" : "bg-white/5",
+              )}
             />
-
-            <Download className="w-6 h-6 text-white group-hover:text-cyan-400 transition-colors" />
-
-            {/* STATUS DOT */}
-            <div
-              className={`absolute top-0 right-0 w-2.5 h-2.5 border-2 border-black rounded-full transition-colors ${
-                isSignedIn ? "bg-cyan-500" : "bg-zinc-600"
-              }`}
+            <Download className="h-6 w-6 text-white transition-colors group-hover:text-cyan-400" />
+            <span
+              aria-hidden
+              className={cn(
+                "absolute top-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black transition-colors",
+                isSignedIn ? "bg-cyan-500" : "bg-zinc-600",
+              )}
             />
           </button>
         </div>
       </div>
 
-      {/* SYNC MODAL (PC ONLY) */}
       {showQR && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="relative w-full max-w-100 max-h-full overflow-y-auto no-scrollbar bg-zinc-900 border border-white/10 rounded-[3rem] p-6 sm:p-10 shadow-2xl text-center">
-            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lumina-qr-title"
+          onClick={() => setShowQR(false)}
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 p-6 backdrop-blur-xl animate-in fade-in duration-300"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="no-scrollbar relative max-h-full w-full max-w-100 overflow-y-auto rounded-[3rem] border border-white/10 bg-zinc-900 p-6 text-center shadow-2xl sm:p-10"
+          >
+            <div className="absolute top-0 left-0 h-1 w-full bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
 
             <button
+              type="button"
               onClick={() => setShowQR(false)}
-              className="absolute top-8 right-8 p-2 bg-white/5 hover:bg-white/10 rounded-full text-zinc-500 hover:text-white transition-all"
+              aria-label={t("close")}
+              className="absolute top-8 right-8 cursor-pointer rounded-full bg-white/5 p-2 text-zinc-500 transition-all hover:bg-white/10 hover:text-white"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
 
             <div className="space-y-8">
               <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
-                  <Smartphone className="w-3 h-3 text-cyan-500" />
-                  <span className="text-[8px] font-black uppercase text-cyan-500 tracking-widest">
-                    Device Bridge Active
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1">
+                  <Smartphone className="h-3 w-3 text-cyan-500" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-cyan-500">
+                    {t("qrBadge")}
                   </span>
                 </div>
-                <h3 className="text-2xl font-black uppercase italic text-white tracking-tighter">
-                  Scan to <span className="text-cyan-500">Download</span>
+                <h3
+                  id="lumina-qr-title"
+                  className="text-2xl font-black uppercase italic tracking-tighter text-white"
+                >
+                  {t("qrTitle")}
                 </h3>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-[0.15em] font-bold leading-relaxed px-4">
-                  Open your camera to sync this session to your mobile device
-                  for 1DM processing.
-                </p>
+                <p className="px-4 text-xs leading-relaxed text-zinc-400">{t("qrBody")}</p>
               </div>
 
-              <div className="relative mx-auto p-6 bg-white rounded-[2.5rem] w-fit shadow-[0_0_60px_rgba(6,182,212,0.15)] group">
+              <div className="relative mx-auto w-fit rounded-[2.5rem] bg-white p-6 shadow-[0_0_60px_rgba(6,182,212,0.15)]">
                 <QRCodeSVG
                   value={currentUrl}
                   size={220}
                   level="H"
-                  includeMargin={false}
-                  imageSettings={{
-                    src: "/favicon.ico",
-                    height: 48,
-                    width: 48,
-                    excavate: true,
-                  }}
+                  marginSize={0}
+                  imageSettings={{ src: "/favicon.ico", height: 48, width: 48, excavate: true }}
                 />
-              </div>
-
-              <div className="pt-4 space-y-4">
-                <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.3em]">
-                  Lumina Security Protocol v2.4
-                </p>
               </div>
             </div>
           </div>

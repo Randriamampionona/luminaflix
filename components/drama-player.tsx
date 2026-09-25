@@ -26,6 +26,19 @@ interface Provider {
 
 const PROVIDERS: Provider[] = [
   {
+    name: "VidLink (Direct)",
+    id: "vidlink",
+    url: (id, s, e) =>
+      `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=06b6d4`,
+    icon: Zap,
+  },
+  {
+    name: "VidSrc (Global)",
+    id: "vidsrc",
+    url: (id, s, e) => `https://vidsrc.sbs/embed/tv/${id}/${s}/${e}`,
+    icon: Globe2,
+  },
+  {
     name: "VidFast (Flash)",
     id: "vidfast",
     url: (id, s, e) => `https://vidfast.vc/tv/${id}/${s}/${e}?autoPlay=true`,
@@ -41,19 +54,6 @@ const PROVIDERS: Provider[] = [
     name: "VidNest (Mirror)",
     id: "vidnest",
     url: (id, s, e) => `https://vidnest.fun/tv/${id}/${s}/${e}`,
-    icon: Globe2,
-  },
-  {
-    name: "VidLink (Direct)",
-    id: "vidlink",
-    url: (id, s, e) =>
-      `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=06b6d4`,
-    icon: Zap,
-  },
-  {
-    name: "VidSrc (Global)",
-    id: "vidsrc",
-    url: (id, s, e) => `https://vidsrc.sbs/embed/tv/${id}/${s}/${e}`,
     icon: Globe2,
   },
 ];
