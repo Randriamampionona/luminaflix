@@ -232,7 +232,7 @@ export default function ContactForm({
       className="relative space-y-6 rounded-4xl border border-white/5 bg-zinc-950/60 p-6 backdrop-blur-sm sm:p-8"
     >
       {/* Anti-spam: honeypot (hidden from people & assistive tech) + time-trap. */}
-      <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
+      <div aria-hidden className="absolute -left-2499.75 h-px w-px overflow-hidden">
         <label htmlFor={HONEYPOT_FIELD}>Leave this field empty</label>
         <input
           id={HONEYPOT_FIELD}

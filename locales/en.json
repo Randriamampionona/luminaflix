@@ -640,5 +640,42 @@
         }
       ]
     }
+  },
+  "emails": {
+    "dailyPicks": {
+      "subjectNamed1": "{name}, tonight's pick: {title} 🍿",
+      "subjectNamed2": "🎬 {title} + {count} more picks for you, {name}",
+      "subjectNamed3": "{name}, your {weekday} watchlist is ready",
+      "subject1": "Tonight's pick: {title} 🍿",
+      "subject2": "🎬 {title} + {count} more picks",
+      "subject3": "Your {weekday} watchlist is ready",
+      "preheader": "{title}, plus {others}. One tap and you're watching.",
+      "preheaderSolo": "{title} is waiting for you. One tap and you're watching.",
+      "eyebrow": "Your daily picks",
+      "greetingNamed": "Hey {name}, tonight's watch is ready.",
+      "greeting": "Tonight's watch is ready.",
+      "intro": "We picked {count} titles to start your evening. Press play, we'll handle the rest.",
+      "kind": { "movie": "Movie", "kdrama": "K-Drama", "anime": "Anime" },
+      "watchNow": "Watch now",
+      "trailer": "Watch the trailer",
+      "alsoTonight": "Also on tonight",
+      "startWatching": "Start watching",
+      "bannerTitle": "Your next favorite is one click away.",
+      "bannerBody": "Movies, series, anime and K-dramas in HD — in English or French, on any device.",
+      "openApp": "Open LuminaFlix",
+      "browse": { "movies": "Movies", "tvShows": "TV Shows", "anime": "Anime", "kdrama": "K-Drama", "newPopular": "New & Popular" },
+      "favorites": "My favorites",
+      "help": "Help center",
+      "unsubscribe": "Unsubscribe",
+      "reason": "You're receiving this because you have a LuminaFlix account.",
+      "attribution": "Titles, images and ratings from TMDB.",
+      "viewInBrowser": "View in browser",
+      "language": "Language",
+      "textPick": "TONIGHT'S PICK",
+      "textWatch": "Watch now:",
+      "textOpen": "Open LuminaFlix:",
+      "textUnsubscribe": "Unsubscribe:",
+      "webTitle": "LuminaFlix · Daily picks"
+    }
   }
 }

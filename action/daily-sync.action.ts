@@ -1,232 +1,156 @@
-// SECURITY: no longer a "use server" module. As a server action,
-// triggerDailySync (which emails every user) was exposed as a callable
-// endpoint; it is now only reachable through the authenticated cron route.
+// SECURITY: not a "use server" module. As a server action, triggerDailySync
+// (which emails every user) would be a callable endpoint; it is only
+// reachable through the authenticated cron route (app/api/cron/sync).
 import "server-only";
 import { BrevoClient } from "@getbrevo/brevo";
+import { getAllAnime } from "@/action/get-all-anime.action";
+import { getAllKDramas } from "@/action/get-all-kdramas.action";
 import { getAllMovies } from "@/action/get-all-movies.action";
-import { getDb } from "@/lib/firebase-admin";
+import { isLocale, type Locale } from "@/i18n/config";
+import {
+  dailyPicksWebUrl,
+  loadDailyPicksContent,
+  unsubscribeMailto,
+  type DailyPicksIds,
+} from "@/lib/emails/daily-picks-content";
+import { renderDailyPicksEmail } from "@/lib/emails/daily-picks-email";
+import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import type { Movie, TMDBResponse } from "@/typing";
-import { getAllKDramas } from "./get-all-kdramas.action";
-import { getAllAnime } from "./get-all-anime.action";
 
+/**
+ * Daily "picks" newsletter: one featured movie + a K-drama + an anime,
+ * in the recipient's language (EN/FR) with an in-email language switch.
+ *
+ * Env:
+ * - BREVO_API_KEY               (required)
+ * - NEWSLETTER_FROM_EMAIL       sender (falls back to CONTACT_FROM_EMAIL), verified in Brevo
+ * - NEWSLETTER_TEST_EMAIL       recipient of the single preview sent outside production
+ * - NEWSLETTER_DEFAULT_LOCALE   "en" | "fr" for users with no saved language (default "en")
+ * - NEXT_PUBLIC_DOMAIN          absolute site URL used in links
+ */
 const IS_PROD = process.env.NODE_ENV === "production";
+const FROM_EMAIL = process.env.NEWSLETTER_FROM_EMAIL || process.env.CONTACT_FROM_EMAIL || "tojorandria474@gmail.com";
+const FROM_NAME = "LuminaFlix";
+const TEST_EMAIL = process.env.NEWSLETTER_TEST_EMAIL || "tojorandriaii474@gmail.com";
+const DEFAULT_LOCALE: Locale = isLocale(process.env.NEWSLETTER_DEFAULT_LOCALE)
+  ? process.env.NEWSLETTER_DEFAULT_LOCALE
+  : "en";
 
-const brevo = new BrevoClient({
-  apiKey: process.env.BREVO_API_KEY!,
-});
+/** Parallel sends at a time (keeps us well under Brevo's rate limits). */
+const CONCURRENCY = 10;
 
-/** Escapes TMDB / user strings before interpolating them into HTML. */
-const escapeHtml = (value: unknown) =>
-  String(value ?? "").replace(/[&<>"']/g, (char) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] as string,
+interface Recipient {
+  email: string;
+  firstName?: string;
+  locale: Locale;
+}
+
+/**
+ * Picks a title worth featuring: has artwork and a synopsis, from the most
+ * popular results (pages 1–5).
+ */
+function pickFeatured(data: TMDBResponse, needsBackdrop = false): Movie | null {
+  const candidates = (data?.results ?? []).filter(
+    (item) =>
+      (needsBackdrop ? item.backdrop_path : item.poster_path) &&
+      (item.overview ?? "").length > 40 &&
+      (item.vote_average ?? 0) >= 6,
   );
+  const pool = candidates.length > 0 ? candidates : (data?.results ?? []);
+  return pool.length ? pool[Math.floor(Math.random() * Math.min(pool.length, 12))] : null;
+}
 
-const truncate = (text: string | undefined, length: number) =>
-  escapeHtml(text && text.length > length ? text.substring(0, length) + "..." : text);
+const randomPage = () => Math.floor(Math.random() * 5) + 1;
 
-const getRandomItem = (data: TMDBResponse): Movie | null => {
-  if (!data?.results || data.results.length === 0) return null;
-  const randomIndex = Math.floor(
-    Math.random() * Math.min(data.results.length, 15),
-  );
-  return data.results[randomIndex];
-};
+async function mapWithConcurrency<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
+  const results: PromiseSettledResult<R>[] = [];
+  for (let i = 0; i < items.length; i += limit) {
+    results.push(...(await Promise.allSettled(items.slice(i, i + limit).map(fn))));
+  }
+  return results;
+}
+
+async function getRecipients(): Promise<Recipient[]> {
+  if (!IS_PROD) return [{ email: TEST_EMAIL, firstName: "Tooj", locale: DEFAULT_LOCALE }];
+  const snapshot = await getDb().collection("USERS").get();
+  return snapshot.docs
+    .map((doc) => doc.data() as { email?: string; firstName?: string; locale?: string })
+    .filter((user) => !!user.email)
+    .map((user) => ({
+      email: user.email as string,
+      firstName: user.firstName,
+      // Saved by setUserLocale when a signed-in user switches language.
+      locale: isLocale(user.locale) ? user.locale : DEFAULT_LOCALE,
+    }));
+}
 
 export async function triggerDailySync() {
-  const domain = IS_PROD
-    ? process.env.NEXT_PUBLIC_DOMAIN
-    : "http://localhost:3000";
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    console.error("[daily-sync] BREVO_API_KEY is not set");
+    return { success: false, error: "BREVO_API_KEY is not set" };
+  }
+  const domain = (IS_PROD ? process.env.NEXT_PUBLIC_DOMAIN : undefined) || "http://localhost:3000";
 
   try {
-    // Generate a random page between 1 and 100 for each category
-    const moviePage = Math.floor(Math.random() * 50) + 1;
-    const dramaPage = Math.floor(Math.random() * 50) + 1;
-    const animePage = Math.floor(Math.random() * 50) + 1;
-
     const [movieData, dramaData, animeData] = await Promise.all([
-      getAllMovies(moviePage, "popularity.desc", "all", "all", "movie"),
-      getAllKDramas(dramaPage, "popularity.desc", "all", "all"),
-      getAllAnime(animePage, "popularity.desc", "all", "all"),
+      getAllMovies(randomPage(), "popularity.desc", "all", "all", "movie"),
+      getAllKDramas(randomPage(), "popularity.desc", "all", "all"),
+      getAllAnime(randomPage(), "popularity.desc", "all", "all"),
     ]);
 
-    const m = getRandomItem(movieData);
-    const d = getRandomItem(dramaData);
-    const a = getRandomItem(animeData);
+    const movie = pickFeatured(movieData, true);
+    if (!movie) return { success: false, error: "No featured movie available from TMDB" };
 
-    const usersSnap = await getDb().collection("USERS").get();
-    const recipients = usersSnap.docs
-      .map((doc) => doc.data() as { email?: string; firstName?: string })
-      .filter((user) => !!user.email);
+    const ids: DailyPicksIds = {
+      movie: movie.id,
+      drama: pickFeatured(dramaData)?.id,
+      anime: pickFeatured(animeData)?.id,
+    };
 
-    if (IS_PROD) {
-      const emailPromises = recipients.map((user) => {
-        return brevo.transactionalEmails.sendTransacEmail({
-          subject: `[LUMINA] ⚡ Daily Transmission | Intelligence Update`,
-          sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
-          to: [{ email: user.email as string, name: user.firstName }],
-          cc: [{ email: "tojorandriaii474@gmail.com", name: "Ops Manager" }],
-          htmlContent: `<div style="background-color: #020405; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
-            <div style="max-width: 600px; margin: auto; background: #05080a; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);">
-              
-              <div style="padding: 16px 24px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <div style="width: 6px; height: 6px; background: #06b6d4; border-radius: 50%; box-shadow: 0 0 8px #06b6d4;"></div>
-                  <span style="color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Secure Stream Active</span>
-                </div>
-                <span style="color: #475569; font-size: 10px; font-weight: 500; font-family: monospace; margin-left: 7px;">${new Date().toISOString().replace("T", " // ").slice(0, 19)}</span>
-              </div>
+    // Same titles in EN and FR (localized titles & synopses).
+    const content = await loadDailyPicksContent(ids);
+    if (!content) return { success: false, error: "Could not load the picks from TMDB" };
 
-              <div style="position: relative; padding: 40px 30px; background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);">
-                <h1 style="margin: 0; font-size: 12px; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 12px;">LUMINA OS</h1>
-                <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">${escapeHtml(user.firstName || "Operative")}</span>.</h2>
-              </div>
+    const recipients = await getRecipients();
+    const brevo = new BrevoClient({ apiKey });
 
-              <div style="padding: 0 24px 32px 24px;">
-                <div style="background: #0d1117; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
-                  <div style="position: relative;">
-                    <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block;" />
-                    <div style="position: absolute; inset: 0; background: linear-gradient(to top, #0d1117 0%, transparent 50%);"></div>
-                    <div style="position: absolute; bottom: 20px; left: 20px;">
-                      <span style="background: #ffffff; color: #000000; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Top Priority</span>
-                    </div>
-                  </div>
-                  
-                  <div style="padding: 24px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${escapeHtml(m?.title)}</h3>
-                    <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
-                    
-                    <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
-                      Initialize Link →
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div style="padding: 0 24px 40px 24px;">
-                <table width="100%" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td width="48%" valign="top">
-                      <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
-                        <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
-                        <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
-                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(d?.name)}</h4>
-                        <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
-                      </div>
-                    </td>
-                    <td width="4%"></td>
-                    <td width="48%" valign="top">
-                      <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
-                        <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
-                        <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
-                        <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(a?.name)}</h4>
-                        <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-
-              <div style="padding: 32px 24px; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                <div style="margin-bottom: 16px;">
-                  <span style="color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">LUMINA_PROTOCOL // ENCRYPTED</span>
-                </div>
-                <div style="font-size: 11px; color: #64748b;">
-                  <a href="#" style="color: #64748b; text-decoration: none;">Security Settings</a>
-                  <span style="margin: 0 10px; opacity: 0.2;">|</span>
-                  <a href="#" style="color: #64748b; text-decoration: none;">End Session</a>
-                </div>
-              </div>
-            </div>
-          </div>`,
-        });
+    const results = await mapWithConcurrency(recipients, CONCURRENCY, (user) => {
+      const email = renderDailyPicksEmail({
+        locale: user.locale,
+        content,
+        firstName: user.firstName,
+        domain,
+        webVersionUrl: (l) => dailyPicksWebUrl(domain, ids, l),
+        unsubscribeUrl: unsubscribeMailto,
       });
-      await Promise.all(emailPromises);
-      return { success: true, count: recipients.length };
-    } else {
-      await brevo.transactionalEmails.sendTransacEmail({
-        subject: `[LUMINA] New Signals Intercepted: ${m?.title || "Update"}`,
-        sender: { email: "tojorandria474@gmail.com", name: "Lumina" },
-        to: [{ email: "tojorandriaii474@gmail.com", name: "Developer" }],
-        cc: [{ email: "joodev08@gmail.com", name: "Ops Manager" }],
-        htmlContent: `<div style="background-color: #020405; padding: 40px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;">
-        <div style="max-width: 600px; margin: auto; background: #05080a; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);">
-          
-          <div style="padding: 16px 24px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 6px; height: 6px; background: #06b6d4; border-radius: 50%; box-shadow: 0 0 8px #06b6d4;"></div>
-              <span style="color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Secure Stream Active</span>
-            </div>
-            <span style="color: #475569; font-size: 10px; font-weight: 500; font-family: monospace; margin-left: 7px;">${new Date().toISOString().replace("T", " // ").slice(0, 19)}</span>
-          </div>
-
-          <div style="position: relative; padding: 40px 30px; background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);">
-            <h1 style="margin: 0; font-size: 12px; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 12px;">LUMINA OS</h1>
-            <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -1px; line-height: 1.1;">Intercepting new <br/>visual signals for <span style="color: #06b6d4;">Tooj</span>.</h2>
-          </div>
-
-          <div style="padding: 0 24px 32px 24px;">
-            <div style="background: #0d1117; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
-              <div style="position: relative;">
-                <img src="https://image.tmdb.org/t/p/w780${m?.backdrop_path || m?.poster_path}" style="width: 100%; display: block;" />
-                <div style="position: absolute; inset: 0; background: linear-gradient(to top, #0d1117 0%, transparent 50%);"></div>
-                <div style="position: absolute; bottom: 20px; left: 20px;">
-                  <span style="background: #ffffff; color: #000000; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 4px; text-transform: uppercase;">Top Priority</span>
-                </div>
-              </div>
-              
-              <div style="padding: 24px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 24px; color: #ffffff; font-weight: 700;">${escapeHtml(m?.title)}</h3>
-                <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">${truncate(m?.overview, 140)}</p>
-                
-                <a href="${domain}/movies/${m?.id}" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);">
-                  Initialize Link →
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div style="padding: 0 24px 40px 24px;">
-            <table width="100%" cellspacing="0" cellpadding="0">
-              <tr>
-                <td width="48%" valign="top">
-                  <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
-                    <img src="https://image.tmdb.org/t/p/w500${d?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
-                    <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">K-Drama</p>
-                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(d?.name)}</h4>
-                    <a href="${domain}/k-drama/${d?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
-                  </div>
-                </td>
-                <td width="4%"></td>
-                <td width="48%" valign="top">
-                  <div style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px;">
-                    <img src="https://image.tmdb.org/t/p/w500${a?.poster_path}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" />
-                    <p style="color: #06b6d4; font-size: 9px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px 0;">Anime</p>
-                    <h4 style="font-size: 14px; color: #ffffff; margin: 0 0 12px 0; font-weight: 600; line-height: 1.3;">${escapeHtml(a?.name)}</h4>
-                    <a href="${domain}/anime/${a?.id}" style="color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; opacity: 0.6; border-bottom: 1px solid #06b6d4;">Sync Files</a>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="padding: 32px 24px; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-            <div style="margin-bottom: 16px;">
-              <span style="color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">LUMINA_PROTOCOL // ENCRYPTED</span>
-            </div>
-            <div style="font-size: 11px; color: #64748b;">
-              <a href="#" style="color: #64748b; text-decoration: none;">Security Settings</a>
-              <span style="margin: 0 10px; opacity: 0.2;">|</span>
-              <a href="#" style="color: #64748b; text-decoration: none;">End Session</a>
-            </div>
-          </div>
-        </div>
-        </div>`,
+      return brevo.transactionalEmails.sendTransacEmail({
+        subject: email.subject,
+        sender: { email: FROM_EMAIL, name: FROM_NAME },
+        to: [{ email: user.email, name: user.firstName || undefined }],
+        htmlContent: email.html,
+        textContent: email.text,
+        tags: ["daily-picks", `daily-picks-${user.locale}`],
       });
-      return { success: true, count: 1 };
+    });
+
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length > 0) {
+      const reason = (failed[0] as PromiseRejectedResult).reason;
+      console.error(
+        `[daily-sync] ${failed.length}/${recipients.length} emails failed. First error:`,
+        reason instanceof Error ? reason.message : reason,
+      );
     }
+
+    return {
+      success: failed.length < recipients.length || recipients.length === 0,
+      sent: recipients.length - failed.length,
+      failed: failed.length,
+    };
   } catch (error) {
+    logFirebaseError("daily-sync", error);
     const message = error instanceof Error ? error.message : String(error);
-    console.error("[daily-sync] Brevo error:", message);
     return { success: false, error: message };
   }
 }

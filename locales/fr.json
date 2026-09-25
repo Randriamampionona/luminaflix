@@ -640,5 +640,42 @@
         }
       ]
     }
+  },
+  "emails": {
+    "dailyPicks": {
+      "subjectNamed1": "{name}, le choix de ce soir : {title} 🍿",
+      "subjectNamed2": "🎬 {title} + {count} autres idées pour vous, {name}",
+      "subjectNamed3": "{name}, votre sélection du {weekday} est prête",
+      "subject1": "Le choix de ce soir : {title} 🍿",
+      "subject2": "🎬 {title} + {count} autres idées",
+      "subject3": "Votre sélection du {weekday} est prête",
+      "preheader": "{title}, et aussi {others}. Un clic et c'est parti.",
+      "preheaderSolo": "{title} vous attend. Un clic et c'est parti.",
+      "eyebrow": "Votre sélection du jour",
+      "greetingNamed": "Bonsoir {name}, votre programme est prêt.",
+      "greeting": "Votre programme de ce soir est prêt.",
+      "intro": "Nous avons choisi {count} titres pour votre soirée. Lancez la lecture, on s'occupe du reste.",
+      "kind": { "movie": "Film", "kdrama": "K-Drama", "anime": "Animé" },
+      "watchNow": "Regarder",
+      "trailer": "Voir la bande-annonce",
+      "alsoTonight": "Aussi ce soir",
+      "startWatching": "Commencer",
+      "bannerTitle": "Votre prochain coup de cœur est à un clic.",
+      "bannerBody": "Films, séries, animés et K-dramas en HD — en français ou en anglais, sur tous vos appareils.",
+      "openApp": "Ouvrir LuminaFlix",
+      "browse": { "movies": "Films", "tvShows": "Séries", "anime": "Animés", "kdrama": "K-Drama", "newPopular": "Nouveautés" },
+      "favorites": "Mes favoris",
+      "help": "Centre d'aide",
+      "unsubscribe": "Se désabonner",
+      "reason": "Vous recevez cet e-mail car vous avez un compte LuminaFlix.",
+      "attribution": "Titres, images et notes fournis par TMDB.",
+      "viewInBrowser": "Voir dans le navigateur",
+      "language": "Langue",
+      "textPick": "LE CHOIX DE CE SOIR",
+      "textWatch": "Regarder :",
+      "textOpen": "Ouvrir LuminaFlix :",
+      "textUnsubscribe": "Se désabonner :",
+      "webTitle": "LuminaFlix · Sélection du jour"
+    }
   }
 }
