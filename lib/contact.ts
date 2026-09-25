@@ -9,22 +9,42 @@ export const CONTACT_LIMITS = {
   message: { min: 20, max: 5000 },
 } as const;
 
+/** Wait time between two messages (enforced in the browser *and* per IP on the server). */
+export const CONTACT_COOLDOWN_SECONDS = 120;
+
 export type ContactField = "name" | "email" | "subject" | "message";
 export type ContactValues = Record<ContactField, string>;
 
 /** Keys under `contact.errors.*`. */
-export type ContactFieldError = "required" | ContactField;
-export type ContactErrors = Partial<Record<ContactField, ContactFieldError>>;
+export type ContactFieldError = "required" | ContactField | "captcha" | "captchaExpired";
+export type ContactErrors = Partial<Record<ContactField | "captcha", ContactFieldError>>;
+
+/** A math question rendered as an image, plus the signed token that proves the answer. */
+export interface ContactChallenge {
+  token: string;
+  /** data:image/svg+xml URI — the digits are drawn as shapes, not text. */
+  image: string;
+}
 
 export type ContactFormState =
   | { status: "idle" }
-  | { status: "success"; name: string; email: string }
+  | {
+      status: "success";
+      name: string;
+      email: string;
+      cooldownSeconds: number;
+      challenge: ContactChallenge;
+    }
   | {
       status: "error";
-      /** Keys under `contact.errors.*`. */
-      error: "fixFields" | "rateLimited" | "spam" | "config" | "server";
+      /** Keys under `contact.errors.*` ("cooldown" is rendered with a countdown instead). */
+      error: "fixFields" | "captcha" | "cooldown" | "rateLimited" | "spam" | "config" | "server";
       fieldErrors?: ContactErrors;
       values?: Partial<ContactValues>;
+      /** Seconds until the next message is allowed (error "cooldown"). */
+      retryAfter?: number;
+      /** Every response carries a fresh question: each one can be used only once. */
+      challenge: ContactChallenge;
     };
 
 // Pragmatic check: one @, no spaces, a dot in the domain.
@@ -58,6 +78,12 @@ export function validateContactField(field: ContactField, value: string): Contac
   }
 }
 
+/** The captcha answer must be a small whole number. */
+export function validateCaptchaAnswer(value: string): ContactFieldError | undefined {
+  if (!value.trim()) return "required";
+  return /^\d{1,3}$/.test(value.trim()) ? undefined : "captcha";
+}
+
 export function validateContact(values: ContactValues): ContactErrors {
   const errors: ContactErrors = {};
   for (const field of ["name", "email", "subject", "message"] as const) {
@@ -65,4 +91,10 @@ export function validateContact(values: ContactValues): ContactErrors {
     if (error) errors[field] = error;
   }
   return errors;
+}
+
+/** 125 → "2:05" */
+export function formatCountdown(totalSeconds: number) {
+  const s = Math.max(0, Math.ceil(totalSeconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }

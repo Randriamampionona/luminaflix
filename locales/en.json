@@ -426,12 +426,26 @@
       "spam": "Your message couldn't be sent. Reload the page and try again.",
       "config": "The contact form is temporarily unavailable. Try again later.",
       "server": "Your message couldn't be sent. Try again in a moment.",
-      "fixFields": "Check the highlighted fields."
+      "fixFields": "Check the highlighted fields.",
+      "captcha": "Wrong answer. Try the new question.",
+      "captchaExpired": "That question expired. Answer the new one.",
+      "cooldown": "Please wait {time} before sending another message."
     },
     "success": {
       "title": "Message sent",
       "body": "Thanks, {name}. We'll reply to {email} soon.",
       "again": "Send another message"
+    },
+    "captcha": {
+      "label": "Security check",
+      "hint": "Solve the calculation to show you're not a bot.",
+      "placeholder": "Answer",
+      "refresh": "New question",
+      "imageAlt": "Calculation to solve"
+    },
+    "cooldown": {
+      "notice": "Message received. You can send another one in {time}.",
+      "button": "Wait {time}"
     },
     "prefilled": "We filled in your account name and email. You can change them."
   },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, LifeBuoy } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import ContactForm from "@/components/contact/contact-form";
+import { createContactChallenge } from "@/lib/contact-captcha";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { type } from "@/lib/typography";
@@ -62,6 +63,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           {/* `key`: remount with the new defaults after signing in/out on this page. */}
           <ContactForm
             key={account.id ?? "guest"}
+            initialChallenge={createContactChallenge()}
             defaultSubject={defaultSubject}
             defaultName={account.name}
             defaultEmail={account.email}

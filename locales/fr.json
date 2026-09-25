@@ -426,12 +426,26 @@
       "spam": "Votre message n'a pas pu être envoyé. Rechargez la page et réessayez.",
       "config": "Le formulaire de contact est momentanément indisponible. Réessayez plus tard.",
       "server": "Votre message n'a pas pu être envoyé. Réessayez dans un instant.",
-      "fixFields": "Vérifiez les champs signalés."
+      "fixFields": "Vérifiez les champs signalés.",
+      "captcha": "Mauvaise réponse. Essayez la nouvelle question.",
+      "captchaExpired": "Cette question a expiré. Répondez à la nouvelle.",
+      "cooldown": "Veuillez patienter {time} avant d'envoyer un autre message."
     },
     "success": {
       "title": "Message envoyé",
       "body": "Merci, {name}. Nous répondrons bientôt à {email}.",
       "again": "Envoyer un autre message"
+    },
+    "captcha": {
+      "label": "Vérification",
+      "hint": "Résolvez le calcul pour montrer que vous n'êtes pas un robot.",
+      "placeholder": "Réponse",
+      "refresh": "Nouvelle question",
+      "imageAlt": "Calcul à résoudre"
+    },
+    "cooldown": {
+      "notice": "Message bien reçu. Vous pourrez en envoyer un autre dans {time}.",
+      "button": "Patientez {time}"
     },
     "prefilled": "Nous avons rempli le nom et l'e-mail de votre compte. Vous pouvez les modifier."
   },

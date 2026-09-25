@@ -2,7 +2,15 @@
 
 import { BrevoClient, BrevoError } from "@getbrevo/brevo";
 import { headers } from "next/headers";
-import { normalizeContact, validateContact, type ContactFormState } from "@/lib/contact";
+import {
+  CONTACT_COOLDOWN_SECONDS,
+  normalizeContact,
+  validateCaptchaAnswer,
+  validateContact,
+  type ContactChallenge,
+  type ContactFormState,
+} from "@/lib/contact";
+import { createContactChallenge, verifyContactChallenge } from "@/lib/contact-captcha";
 
 /**
  * Contact form → transactional email via Brevo (already used by the daily
@@ -13,9 +21,12 @@ import { normalizeContact, validateContact, type ContactFormState } from "@/lib/
  * - CONTACT_TO_EMAIL    recipient, defaults to tojorandria474@gmail.com
  * - CONTACT_FROM_EMAIL  sender; must be a sender verified in Brevo
  *
- * Abuse protection: hidden honeypot field, minimum fill time, per-IP rate
- * limit, strict length limits and HTML escaping. The recipient address is
- * never sent to the browser.
+ * - CONTACT_CAPTCHA_SECRET (optional) signs the math captcha, see lib/contact-captcha.ts
+ *
+ * Abuse protection: hidden honeypot field, minimum fill time, math captcha,
+ * a cooldown between messages (also shown as a countdown in the browser),
+ * per-IP rate limit, strict length limits and HTML escaping. The recipient
+ * address is never sent to the browser.
  */
 const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "tojorandria474@gmail.com";
 const FROM_EMAIL = process.env.CONTACT_FROM_EMAIL || "tojorandria474@gmail.com";
@@ -26,6 +37,23 @@ const RATE_LIMIT = { max: 5, windowMs: 10 * 60 * 1000 };
 
 // Best-effort, per server instance. Use Upstash/Redis for a global limit.
 const hits = new Map<string, number[]>();
+const lastSent = new Map<string, number>();
+
+/** Seconds left before this IP may send again (0 = allowed). */
+function cooldownRemaining(ip: string) {
+  const sentAt = lastSent.get(ip);
+  if (!sentAt) return 0;
+  const left = CONTACT_COOLDOWN_SECONDS * 1000 - (Date.now() - sentAt);
+  return left > 0 ? Math.ceil(left / 1000) : 0;
+}
+
+function recordSent(ip: string) {
+  const now = Date.now();
+  lastSent.set(ip, now);
+  if (lastSent.size > 5000) {
+    for (const [k, t] of lastSent) if (now - t > CONTACT_COOLDOWN_SECONDS * 1000) lastSent.delete(k);
+  }
+}
 
 function isRateLimited(key: string) {
   const now = Date.now();
@@ -80,7 +108,17 @@ function describeBrevoError(error: unknown): { code: "config" | "server"; detail
   return { code: "server", detail: error instanceof Error ? error.message : String(error) };
 }
 
+/** A fresh captcha, for the "new question" button. */
+export async function getContactChallenge(): Promise<ContactChallenge> {
+  return createContactChallenge();
+}
+
 export async function sendContactMessage(_prev: ContactFormState, formData: FormData): Promise<ContactFormState> {
+  // Each response carries a new question: a token can only be used once.
+  const challenge = createContactChallenge();
+  const captchaToken = String(formData.get("captchaToken") ?? "");
+  const captchaAnswer = String(formData.get("captchaAnswer") ?? "");
+
   const values = normalizeContact({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -101,24 +139,43 @@ export async function sendContactMessage(_prev: ContactFormState, formData: Form
           : null;
   if (spamReason) {
     console.warn(`[contact] rejected by spam filter: ${spamReason}`);
-    return { status: "error", error: "spam", values };
+    return { status: "error", error: "spam", values, challenge };
   }
 
   const fieldErrors = validateContact(values);
+  const captchaError = validateCaptchaAnswer(captchaAnswer);
+  if (captchaError) fieldErrors.captcha = captchaError;
   if (Object.keys(fieldErrors).length > 0) {
-    return { status: "error", error: "fixFields", fieldErrors, values };
+    return { status: "error", error: "fixFields", fieldErrors, values, challenge };
   }
 
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+
+  // Server-side twin of the browser countdown (localStorage can be cleared).
+  const retryAfter = cooldownRemaining(ip);
+  if (retryAfter > 0) {
+    return { status: "error", error: "cooldown", retryAfter, values, challenge };
+  }
   if (isRateLimited(ip)) {
-    return { status: "error", error: "rateLimited", values };
+    return { status: "error", error: "rateLimited", values, challenge };
+  }
+
+  const captcha = verifyContactChallenge(captchaToken, captchaAnswer);
+  if (captcha !== "ok") {
+    return {
+      status: "error",
+      error: "captcha",
+      fieldErrors: { captcha: captcha === "expired" ? "captchaExpired" : "captcha" },
+      values,
+      challenge,
+    };
   }
 
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
     console.error("[contact] BREVO_API_KEY is not set");
-    return { status: "error", error: "config", values };
+    return { status: "error", error: "config", values, challenge };
   }
 
   const locale = h.get("accept-language")?.split(",")[0] ?? "unknown";
@@ -164,10 +221,17 @@ ${values.message}`;
       htmlContent,
       textContent,
     });
-    return { status: "success", name: values.name, email: values.email };
+    recordSent(ip);
+    return {
+      status: "success",
+      name: values.name,
+      email: values.email,
+      cooldownSeconds: CONTACT_COOLDOWN_SECONDS,
+      challenge,
+    };
   } catch (error) {
     const { code, detail } = describeBrevoError(error);
     console.error(`[contact] Brevo send failed (${code}): ${detail}`);
-    return { status: "error", error: code, values };
+    return { status: "error", error: code, values, challenge };
   }
 }
