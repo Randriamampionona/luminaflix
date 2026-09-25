@@ -33,14 +33,10 @@
     "close": "Fermer",
     "loading": "Chargement…",
     "retry": "Réessayer",
-    "seeAll": "Tout voir",
-    "viewAll": "Tout afficher",
     "scrollLeft": "Faire défiler vers la gauche",
     "scrollRight": "Faire défiler vers la droite",
     "unknown": "Inconnu",
-    "notAvailable": "N/D",
     "tba": "À venir",
-    "comingSoon": "Bientôt disponible",
     "loadError": "Impossible de charger ce contenu. Vérifiez votre connexion et réessayez."
   },
   "nav": {
@@ -348,10 +344,14 @@
   "actions": {
     "addFavorite": "Ajouter aux favoris",
     "inFavorites": "Dans les favoris",
-    "saving": "Enregistrement…",
     "like": "J'aime",
     "dislike": "Je n'aime pas",
-    "error": "L'action a échoué. Réessayez."
+    "error": "L'action a échoué. Réessayez.",
+    "addedFavorite": "Ajouté aux favoris",
+    "removedFavorite": "Retiré des favoris",
+    "viewFavorites": "Voir",
+    "signInToSave": "Connectez-vous pour enregistrer des titres dans vos favoris.",
+    "signInToReact": "Connectez-vous pour aimer ou ne pas aimer."
   },
   "download": {
     "loginRequired": "Connectez-vous pour télécharger",
@@ -444,31 +444,51 @@
     "current": "Offre actuelle",
     "priceTba": "Tarif au lancement",
     "free": "Gratuit",
-    "perMonth": "/ mois",
     "unavailable": "Bientôt disponible",
     "plans": {
       "free": {
         "name": "Gratuit",
         "tagline": "Tout ce que vous utilisez aujourd'hui.",
-        "features": ["Catalogue complet de films, séries, anime et K-dramas", "Favoris synchronisés avec votre compte", "Interface en anglais et en français"]
+        "features": [
+          "Catalogue complet de films, séries, anime et K-dramas",
+          "Favoris synchronisés avec votre compte",
+          "Interface en anglais et en français"
+        ]
       },
       "plus": {
         "name": "Plus",
         "tagline": "Pour celles et ceux qui regardent chaque jour.",
-        "features": ["Aucun message sponsorisé avant les bandes-annonces", "Serveurs prioritaires aux heures de pointe", "Accès anticipé aux nouvelles fonctionnalités"]
+        "features": [
+          "Aucun message sponsorisé avant les bandes-annonces",
+          "Serveurs prioritaires aux heures de pointe",
+          "Accès anticipé aux nouvelles fonctionnalités"
+        ]
       },
       "family": {
         "name": "Famille",
         "tagline": "Une seule offre pour tout le foyer.",
-        "features": ["Tout le contenu de l'offre Plus", "Jusqu'à 5 profils avec favoris séparés", "Contrôle parental par profil"]
+        "features": [
+          "Tout le contenu de l'offre Plus",
+          "Jusqu'à 5 profils avec favoris séparés",
+          "Contrôle parental par profil"
+        ]
       }
     },
     "recommended": "La plus choisie",
     "faqTitle": "Questions sur Premium",
     "faq": [
-      { "q": "L'offre gratuite va-t-elle changer ?", "a": "Non. Tout ce qui est disponible aujourd'hui restera gratuit au lancement de Premium." },
-      { "q": "Quand Premium sera-t-il lancé ?", "a": "Nous annoncerons la date et les tarifs par e-mail à toutes les personnes qui ont demandé à être prévenues." },
-      { "q": "Comment être prévenu ?", "a": "Utilisez « Me prévenir au lancement » pour nous envoyer un message avec votre adresse e-mail." }
+      {
+        "q": "L'offre gratuite va-t-elle changer ?",
+        "a": "Non. Tout ce qui est disponible aujourd'hui restera gratuit au lancement de Premium."
+      },
+      {
+        "q": "Quand Premium sera-t-il lancé ?",
+        "a": "Nous annoncerons la date et les tarifs par e-mail à toutes les personnes qui ont demandé à être prévenues."
+      },
+      {
+        "q": "Comment être prévenu ?",
+        "a": "Utilisez « Me prévenir au lancement » pour nous envoyer un message avec votre adresse e-mail."
+      }
     ]
   },
   "help": {
@@ -480,30 +500,57 @@
     "devicesTitle": "Où regarder",
     "devicesBody": "LuminaFlix fonctionne dans tout navigateur récent, sans application à installer.",
     "devices": [
-      { "title": "Ordinateur", "body": "Chrome, Edge, Firefox ou Safari, sous Windows, macOS ou Linux." },
-      { "title": "Téléphone et tablette", "body": "Safari sur iOS/iPadOS et Chrome sur Android. Tournez l'appareil pour la lecture en plein écran." },
-      { "title": "Télévision", "body": "Diffusez un onglet depuis Chrome, ou ouvrez le site dans le navigateur intégré de votre TV." }
+      {
+        "title": "Ordinateur",
+        "body": "Chrome, Edge, Firefox ou Safari, sous Windows, macOS ou Linux."
+      },
+      {
+        "title": "Téléphone et tablette",
+        "body": "Safari sur iOS/iPadOS et Chrome sur Android. Tournez l'appareil pour la lecture en plein écran."
+      },
+      {
+        "title": "Télévision",
+        "body": "Diffusez un onglet depuis Chrome, ou ouvrez le site dans le navigateur intégré de votre TV."
+      }
     ],
     "categories": [
       {
         "title": "Compte",
         "items": [
-          { "q": "Faut-il un compte pour regarder ?", "a": "Non. Vous pouvez parcourir et regarder sans compte. La connexion permet d'enregistrer des favoris, d'aimer des titres et de télécharger." },
-          { "q": "Comment supprimer mon compte ?", "a": "Ouvrez le menu de votre profil, choisissez « Gérer le compte », puis « Supprimer le compte ». Vos favoris sont supprimés avec lui." }
+          {
+            "q": "Faut-il un compte pour regarder ?",
+            "a": "Non. Vous pouvez parcourir et regarder sans compte. La connexion permet d'enregistrer des favoris, d'aimer des titres et de télécharger."
+          },
+          {
+            "q": "Comment supprimer mon compte ?",
+            "a": "Ouvrez le menu de votre profil, choisissez « Gérer le compte », puis « Supprimer le compte ». Vos favoris sont supprimés avec lui."
+          }
         ]
       },
       {
         "title": "Lecture",
         "items": [
-          { "q": "La vidéo ne démarre pas ou saccade.", "a": "Les flux proviennent de plusieurs serveurs. Choisissez un autre serveur sous le lecteur ; si aucun ne fonctionne, rechargez la page." },
-          { "q": "Pourquoi le message « Lecture bloquée » s'affiche-t-il ?", "a": "Certaines extensions (bloqueurs de publicités, gestionnaires de téléchargement) empêchent le lecteur de se charger. Désactivez-les pour ce site et rechargez." }
+          {
+            "q": "La vidéo ne démarre pas ou saccade.",
+            "a": "Les flux proviennent de plusieurs serveurs. Choisissez un autre serveur sous le lecteur ; si aucun ne fonctionne, rechargez la page."
+          },
+          {
+            "q": "Pourquoi le message « Lecture bloquée » s'affiche-t-il ?",
+            "a": "Certaines extensions (bloqueurs de publicités, gestionnaires de téléchargement) empêchent le lecteur de se charger. Désactivez-les pour ce site et rechargez."
+          }
         ]
       },
       {
         "title": "Langue",
         "items": [
-          { "q": "Comment changer de langue ?", "a": "Utilisez le menu des langues dans la barre de navigation ou le pied de page. Votre choix est mémorisé sur cet appareil." },
-          { "q": "La langue modifie-t-elle les titres et résumés ?", "a": "Oui. Les titres, résumés et genres passent dans la langue choisie lorsqu'une traduction existe." }
+          {
+            "q": "Comment changer de langue ?",
+            "a": "Utilisez le menu des langues dans la barre de navigation ou le pied de page. Votre choix est mémorisé sur cet appareil."
+          },
+          {
+            "q": "La langue modifie-t-elle les titres et résumés ?",
+            "a": "Oui. Les titres, résumés et genres passent dans la langue choisie lorsqu'une traduction existe."
+          }
         ]
       }
     ],
@@ -520,12 +567,30 @@
       "accent": "confidentialité",
       "intro": "Cette politique explique quelles informations LuminaFlix collecte, pourquoi, et quels choix s'offrent à vous.",
       "sections": [
-        { "title": "Informations collectées", "body": "Lorsque vous créez un compte, notre fournisseur d'authentification (Clerk) enregistre votre nom, votre adresse e-mail et votre photo de profil. Nous enregistrons les titres ajoutés à vos favoris et vos mentions « J'aime ». Lorsque vous utilisez le formulaire de contact, nous recevons votre nom, votre e-mail et votre message." },
-        { "title": "Utilisation", "body": "Nous utilisons ces informations pour gérer votre compte, synchroniser vos favoris, répondre à vos messages et envoyer occasionnellement des recommandations par e-mail. Nous ne vendons pas vos données personnelles." },
-        { "title": "Cookies et stockage local", "body": "Nous utilisons des cookies essentiels pour la connexion et pour mémoriser votre langue. Les statistiques (Vercel Analytics) mesurent les pages vues sans suivi intersites." },
-        { "title": "Services tiers", "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies." },
-        { "title": "Vos droits", "body": "Vous pouvez à tout moment accéder à vos données, les corriger ou les supprimer depuis les paramètres de votre compte, ou en nous contactant. Si vous résidez dans l'UE, vous pouvez également saisir votre autorité de protection des données (en France, la CNIL)." },
-        { "title": "Conservation", "body": "Nous conservons vos données tant que votre compte est actif. La suppression du compte efface votre profil et vos favoris sous 30 jours." }
+        {
+          "title": "Informations collectées",
+          "body": "Lorsque vous créez un compte, notre fournisseur d'authentification (Clerk) enregistre votre nom, votre adresse e-mail et votre photo de profil. Nous enregistrons les titres ajoutés à vos favoris et vos mentions « J'aime ». Lorsque vous utilisez le formulaire de contact, nous recevons votre nom, votre e-mail et votre message."
+        },
+        {
+          "title": "Utilisation",
+          "body": "Nous utilisons ces informations pour gérer votre compte, synchroniser vos favoris, répondre à vos messages et envoyer occasionnellement des recommandations par e-mail. Nous ne vendons pas vos données personnelles."
+        },
+        {
+          "title": "Cookies et stockage local",
+          "body": "Nous utilisons des cookies essentiels pour la connexion et pour mémoriser votre langue. Les statistiques (Vercel Analytics) mesurent les pages vues sans suivi intersites."
+        },
+        {
+          "title": "Services tiers",
+          "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies."
+        },
+        {
+          "title": "Vos droits",
+          "body": "Vous pouvez à tout moment accéder à vos données, les corriger ou les supprimer depuis les paramètres de votre compte, ou en nous contactant. Si vous résidez dans l'UE, vous pouvez également saisir votre autorité de protection des données (en France, la CNIL)."
+        },
+        {
+          "title": "Conservation",
+          "body": "Nous conservons vos données tant que votre compte est actif. La suppression du compte efface votre profil et vos favoris sous 30 jours."
+        }
       ]
     },
     "terms": {
@@ -533,12 +598,30 @@
       "accent": "d'utilisation",
       "intro": "En utilisant LuminaFlix, vous acceptez les présentes conditions. Merci de les lire attentivement.",
       "sections": [
-        { "title": "Le service", "body": "LuminaFlix est un catalogue qui affiche des informations issues de TMDB et intègre des lecteurs exploités par des tiers. Nous n'hébergeons aucun fichier vidéo et ne contrôlons pas le contenu fourni par ces services." },
-        { "title": "Votre compte", "body": "Vous êtes responsable de l'activité de votre compte et de la sécurité de vos identifiants. Vous devez avoir l'âge requis pour consentir au traitement de vos données dans votre pays." },
-        { "title": "Utilisation acceptable", "body": "N'essayez pas de perturber le service, de l'aspirer à grande échelle ou de l'utiliser à des fins illicites. Nous pouvons suspendre les comptes concernés." },
-        { "title": "Ayants droit", "body": "Si vous estimez qu'un contenu accessible via LuminaFlix porte atteinte à vos droits, contactez-nous avec les détails : nous examinerons votre demande rapidement." },
-        { "title": "Limitation de responsabilité", "body": "Le service est fourni « en l'état », sans garantie de disponibilité ni d'adéquation à un usage particulier, dans les limites autorisées par la loi." },
-        { "title": "Modifications", "body": "Nous pouvons modifier ces conditions. Le cas échéant, la date en haut de cette page sera mise à jour. Continuer à utiliser le service vaut acceptation des conditions modifiées." }
+        {
+          "title": "Le service",
+          "body": "LuminaFlix est un catalogue qui affiche des informations issues de TMDB et intègre des lecteurs exploités par des tiers. Nous n'hébergeons aucun fichier vidéo et ne contrôlons pas le contenu fourni par ces services."
+        },
+        {
+          "title": "Votre compte",
+          "body": "Vous êtes responsable de l'activité de votre compte et de la sécurité de vos identifiants. Vous devez avoir l'âge requis pour consentir au traitement de vos données dans votre pays."
+        },
+        {
+          "title": "Utilisation acceptable",
+          "body": "N'essayez pas de perturber le service, de l'aspirer à grande échelle ou de l'utiliser à des fins illicites. Nous pouvons suspendre les comptes concernés."
+        },
+        {
+          "title": "Ayants droit",
+          "body": "Si vous estimez qu'un contenu accessible via LuminaFlix porte atteinte à vos droits, contactez-nous avec les détails : nous examinerons votre demande rapidement."
+        },
+        {
+          "title": "Limitation de responsabilité",
+          "body": "Le service est fourni « en l'état », sans garantie de disponibilité ni d'adéquation à un usage particulier, dans les limites autorisées par la loi."
+        },
+        {
+          "title": "Modifications",
+          "body": "Nous pouvons modifier ces conditions. Le cas échéant, la date en haut de cette page sera mise à jour. Continuer à utiliser le service vaut acceptation des conditions modifiées."
+        }
       ]
     }
   }

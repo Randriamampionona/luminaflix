@@ -20,11 +20,13 @@ export function useAuthGate() {
 
   const requireAuth = useCallback((): boolean => {
     if (isSignedIn) return true;
+    // Clerk not ready yet: don't send a possibly signed-in user to sign-in.
+    if (!isLoaded) return false;
 
     const returnTo = getCurrentLocation();
     rememberReturnTo(returnTo); // safety net, see <PostAuthRedirect />
 
-    if (isLoaded && clerk?.openSignIn) {
+    if (clerk?.openSignIn) {
       clerk.openSignIn({
         forceRedirectUrl: returnTo,
         signUpForceRedirectUrl: returnTo,

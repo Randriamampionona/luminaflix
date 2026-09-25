@@ -119,7 +119,7 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
   };
 
   const embedSrc = trailer
-    ? `https://www.youtube-nocookie.com/embed/${trailer.key}?${new URLSearchParams({
+    ? `https://www.youtube.com/embed/${trailer.key}?${new URLSearchParams({
         autoplay: "1",
         rel: "0",
         modestbranding: "1",

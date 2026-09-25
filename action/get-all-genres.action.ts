@@ -2,7 +2,7 @@ import { REVALIDATE, tmdb } from "@/lib/tmdb";
 import type { Genre, GenreResponse, TMDBResponse } from "@/typing";
 
 /** Movie + TV genres merged and de-duplicated (cached for a day). */
-export async function getGenreList(): Promise<Genre[]> {
+async function getGenreList(): Promise<Genre[]> {
   const [movie, tv] = await Promise.all([
     tmdb<GenreResponse>("/genre/movie/list", {}, { revalidate: REVALIDATE.long }),
     tmdb<GenreResponse>("/genre/tv/list", {}, { revalidate: REVALIDATE.long }),

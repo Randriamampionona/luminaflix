@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getAnimeDetails, getAnimeSeasonEpisodes } from "@/action/get-anime-details.action";
+import { getMediaInteraction } from "@/action/stream-actions";
 import EpisodePlayView, { parseEpisodeParams } from "@/components/media/episode-play-view";
 
 type Params = Promise<{ id: string }>;
@@ -22,7 +23,20 @@ export async function generateMetadata({
 export default async function AnimePlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
   const { season, episode } = parseEpisodeParams(s, e);
-  const [anime, episodes] = await Promise.all([getAnimeDetails(id), getAnimeSeasonEpisodes(id, season)]);
+  const [anime, episodes, interaction] = await Promise.all([
+    getAnimeDetails(id),
+    getAnimeSeasonEpisodes(id, season),
+    getMediaInteraction({ mediaId: id, type: "ANIME", season, episode }),
+  ]);
 
-  return <EpisodePlayView series={anime} episodes={episodes} season={season} episode={episode} path="anime" />;
+  return (
+    <EpisodePlayView
+      series={anime}
+      episodes={episodes}
+      season={season}
+      episode={episode}
+      interaction={interaction}
+      path="anime"
+    />
+  );
 }

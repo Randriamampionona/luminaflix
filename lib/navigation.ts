@@ -10,8 +10,6 @@ export const NAV_ITEMS = [
   { key: "favorites", href: "/favorites" },
 ] as const;
 
-export type NavKey = (typeof NAV_ITEMS)[number]["key"];
-
 /** Number of items shown inline on desktop; the rest go under "More". */
 export const NAV_INLINE_COUNT = 3;
 

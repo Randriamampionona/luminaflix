@@ -4,13 +4,13 @@ import {
   AlertTriangle,
   ChevronDown,
   LayoutGrid,
-  Loader2,
   Plus,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { getSeasonEpisodes } from "@/action/get-kdrama-details.action";
 import { SectionHeader } from "@/components/layout/page-header";
+import { EpisodeGridSkeleton } from "@/components/layout/skeletons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,12 +171,12 @@ export default function EpisodeExplorer({
 
       <div aria-live="polite" aria-busy={status === "loading"}>
         {status === "loading" ? (
-          <div className="flex justify-center py-24">
-            <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
+          <>
+            <EpisodeGridSkeleton count={Math.min(Math.max(episodes.length, 4), BATCH)} />
             <span className="sr-only">
               {t("seasonActive", { season: activeSeason })}
             </span>
-          </div>
+          </>
         ) : status === "error" ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-[3rem] border border-dashed border-red-500/20 py-24 text-center">
             <AlertTriangle className="h-8 w-8 text-red-500/70" />

@@ -10,7 +10,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 export const YEAR_OPTIONS = [0, 1, 2, 3].map((offset) => String(CURRENT_YEAR - offset));
 export const OLDER_THAN_YEAR = CURRENT_YEAR - 3;
 
-export type SortKey = "recent" | "popular" | "oldest" | "topRated" | "az";
+type SortKey = "recent" | "popular" | "oldest" | "topRated" | "az";
 
 export const SORT_OPTIONS: Record<MediaType, { key: SortKey; value: string }[]> = {
   movie: [
@@ -35,8 +35,6 @@ export function resolveSort(value: string | undefined, type: MediaType, fallback
   const match = options.find((option) => option.value === value);
   return match?.value ?? fallback ?? options[0].value;
 }
-
-export type GenreKey = `g${number}`;
 
 /** TMDB genre IDs differ between movies and TV. Names come from `genres.*`. */
 export const GENRE_OPTIONS: Record<MediaType, string[]> = {

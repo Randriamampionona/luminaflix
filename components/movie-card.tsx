@@ -8,7 +8,7 @@ import type { Movie } from "@/typing";
 import { useMediaDetails } from "./media/media-details-provider";
 
 /** Poster widths per breakpoint — must mirror MEDIA_GRID_CLASS / MovieRow. */
-export const POSTER_SIZES =
+const POSTER_SIZES =
   "(min-width: 1280px) 200px, (min-width: 1024px) 22vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw";
 
 interface MovieCardProps {

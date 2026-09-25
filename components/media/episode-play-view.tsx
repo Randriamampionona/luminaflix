@@ -9,6 +9,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import StreamPlayer from "@/components/player/stream-player";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import type { MediaInteraction } from "@/lib/media-interactions";
 import type { AnimeEpisode } from "@/typing";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -29,12 +30,14 @@ export default async function EpisodePlayView({
   season,
   episode,
   path,
+  interaction,
 }: {
   series: SeriesDetails | null;
   episodes: AnimeEpisode[];
   season: number;
   episode: number;
   path: "anime" | "k-drama";
+  interaction: MediaInteraction;
 }) {
   const t = await getTranslations("details");
 
@@ -99,6 +102,7 @@ export default async function EpisodePlayView({
         posterPath={series.poster_path}
         backdropPath={current?.still_path || series.backdrop_path}
         title={series.name}
+        interaction={interaction}
       />
 
       <section className="flex items-start gap-6 rounded-[2.5rem] border border-white/5 bg-zinc-900/20 p-6 backdrop-blur-sm sm:p-8">

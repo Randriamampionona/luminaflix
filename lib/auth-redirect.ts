@@ -10,7 +10,7 @@
  * `forceRedirectUrl`, and (2) keep a short-lived copy in sessionStorage that
  * <PostAuthRedirect /> uses as a safety net if Clerk still lands on `/`.
  */
-export const RETURN_TO_STORAGE_KEY = "luminaflix:return-to";
+const RETURN_TO_STORAGE_KEY = "luminaflix:return-to";
 const RETURN_TO_TTL_MS = 15 * 60 * 1000;
 const AUTH_ROUTE = /^\/(sign-in|sign-up)(\/|\?|#|$)/;
 

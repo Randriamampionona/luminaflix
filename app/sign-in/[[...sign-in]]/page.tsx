@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { SignIn } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading, SignIn } from "@clerk/nextjs";
 import { getTranslations } from "next-intl/server";
 import { AuthShell, resolveReturnTo, type AuthSearchParams } from "@/components/auth/auth-page";
+import { AuthCardSkeleton } from "@/components/skeletons/support-skeletons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata.pages");
@@ -19,7 +20,13 @@ export default async function SignInPage({ searchParams }: { searchParams: AuthS
 
   return (
     <AuthShell>
-      <SignIn forceRedirectUrl={returnTo} signUpForceRedirectUrl={returnTo} signUpUrl={signUpUrl} />
+      {/* Clerk renders nothing until its script loads: show the card shape meanwhile. */}
+      <ClerkLoading>
+        <AuthCardSkeleton />
+      </ClerkLoading>
+      <ClerkLoaded>
+        <SignIn forceRedirectUrl={returnTo} signUpForceRedirectUrl={returnTo} signUpUrl={signUpUrl} />
+      </ClerkLoaded>
     </AuthShell>
   );
 }

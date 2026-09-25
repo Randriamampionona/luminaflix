@@ -36,7 +36,7 @@ interface TmdbOptions {
 }
 
 /** TMDB `language` value for the current request's locale. */
-export async function getTmdbLanguage(): Promise<string> {
+async function getTmdbLanguage(): Promise<string> {
   const locale = await getLocale();
   return localeMeta[locale]?.tmdb ?? "en-US";
 }

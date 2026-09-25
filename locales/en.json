@@ -33,14 +33,10 @@
     "close": "Close",
     "loading": "Loading…",
     "retry": "Try again",
-    "seeAll": "See all",
-    "viewAll": "View all",
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right",
     "unknown": "Unknown",
-    "notAvailable": "N/A",
     "tba": "TBA",
-    "comingSoon": "Coming soon",
     "loadError": "We couldn't load this content. Check your connection and try again."
   },
   "nav": {
@@ -348,10 +344,14 @@
   "actions": {
     "addFavorite": "Add to favorites",
     "inFavorites": "In favorites",
-    "saving": "Saving…",
     "like": "Like",
     "dislike": "Dislike",
-    "error": "That didn't go through. Try again."
+    "error": "That didn't go through. Try again.",
+    "addedFavorite": "Saved to favorites",
+    "removedFavorite": "Removed from favorites",
+    "viewFavorites": "View",
+    "signInToSave": "Please sign in to save titles to your favorites.",
+    "signInToReact": "Please sign in to like or dislike."
   },
   "download": {
     "loginRequired": "Sign in to download",
@@ -444,31 +444,51 @@
     "current": "Current plan",
     "priceTba": "Price at launch",
     "free": "Free",
-    "perMonth": "/ month",
     "unavailable": "Coming soon",
     "plans": {
       "free": {
         "name": "Free",
         "tagline": "Everything you use today.",
-        "features": ["Full catalog of movies, series, anime and K-dramas", "Favorites synced to your account", "English and French interface"]
+        "features": [
+          "Full catalog of movies, series, anime and K-dramas",
+          "Favorites synced to your account",
+          "English and French interface"
+        ]
       },
       "plus": {
         "name": "Plus",
         "tagline": "For people who watch every day.",
-        "features": ["No sponsor messages before trailers", "Priority servers during peak hours", "Early access to new features"]
+        "features": [
+          "No sponsor messages before trailers",
+          "Priority servers during peak hours",
+          "Early access to new features"
+        ]
       },
       "family": {
         "name": "Family",
         "tagline": "One plan for the whole household.",
-        "features": ["Everything in Plus", "Up to 5 profiles with separate favorites", "Parental controls per profile"]
+        "features": [
+          "Everything in Plus",
+          "Up to 5 profiles with separate favorites",
+          "Parental controls per profile"
+        ]
       }
     },
     "recommended": "Most popular",
     "faqTitle": "Questions about Premium",
     "faq": [
-      { "q": "Will the free plan change?", "a": "No. Everything available today stays free when Premium launches." },
-      { "q": "When is Premium launching?", "a": "We'll announce the date and pricing by email to everyone who asked to be notified." },
-      { "q": "How do I get notified?", "a": "Use “Notify me at launch” to send us a message with your email address." }
+      {
+        "q": "Will the free plan change?",
+        "a": "No. Everything available today stays free when Premium launches."
+      },
+      {
+        "q": "When is Premium launching?",
+        "a": "We'll announce the date and pricing by email to everyone who asked to be notified."
+      },
+      {
+        "q": "How do I get notified?",
+        "a": "Use “Notify me at launch” to send us a message with your email address."
+      }
     ]
   },
   "help": {
@@ -480,30 +500,57 @@
     "devicesTitle": "Ways to watch",
     "devicesBody": "LuminaFlix runs in any modern browser — no app to install.",
     "devices": [
-      { "title": "Computer", "body": "Chrome, Edge, Firefox or Safari, on Windows, macOS or Linux." },
-      { "title": "Phone & tablet", "body": "Safari on iOS/iPadOS and Chrome on Android. Rotate your device for fullscreen playback." },
-      { "title": "TV", "body": "Cast a browser tab from Chrome, or open the site in your TV's built-in browser." }
+      {
+        "title": "Computer",
+        "body": "Chrome, Edge, Firefox or Safari, on Windows, macOS or Linux."
+      },
+      {
+        "title": "Phone & tablet",
+        "body": "Safari on iOS/iPadOS and Chrome on Android. Rotate your device for fullscreen playback."
+      },
+      {
+        "title": "TV",
+        "body": "Cast a browser tab from Chrome, or open the site in your TV's built-in browser."
+      }
     ],
     "categories": [
       {
         "title": "Account",
         "items": [
-          { "q": "Do I need an account to watch?", "a": "No. You can browse and watch without an account. Signing in lets you save favorites, like titles and download." },
-          { "q": "How do I delete my account?", "a": "Open your profile menu, choose “Manage account”, then “Delete account”. Your favorites are removed with it." }
+          {
+            "q": "Do I need an account to watch?",
+            "a": "No. You can browse and watch without an account. Signing in lets you save favorites, like titles and download."
+          },
+          {
+            "q": "How do I delete my account?",
+            "a": "Open your profile menu, choose “Manage account”, then “Delete account”. Your favorites are removed with it."
+          }
         ]
       },
       {
         "title": "Playback",
         "items": [
-          { "q": "The video won't start or keeps buffering.", "a": "Streams come from several servers. Switch to another server below the player; if none work, reload the page." },
-          { "q": "Why do I see “Playback blocked”?", "a": "Some browser extensions (ad blockers, download managers) prevent the player from loading. Disable them for this site and reload." }
+          {
+            "q": "The video won't start or keeps buffering.",
+            "a": "Streams come from several servers. Switch to another server below the player; if none work, reload the page."
+          },
+          {
+            "q": "Why do I see “Playback blocked”?",
+            "a": "Some browser extensions (ad blockers, download managers) prevent the player from loading. Disable them for this site and reload."
+          }
         ]
       },
       {
         "title": "Language",
         "items": [
-          { "q": "How do I change the language?", "a": "Use the language menu in the navigation bar or the footer. Your choice is remembered on this device." },
-          { "q": "Does the language change titles and summaries?", "a": "Yes. Titles, summaries and genres switch to the selected language when a translation exists." }
+          {
+            "q": "How do I change the language?",
+            "a": "Use the language menu in the navigation bar or the footer. Your choice is remembered on this device."
+          },
+          {
+            "q": "Does the language change titles and summaries?",
+            "a": "Yes. Titles, summaries and genres switch to the selected language when a translation exists."
+          }
         ]
       }
     ],
@@ -520,12 +567,30 @@
       "accent": "policy",
       "intro": "This policy explains what information LuminaFlix collects, why, and the choices you have.",
       "sections": [
-        { "title": "Information we collect", "body": "When you create an account, our authentication provider (Clerk) stores your name, email address and profile picture. We store the titles you add to favorites and your likes. When you use the contact form we receive your name, email and message." },
-        { "title": "How we use it", "body": "We use this information to run your account, sync your favorites, reply to your messages and send occasional recommendation emails. We don't sell your personal information." },
-        { "title": "Cookies and local storage", "body": "We use essential cookies for sign-in and to remember your language. Analytics (Vercel Analytics) measure page views without cross-site tracking." },
-        { "title": "Third-party services", "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies." },
-        { "title": "Your rights", "body": "You can access, correct or delete your data at any time from your account settings, or by contacting us. If you live in the EU, you may also lodge a complaint with your data protection authority." },
-        { "title": "Retention", "body": "We keep your data while your account is active. Deleting your account removes your profile and favorites within 30 days." }
+        {
+          "title": "Information we collect",
+          "body": "When you create an account, our authentication provider (Clerk) stores your name, email address and profile picture. We store the titles you add to favorites and your likes. When you use the contact form we receive your name, email and message."
+        },
+        {
+          "title": "How we use it",
+          "body": "We use this information to run your account, sync your favorites, reply to your messages and send occasional recommendation emails. We don't sell your personal information."
+        },
+        {
+          "title": "Cookies and local storage",
+          "body": "We use essential cookies for sign-in and to remember your language. Analytics (Vercel Analytics) measure page views without cross-site tracking."
+        },
+        {
+          "title": "Third-party services",
+          "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies."
+        },
+        {
+          "title": "Your rights",
+          "body": "You can access, correct or delete your data at any time from your account settings, or by contacting us. If you live in the EU, you may also lodge a complaint with your data protection authority."
+        },
+        {
+          "title": "Retention",
+          "body": "We keep your data while your account is active. Deleting your account removes your profile and favorites within 30 days."
+        }
       ]
     },
     "terms": {
@@ -533,12 +598,30 @@
       "accent": "use",
       "intro": "By using LuminaFlix you agree to these terms. Please read them carefully.",
       "sections": [
-        { "title": "The service", "body": "LuminaFlix is a catalog that displays information from TMDB and embeds players operated by third parties. We don't host video files and don't control the content provided by these services." },
-        { "title": "Your account", "body": "You're responsible for activity on your account and for keeping your sign-in details secure. You must be old enough to consent to data processing in your country." },
-        { "title": "Acceptable use", "body": "Don't attempt to disrupt the service, scrape it at scale, or use it for unlawful purposes. We may suspend accounts that do." },
-        { "title": "Rights holders", "body": "If you believe content accessible through LuminaFlix infringes your rights, contact us with the details and we'll review your request promptly." },
-        { "title": "Disclaimer", "body": "The service is provided “as is”, without warranties of availability or fitness for a particular purpose, to the extent permitted by law." },
-        { "title": "Changes", "body": "We may update these terms. When we do, we'll change the date at the top of this page. Continuing to use the service means you accept the updated terms." }
+        {
+          "title": "The service",
+          "body": "LuminaFlix is a catalog that displays information from TMDB and embeds players operated by third parties. We don't host video files and don't control the content provided by these services."
+        },
+        {
+          "title": "Your account",
+          "body": "You're responsible for activity on your account and for keeping your sign-in details secure. You must be old enough to consent to data processing in your country."
+        },
+        {
+          "title": "Acceptable use",
+          "body": "Don't attempt to disrupt the service, scrape it at scale, or use it for unlawful purposes. We may suspend accounts that do."
+        },
+        {
+          "title": "Rights holders",
+          "body": "If you believe content accessible through LuminaFlix infringes your rights, contact us with the details and we'll review your request promptly."
+        },
+        {
+          "title": "Disclaimer",
+          "body": "The service is provided “as is”, without warranties of availability or fitness for a particular purpose, to the extent permitted by law."
+        },
+        {
+          "title": "Changes",
+          "body": "We may update these terms. When we do, we'll change the date at the top of this page. Continuing to use the service means you accept the updated terms."
+        }
       ]
     }
   }

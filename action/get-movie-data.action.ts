@@ -1,6 +1,6 @@
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 
-export interface MovieDetails {
+interface MovieDetails {
   id: number;
   title: string;
   overview: string;

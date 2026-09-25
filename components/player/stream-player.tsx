@@ -7,12 +7,13 @@ import { Activity, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react
 import DirectLuminaLinker from "@/components/direct-lumina-linker";
 import GuardProtocol from "@/components/guard-protocol";
 import SignalMonitor from "@/components/signal-monitor";
-import StreamActionSuite from "@/components/stream-action-suite";
 import { tmdbImage } from "@/lib/media";
+import type { MediaInteraction } from "@/lib/media-interactions";
+import PlayerActions from "./actions/player-actions";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
 
-export interface StreamPlayerProps {
+interface StreamPlayerProps {
   kind: PlayerKind;
   mediaId: string;
   imdbId?: string;
@@ -21,6 +22,8 @@ export interface StreamPlayerProps {
   backdropPath?: string | null;
   posterPath?: string | null;
   title?: string;
+  /** Initial like/dislike/favorite state, read on the server. */
+  interaction: MediaInteraction;
 }
 
 type LockableOrientation = ScreenOrientation & {
@@ -48,6 +51,7 @@ export default function StreamPlayer({
   backdropPath,
   posterPath,
   title,
+  interaction,
 }: StreamPlayerProps) {
   const t = useTranslations("player");
   const groups = PLAYER_CONFIG[kind];
@@ -228,7 +232,11 @@ export default function StreamPlayer({
             </button>
           </div>
 
-          <StreamActionSuite type={REACTION_TYPE[kind]} mediaId={mediaId} season={season} episode={episode} />
+          <PlayerActions
+            key={`${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`}
+            mediaRef={{ mediaId, type: REACTION_TYPE[kind], season, episode }}
+            initial={interaction}
+          />
         </div>
 
         <div role="radiogroup" aria-label={t("servers")} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

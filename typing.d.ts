@@ -1,5 +1,3 @@
-import { Timestamp } from "firebase/firestore";
-
 export type Movie = {
   id: number;
   title: string;
@@ -52,34 +50,4 @@ export type AnimeEpisode = {
   overview: string;
   still_path: string;
   air_date: string;
-};
-
-export type AnimeSeason = {
-  id: number;
-  season_number: number;
-  name: string;
-  episode_count: number;
-  poster_path: string;
-  episodes?: AnimeEpisode[]; // Loaded when a season is selected
-};
-
-export type AnimeDetail = {
-  id: number;
-  name: string;
-  overview: string;
-  poster_path: string;
-  backdrop_path: string;
-  seasons: AnimeSeason[];
-};
-
-export type User = {
-  clerkId: string;
-  createdAt: Timestamp;
-  email: string;
-  firstName: string;
-  fullName: string;
-  lastActive: Timestamp;
-  lastName: string;
-  profileImage: string;
-  role?: null | "ADMIN";
 };

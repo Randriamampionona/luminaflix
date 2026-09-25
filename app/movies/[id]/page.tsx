@@ -5,6 +5,7 @@ import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { getFallbackMovie } from "@/action/get-fallback-movies.action";
 import { getMovieData } from "@/action/get-movie-data.action";
+import { getMediaInteraction } from "@/action/stream-actions";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
 import { PageShell } from "@/components/layout/page-shell";
@@ -33,7 +34,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function WatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { fallback }] = await Promise.all([params, searchParams]);
-  const [movie, t, format] = await Promise.all([getMovieData(id), getTranslations("media"), getFormatter()]);
+  const [movie, t, format, interaction] = await Promise.all([
+    getMovieData(id),
+    getTranslations("media"),
+    getFormatter(),
+    getMediaInteraction({ mediaId: id, type: "MOVIE" }),
+  ]);
 
   if (!movie) {
     const alternatives = fallback ? (await getFallbackMovie(fallback)).slice(0, 6) : [];
@@ -135,6 +141,7 @@ export default async function WatchPage({ params, searchParams }: { params: Para
         posterPath={movie.poster_path}
         backdropPath={movie.backdrop_path}
         title={movie.title}
+        interaction={interaction}
       />
 
       <AdWrapper>

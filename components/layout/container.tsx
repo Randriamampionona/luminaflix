@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
  * UI STANDARD: the single horizontal constraint used by the navbar, every
  * page, the hero content and the footer. Change it here, nowhere else.
  */
-export const CONTAINER_CLASS = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
+const CONTAINER_CLASS = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 
 type ContainerProps<T extends React.ElementType> = {
   as?: T;
