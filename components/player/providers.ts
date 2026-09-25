@@ -69,10 +69,17 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
   ],
   drama: [
     {
-      key: "all",
+      key: "vf",
       providers: [
-        { name: "VidLink (Direct)", id: "vidlink", icon: Zap, url: (t) => `https://vidlink.pro/tv/${t.mediaId}/${s(t)}/${e(t)}?primaryColor=06b6d4` },
+        { name: "VidNest (Mirror)", id: "vidnest", icon: Globe2, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: Tv2, url: (t) => `https://frembed.surf/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
+      ],
+    },
+    {
+      key: "vo",
+      providers: [
         { name: "VidSrc (Global)", id: "vidsrc", icon: Globe2, url: (t) => `https://vidsrc.sbs/embed/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "VidLink (Direct)", id: "vidlink", icon: Zap, url: (t) => `https://vidlink.pro/tv/${t.mediaId}/${s(t)}/${e(t)}?primaryColor=06b6d4` },
         { name: "VidFast (Flash)", id: "vidfast", icon: FastForward, url: (t) => `https://vidfast.vc/tv/${t.mediaId}/${s(t)}/${e(t)}?autoPlay=true` },
         { name: "Videasy (Legacy)", id: "videasy", icon: Layers, url: (t) => `https://player.videasy.ws/embed/tv/${t.mediaId}/${s(t)}/${e(t)}` },
         { name: "VidNest (Mirror)", id: "vidnest", icon: Globe2, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
