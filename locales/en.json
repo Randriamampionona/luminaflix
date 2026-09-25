@@ -167,7 +167,8 @@
     "notFoundBody": "This title (#{id}) is unavailable. Here are similar titles you can watch instead.",
     "similarTo": "Similar to “{query}”",
     "noSimilar": "No similar titles found.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "seasons": "{count, plural, one {# season} other {# seasons}}"
   },
   "filters": {
     "button": "Filters",
@@ -372,17 +373,15 @@
     "reload": "Reload page"
   },
   "trailer": {
+    "eyebrow": "Official trailer",
     "back": "Back to home",
     "unavailable": "No trailer is available for this title.",
+    "unavailableHint": "You can still start watching the full title.",
     "start": "Start watching",
-    "switchTo": "Switch to {lang}",
     "language": "Trailer language",
-    "playTrailer": "Play trailer",
-    "loadingAd": "Loading sponsor message…",
-    "timeout": "Skipping automatically in {seconds}s",
-    "skipNow": "Skip and play trailer",
-    "skipIn": "Skip in {seconds}s",
-    "bypass": "Play trailer now"
+    "fallbackNotice": "No {requested} trailer is available — showing the {available} version.",
+    "openYoutube": "Watch on YouTube",
+    "playerTitle": "Trailer: {title}"
   },
   "notFound": {
     "title": "404",

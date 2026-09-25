@@ -167,7 +167,8 @@
     "notFoundBody": "Ce titre (n° {id}) n'est pas disponible. Voici des titres similaires à regarder à la place.",
     "similarTo": "Similaire à « {query} »",
     "noSimilar": "Aucun titre similaire trouvé.",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "seasons": "{count, plural, one {# saison} other {# saisons}}"
   },
   "filters": {
     "button": "Filtres",
@@ -372,17 +373,15 @@
     "reload": "Recharger la page"
   },
   "trailer": {
+    "eyebrow": "Bande-annonce officielle",
     "back": "Retour à l'accueil",
     "unavailable": "Aucune bande-annonce n'est disponible pour ce titre.",
-    "start": "Regarder",
-    "switchTo": "Passer en {lang}",
+    "unavailableHint": "Vous pouvez tout de même lancer le titre complet.",
+    "start": "Commencer à regarder",
     "language": "Langue de la bande-annonce",
-    "playTrailer": "Lire la bande-annonce",
-    "loadingAd": "Chargement du message sponsorisé…",
-    "timeout": "Passage automatique dans {seconds} s",
-    "skipNow": "Passer et lire la bande-annonce",
-    "skipIn": "Passer dans {seconds} s",
-    "bypass": "Lire la bande-annonce maintenant"
+    "fallbackNotice": "Aucune bande-annonce en {requested} n'est disponible — version {available} affichée.",
+    "openYoutube": "Regarder sur YouTube",
+    "playerTitle": "Bande-annonce : {title}"
   },
   "notFound": {
     "title": "404",

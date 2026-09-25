@@ -12,6 +12,9 @@ export interface SeriesDetails {
   backdrop_path: string | null;
   vote_average: number;
   origin_country?: string[];
+  first_air_date?: string;
+  number_of_seasons?: number;
+  genres?: { id: number; name: string }[];
   seasons: { id: number; season_number: number; name: string; episode_count: number }[];
 }
 
