@@ -29,7 +29,7 @@ function EpisodeCard({
     <Link
       href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
       aria-label={t("episodes.play", { number: ep.episode_number })}
-      className="group relative block aspect-video overflow-hidden rounded-2xl border border-white/5 bg-zinc-900 outline-none transition-colors hover:border-cyan-500/50 focus-visible:ring-2 focus-visible:ring-cyan-500"
+      className="dark group relative block aspect-video overflow-hidden rounded-2xl border border-line bg-elevated text-foreground outline-none transition-colors hover:border-cyan-500/50 focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       <Image
         src={tmdbImage(ep.still_path) ?? FALLBACK_STILL}
@@ -42,15 +42,15 @@ function EpisodeCard({
 
       <div className="absolute bottom-4 left-4 right-4">
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand">
             {t("episodes.episodeShort", { number: ep.episode_number })}
           </span>
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-fg-muted">
             <Calendar className="h-2.5 w-2.5" />
             {ep.air_date?.split("-")[0] || t("common.tba")}
           </span>
         </div>
-        <h3 className="truncate text-sm font-bold uppercase tracking-tighter text-white">{ep.name}</h3>
+        <h3 className="truncate text-sm font-bold uppercase tracking-tighter text-foreground">{ep.name}</h3>
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">

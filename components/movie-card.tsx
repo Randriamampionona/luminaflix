@@ -48,7 +48,7 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
       onKeyDown={onKeyDown}
       className="group relative w-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
-      <div className="relative aspect-2/3 overflow-hidden rounded-md border border-white/5 bg-zinc-900 shadow-lg">
+      <div className="relative aspect-2/3 overflow-hidden rounded-md border border-line bg-elevated shadow-lg">
         {poster ? (
           <Image
             src={poster}
@@ -59,7 +59,7 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-600">
+          <div className="flex h-full w-full items-center justify-center p-3 text-center text-[10px] font-black uppercase tracking-widest text-fg-faint">
             {title}
           </div>
         )}
@@ -75,17 +75,17 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
       </div>
 
       <div className="mt-3 space-y-1 px-1">
-        <h3 className="truncate text-xs font-bold uppercase tracking-tight text-white transition-colors group-hover:text-cyan-400">
+        <h3 className="truncate text-xs font-bold uppercase tracking-tight text-foreground transition-colors group-hover:text-brand-bright">
           {title}
         </h3>
-        <p className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
+        <p className="flex items-center gap-2 text-[10px] font-medium text-fg-subtle">
           {year && <span>{year}</span>}
           {year && movie.original_language && <span aria-hidden>•</span>}
           {movie.original_language && (
-            <span className="font-bold uppercase text-cyan-500">{movie.original_language}</span>
+            <span className="font-bold uppercase text-brand">{movie.original_language}</span>
           )}
           <span aria-hidden>•</span>
-          <span className="text-white/60">{(movie.vote_average ?? 0).toFixed(1)}</span>
+          <span className="text-foreground/60">{(movie.vote_average ?? 0).toFixed(1)}</span>
         </p>
       </div>
     </div>

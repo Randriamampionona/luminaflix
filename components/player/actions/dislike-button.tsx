@@ -26,7 +26,7 @@ function DislikeButton({ active, count, pending, disabled, onClick }: DislikeBut
       title={t("dislike")}
       className={cn(
         "group flex h-10 cursor-pointer items-center gap-2 rounded-lg px-4 transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-        active ? "text-white" : "text-zinc-500 hover:text-white",
+        active ? "text-foreground" : "text-fg-subtle hover:text-foreground",
       )}
     >
       <ThumbsDown
@@ -34,7 +34,7 @@ function DislikeButton({ active, count, pending, disabled, onClick }: DislikeBut
         className={cn(
           "h-4 w-4 transition-transform",
           pending && "animate-pulse",
-          active ? "scale-110 fill-white" : "group-hover:translate-y-0.5",
+          active ? "scale-110 fill-foreground" : "group-hover:translate-y-0.5",
         )}
       />
       <ActionCount value={count} />

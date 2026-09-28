@@ -43,7 +43,7 @@ function MovieRow({ title, movies, type, priority = false }: MovieRowProps) {
                 type="button"
                 onClick={() => scroll(-1)}
                 aria-label={t("scrollLeft")}
-                className="rounded-full border border-white/5 bg-zinc-900 p-2 text-white transition-colors hover:bg-cyan-500 hover:text-black"
+                className="rounded-full border border-line bg-elevated p-2 text-foreground transition-colors hover:bg-cyan-500 hover:text-black"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -51,7 +51,7 @@ function MovieRow({ title, movies, type, priority = false }: MovieRowProps) {
                 type="button"
                 onClick={() => scroll(1)}
                 aria-label={t("scrollRight")}
-                className="rounded-full border border-white/5 bg-zinc-900 p-2 text-white transition-colors hover:bg-cyan-500 hover:text-black"
+                className="rounded-full border border-line bg-elevated p-2 text-foreground transition-colors hover:bg-cyan-500 hover:text-black"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

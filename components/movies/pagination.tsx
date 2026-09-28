@@ -40,10 +40,10 @@ export default async function Pagination({
   };
 
   const arrow =
-    "rounded-xl border border-white/5 bg-zinc-900 p-2 transition-colors duration-300 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black sm:p-3";
+    "rounded-xl border border-line bg-elevated p-2 transition-colors duration-300 hover:border-cyan-500/50 hover:bg-cyan-500 hover:text-black sm:p-3";
 
   return (
-    <nav aria-label={t("label")} className="flex flex-wrap items-center justify-center gap-1.5 border-t border-white/5 pt-10 sm:gap-2">
+    <nav aria-label={t("label")} className="flex flex-wrap items-center justify-center gap-1.5 border-t border-line pt-10 sm:gap-2">
       {currentPage > 1 && (
         <Link href={href(currentPage - 1)} aria-label={t("previous")} className={arrow}>
           <ChevronLeft className="h-5 w-5" />
@@ -60,7 +60,7 @@ export default async function Pagination({
             "flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold transition-colors duration-300 sm:h-12 sm:w-12 sm:text-base",
             page === currentPage
               ? "bg-cyan-500 text-black shadow-[0_0_30px_rgba(6,182,212,0.3)]"
-              : "border border-white/5 bg-zinc-900 text-zinc-500 hover:text-white",
+              : "border border-line bg-elevated text-fg-subtle hover:text-foreground",
           )}
         >
           {page}

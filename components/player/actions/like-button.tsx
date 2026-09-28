@@ -26,7 +26,7 @@ function LikeButton({ active, count, pending, disabled, onClick }: LikeButtonPro
       title={t("like")}
       className={cn(
         "group flex h-10 cursor-pointer items-center gap-2 rounded-lg px-4 transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-        active ? "text-cyan-400" : "text-zinc-500 hover:text-white",
+        active ? "text-brand-bright" : "text-fg-subtle hover:text-foreground",
       )}
     >
       <ThumbsUp

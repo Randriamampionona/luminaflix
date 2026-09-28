@@ -31,8 +31,8 @@ export function PageHeader({
         {eyebrow && <p className={type.eyebrow}>{eyebrow}</p>}
         <h1 className={cn(type.h1, "wrap-break-word")}>
           {title}
-          {accent && <span className="text-white/20"> {accent}</span>}
-          <span className="text-cyan-500 not-italic">.</span>
+          {accent && <span className="text-foreground/20"> {accent}</span>}
+          <span className="text-brand not-italic">.</span>
         </h1>
         {meta && (
           <div className="flex items-center gap-3">
@@ -71,7 +71,7 @@ export function SectionHeader({
         {eyebrow && <p className={type.eyebrow}>{eyebrow}</p>}
         <h2 id={id} className={cn(type.h2, "truncate")}>
           {title}
-          <span className="text-cyan-500 not-italic">.</span>
+          <span className="text-brand not-italic">.</span>
         </h2>
       </div>
       {action && <div className="shrink-0">{action}</div>}

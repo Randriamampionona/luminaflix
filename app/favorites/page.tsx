@@ -66,7 +66,7 @@ async function FavoritesList({ data }: { data: FavoritesResult }) {
         action={
           <Link
             href="/favorites"
-            className="inline-flex items-center gap-3 rounded-full border border-white/10 px-8 py-4 text-xs font-black uppercase tracking-widest text-white transition-colors hover:border-cyan-500 hover:text-cyan-400"
+            className="inline-flex items-center gap-3 rounded-full border border-line-strong px-8 py-4 text-xs font-black uppercase tracking-widest text-foreground transition-colors hover:border-cyan-500 hover:text-brand-bright"
           >
             {tCommon("retry")}
           </Link>
@@ -84,7 +84,7 @@ async function FavoritesList({ data }: { data: FavoritesResult }) {
         action={
           <Link
             href="/movies"
-            className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-xs font-black uppercase italic text-black transition-all duration-300 hover:bg-cyan-500 active:scale-95"
+            className="inline-flex items-center gap-3 rounded-full bg-inverse px-8 py-4 text-xs font-black uppercase italic text-inverse-fg transition-all duration-300 hover:bg-cyan-500 hover:text-black active:scale-95"
           >
             {t("emptyCta")}
           </Link>

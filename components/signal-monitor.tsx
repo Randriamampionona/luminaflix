@@ -7,7 +7,7 @@ export default function SignalMonitor() {
   return (
     <div
       role="note"
-      className="group relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/40 p-4 transition-colors duration-500 hover:border-amber-500/30"
+      className="group relative overflow-hidden rounded-2xl border border-line bg-elevated/40 p-4 transition-colors duration-500 hover:border-amber-500/30"
     >
       <div className="pointer-events-none absolute -top-10 -left-10 h-32 w-32 rounded-full bg-amber-500/5 blur-[50px] transition-colors group-hover:bg-amber-500/10" />
       <div className="relative flex items-center gap-4">
@@ -18,7 +18,7 @@ export default function SignalMonitor() {
           <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/90">
             {t("advisoryTitle")}
           </h4>
-          <p className="text-xs leading-relaxed text-zinc-400">{t("advisoryBody")}</p>
+          <p className="text-xs leading-relaxed text-fg-muted">{t("advisoryBody")}</p>
         </div>
       </div>
     </div>

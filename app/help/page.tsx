@@ -32,10 +32,10 @@ export default async function HelpPage() {
             <div key={category.title} className="space-y-3">
               <h3 className={type.eyebrow}>{category.title}</h3>
               {category.items.map((item) => (
-                <details key={item.q} className="group rounded-2xl border border-white/5 bg-zinc-950 p-5 open:border-cyan-500/30">
-                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-bold text-white">
+                <details key={item.q} className="group rounded-2xl border border-line bg-surface p-5 open:border-cyan-500/30">
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-bold text-foreground">
                     {item.q}
-                    <span aria-hidden className="text-cyan-500 transition-transform group-open:rotate-45">+</span>
+                    <span aria-hidden className="text-brand transition-transform group-open:rotate-45">+</span>
                   </summary>
                   <p className={cn(type.prose, "mt-3")}>{item.a}</p>
                 </details>
@@ -51,8 +51,8 @@ export default async function HelpPage() {
           {devices.map((device, index) => {
             const Icon = DEVICE_ICONS[index] ?? Monitor;
             return (
-              <article key={device.title} className="space-y-4 rounded-4xl border border-white/5 bg-zinc-950 p-8">
-                <span className="inline-flex rounded-2xl bg-cyan-500/10 p-3 text-cyan-500">
+              <article key={device.title} className="space-y-4 rounded-4xl border border-line bg-surface p-8">
+                <span className="inline-flex rounded-2xl bg-cyan-500/10 p-3 text-brand">
                   <Icon className="h-6 w-6" aria-hidden />
                 </span>
                 <h3 className={type.h3}>{device.title}</h3>

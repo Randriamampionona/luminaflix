@@ -70,12 +70,12 @@ export async function GenresSection() {
           action={
             <Link
               href="/genres"
-              className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 transition-colors hover:border-cyan-500/50 sm:px-5"
+              className="group flex items-center gap-3 rounded-2xl border border-line-strong bg-tint px-4 py-2.5 transition-colors hover:border-cyan-500/50 sm:px-5"
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 transition-colors group-hover:text-white">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-fg-muted transition-colors group-hover:text-foreground">
                 {t("genresViewAll")}
               </span>
-              <ArrowRight className="h-3.5 w-3.5 text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-400" />
+              <ArrowRight className="h-3.5 w-3.5 text-fg-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-bright" />
             </Link>
           }
         />

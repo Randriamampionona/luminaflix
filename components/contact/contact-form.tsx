@@ -25,7 +25,7 @@ const INITIAL_STATE: ContactFormState = { status: "idle" };
 const ALL_TOUCHED = { name: true, email: true, subject: true, message: true, captcha: true };
 
 const inputBase =
-  "w-full rounded-2xl border bg-zinc-900/60 px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-60";
+  "w-full rounded-2xl border bg-elevated/60 px-4 py-3.5 text-sm text-foreground placeholder:text-fg-faint outline-none transition-colors focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:opacity-60";
 
 interface ContactFormProps {
   /** First captcha, generated on the server with the page. */
@@ -161,9 +161,9 @@ export default function ContactForm({
         role="status"
         className="flex flex-col items-center gap-5 rounded-4xl border border-cyan-500/20 bg-cyan-500/5 px-6 py-16 text-center"
       >
-        <CheckCircle2 className="h-12 w-12 text-cyan-500" aria-hidden />
-        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">{t("success.title")}</h2>
-        <p className="max-w-md text-sm leading-relaxed text-zinc-400">
+        <CheckCircle2 className="h-12 w-12 text-brand" aria-hidden />
+        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">{t("success.title")}</h2>
+        <p className="max-w-md text-sm leading-relaxed text-fg-muted">
           {t("success.body", { name: state.name, email: state.email })}
         </p>
         <button
@@ -172,12 +172,12 @@ export default function ContactForm({
             setShowSuccess(false);
             setStartedAt(Date.now());
           }}
-          className="cursor-pointer rounded-full border border-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:border-cyan-500 hover:text-cyan-400"
+          className="cursor-pointer rounded-full border border-line-strong px-6 py-3 text-[10px] font-black uppercase tracking-widest text-foreground transition-colors hover:border-cyan-500 hover:text-brand-bright"
         >
           {t("success.again")}
         </button>
         {cooldown.active && (
-          <p className="flex items-center gap-2 text-xs text-zinc-500" aria-live="polite">
+          <p className="flex items-center gap-2 text-xs text-fg-subtle" aria-live="polite">
             <Clock className="h-3.5 w-3.5" aria-hidden />
             {t("cooldown.notice", { time: formatCountdown(cooldown.remaining) })}
           </p>
@@ -208,13 +208,13 @@ export default function ContactForm({
     disabled: isPending,
     "aria-invalid": !!fieldError(field),
     "aria-describedby": fieldError(field) ? `${field}-error` : undefined,
-    className: cn(inputBase, fieldError(field) ? "border-red-500/60" : "border-white/10"),
+    className: cn(inputBase, fieldError(field) ? "border-red-500/60" : "border-line-strong"),
   });
 
   const label = (htmlFor: string, text: string) => (
-    <label htmlFor={htmlFor} className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+    <label htmlFor={htmlFor} className="text-[10px] font-black uppercase tracking-[0.2em] text-fg-muted">
       {text}
-      <span className="text-cyan-500" aria-hidden>
+      <span className="text-brand" aria-hidden>
         {" "}
         *
       </span>
@@ -229,7 +229,7 @@ export default function ContactForm({
       action={formAction}
       onSubmit={onSubmit}
       noValidate
-      className="relative space-y-6 rounded-4xl border border-white/5 bg-zinc-950/60 p-6 backdrop-blur-sm sm:p-8"
+      className="relative space-y-6 rounded-4xl border border-line bg-surface/60 p-6 backdrop-blur-sm sm:p-8"
     >
       {/* Anti-spam: honeypot (hidden from people & assistive tech) + time-trap. */}
       <div aria-hidden className="absolute -left-2499.75 h-px w-px overflow-hidden">
@@ -275,7 +275,7 @@ export default function ContactForm({
           {renderError("email")}
         </div>
       </div>
-      {prefilled && <p className="-mt-3 text-xs text-zinc-500">{t("prefilled")}</p>}
+      {prefilled && <p className="-mt-3 text-xs text-fg-subtle">{t("prefilled")}</p>}
 
       <div className="space-y-2">
         {label("subject", t("fields.subject"))}
@@ -295,7 +295,7 @@ export default function ContactForm({
           <span
             className={cn(
               "text-[10px] font-bold tabular-nums",
-              values.message.length > CONTACT_LIMITS.message.max ? "text-red-400" : "text-zinc-600",
+              values.message.length > CONTACT_LIMITS.message.max ? "text-red-400" : "text-fg-faint",
             )}
             aria-live="polite"
           >
@@ -314,15 +314,16 @@ export default function ContactForm({
       </div>
 
       {/* Captcha */}
-      <fieldset className="space-y-3 rounded-2xl border border-white/5 bg-black/30 p-4">
+      <fieldset className="space-y-3 rounded-2xl border border-line bg-tint-soft p-4">
         <legend className="sr-only">{t("captcha.label")}</legend>
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-cyan-500" aria-hidden />
+          <ShieldCheck className="h-4 w-4 text-brand" aria-hidden />
           {label("captchaAnswer", t("captcha.label"))}
         </div>
-        <p className="text-xs text-zinc-500">{t("captcha.hint")}</p>
+        <p className="text-xs text-fg-subtle">{t("captcha.hint")}</p>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-14 items-center rounded-xl border border-white/10 bg-zinc-950 px-2">
+          {/* Always dark: the captcha is drawn in light strokes. */}
+          <div className="dark flex h-14 items-center rounded-xl border border-line-strong bg-surface px-2">
             {/* eslint-disable-next-line @next/next/no-img-element -- inline data: URI, nothing to optimize */}
             <img
               key={challenge.token}
@@ -356,7 +357,7 @@ export default function ContactForm({
             className={cn(
               inputBase,
               "w-28 text-center text-base font-bold tabular-nums",
-              fieldError("captcha") ? "border-red-500/60" : "border-white/10",
+              fieldError("captcha") ? "border-red-500/60" : "border-line-strong",
             )}
           />
           <button
@@ -365,7 +366,7 @@ export default function ContactForm({
             disabled={isRefreshing || isPending}
             aria-label={t("captcha.refresh")}
             title={t("captcha.refresh")}
-            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-white/10 text-zinc-400 transition-colors hover:border-cyan-500 hover:text-cyan-400 disabled:cursor-wait disabled:opacity-60"
+            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-line-strong text-fg-muted transition-colors hover:border-cyan-500 hover:text-brand-bright disabled:cursor-wait disabled:opacity-60"
           >
             <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} aria-hidden />
           </button>
@@ -384,7 +385,7 @@ export default function ContactForm({
       )}
 
       <div className="flex flex-col-reverse items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <p className="text-xs text-zinc-500">{t("responseTime")}</p>
+        <p className="text-xs text-fg-subtle">{t("responseTime")}</p>
         <button
           type="submit"
           disabled={submitDisabled}

@@ -23,7 +23,7 @@ import {
  */
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen bg-black">
+    <main className="relative min-h-screen bg-background">
       <Suspense fallback={<HeroSkeleton />}>
         <HeroSection />
       </Suspense>

@@ -135,13 +135,13 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
       {backdrop && (
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[75vh] overflow-hidden">
           <Image src={backdrop} alt="" fill priority sizes="100vw" className="scale-110 object-cover opacity-30 blur-2xl" />
-          <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/70 to-black" />
+          <div className="absolute inset-0 bg-linear-to-b from-background/30 via-background/70 to-background" />
         </div>
       )}
 
       <nav className="flex items-center justify-between gap-4">
-        <Link href="/" className="group inline-flex min-w-0 items-center gap-3 text-zinc-400 transition-colors hover:text-white">
-          <span className="rounded-full border border-white/10 bg-black/40 p-2 transition-colors group-hover:border-cyan-500 group-hover:text-cyan-400">
+        <Link href="/" className="group inline-flex min-w-0 items-center gap-3 text-fg-muted transition-colors hover:text-foreground">
+          <span className="rounded-full border border-line-strong bg-tint p-2 transition-colors group-hover:border-cyan-500 group-hover:text-brand-bright">
             <ArrowLeft className="h-4 w-4" />
           </span>
           <span className="text-[10px] font-black uppercase tracking-[0.25em]">{t("back")}</span>
@@ -153,7 +153,7 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
       </nav>
 
       {/* Player */}
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-black shadow-[0_0_100px_-30px_rgba(6,182,212,0.35)] ring-1 ring-white/5">
+      <div className="dark overflow-hidden rounded-3xl border border-line-strong bg-background text-foreground shadow-[0_0_100px_-30px_rgba(6,182,212,0.35)] ring-1 ring-line">
         <div className="relative aspect-video w-full">
           {embedSrc ? (
             <iframe
@@ -171,10 +171,10 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
                 <Image src={backdrop} alt="" fill sizes="(min-width: 1152px) 1152px, 100vw" className="object-cover opacity-20" />
               )}
               <div className="absolute inset-0 bg-black/50" />
-              <ShieldAlert className="relative h-10 w-10 text-zinc-500" aria-hidden />
+              <ShieldAlert className="relative h-10 w-10 text-fg-subtle" aria-hidden />
               <div className="relative space-y-1">
-                <p className="text-sm font-bold text-white">{t("unavailable")}</p>
-                <p className="text-xs text-zinc-400">{t("unavailableHint")}</p>
+                <p className="text-sm font-bold text-foreground">{t("unavailable")}</p>
+                <p className="text-xs text-fg-muted">{t("unavailableHint")}</p>
               </div>
               <Link
                 href={watchHref}
@@ -192,7 +192,7 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
         {/* Title details */}
         <section aria-labelledby="trailer-title" className="flex gap-5 lg:col-span-8">
           {poster && (
-            <div className="relative hidden aspect-2/3 w-32 shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-2xl sm:block">
+            <div className="relative hidden aspect-2/3 w-32 shrink-0 overflow-hidden rounded-2xl border border-line-strong shadow-2xl sm:block">
               <Image src={poster} alt="" fill sizes="128px" className="object-cover" />
             </div>
           )}
@@ -203,14 +203,14 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
             </span>
             <h1 id="trailer-title" className={cn(typo.h2, "wrap-break-word")}>
               {title || t("eyebrow")}
-              <span className="text-cyan-500 not-italic">.</span>
+              <span className="text-brand not-italic">.</span>
             </h1>
 
             {details && (
-              <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-zinc-400">
+              <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-fg-muted">
                 {details.year && <li>{details.year}</li>}
                 {details.rating > 0 && (
-                  <li className="flex items-center gap-1 font-bold text-cyan-400">
+                  <li className="flex items-center gap-1 font-bold text-brand-bright">
                     <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
                     {details.rating.toFixed(1)}
                     <span className="sr-only">{tMedia("rating")}</span>
@@ -226,7 +226,7 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
                 {details.genres.slice(0, 4).map((genre) => (
                   <li
                     key={genre}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-300"
+                    className="rounded-full border border-line-strong bg-tint px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-fg-soft"
                   >
                     {genre}
                   </li>
@@ -239,10 +239,10 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
         </section>
 
         {/* Actions + language */}
-        <aside className="space-y-6 self-start rounded-4xl border border-white/10 bg-zinc-950/70 p-6 backdrop-blur-md lg:col-span-4">
+        <aside className="space-y-6 self-start rounded-4xl border border-line-strong bg-surface/70 p-6 backdrop-blur-md lg:col-span-4">
           <Link
             href={watchHref}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-4 text-black transition-all duration-300 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-inverse py-4 text-inverse-fg transition-all duration-300 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] active:scale-[0.98]"
           >
             <Play className="h-4 w-4 fill-current" aria-hidden />
             <span className="text-xs font-black uppercase tracking-[0.3em]">{t("start")}</span>
@@ -250,10 +250,10 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
 
           <div className="space-y-3">
             <p className={cn(typo.meta, "flex items-center gap-2")}>
-              <Globe className="h-3.5 w-3.5 text-cyan-500" aria-hidden />
+              <Globe className="h-3.5 w-3.5 text-brand" aria-hidden />
               {t("language")}
             </p>
-            <div role="group" aria-label={t("language")} className="grid grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-black/60 p-1">
+            <div role="group" aria-label={t("language")} className="grid grid-cols-2 gap-1 rounded-2xl border border-line-strong bg-tint p-1">
               {locales.map((lang) => {
                 const active = lang === requested;
                 return (
@@ -265,10 +265,10 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
                     aria-current={active ? "true" : undefined}
                     className={cn(
                       "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-colors",
-                      active ? "bg-cyan-500 text-black" : "text-zinc-400 hover:bg-white/5 hover:text-white",
+                      active ? "bg-cyan-500 text-black" : "text-fg-muted hover:bg-tint hover:text-foreground",
                     )}
                   >
-                    <span className={cn("text-[10px] font-black", active ? "text-black/60" : "text-zinc-600")}>
+                    <span className={cn("text-[10px] font-black", active ? "text-black/60" : "text-fg-faint")}>
                       {localeMeta[lang].short}
                     </span>
                     {localeMeta[lang].nativeName}
@@ -293,7 +293,7 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
               href={`https://www.youtube.com/watch?v=${trailer.key}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 transition-colors hover:text-white"
+              className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-fg-subtle transition-colors hover:text-foreground"
             >
               {t("openYoutube")}
               <ExternalLink className="h-3 w-3" aria-hidden />

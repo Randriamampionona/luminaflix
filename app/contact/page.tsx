@@ -44,15 +44,15 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         <aside className="space-y-8 lg:col-span-5">
           <PageHeader eyebrow={t("eyebrow")} title={t("title")} accent={t("accent")} description={t("description")} />
           <ul className="space-y-4">
-            <li className="flex items-start gap-4 rounded-3xl border border-white/5 bg-zinc-950 p-5">
-              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" aria-hidden />
+            <li className="flex items-start gap-4 rounded-3xl border border-line bg-surface p-5">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
               <p className={type.body}>{t("responseTime")}</p>
             </li>
-            <li className="flex items-start gap-4 rounded-3xl border border-white/5 bg-zinc-950 p-5">
-              <LifeBuoy className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" aria-hidden />
+            <li className="flex items-start gap-4 rounded-3xl border border-line bg-surface p-5">
+              <LifeBuoy className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
               <p className={type.body}>
                 {t("helpPrompt")}{" "}
-                <Link href="/help" className="font-bold text-cyan-400 hover:underline">
+                <Link href="/help" className="font-bold text-brand-bright hover:underline">
                   {t("helpLink")}
                 </Link>
               </p>

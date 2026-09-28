@@ -81,10 +81,10 @@ function DetailsContent({
   const label = kind === "tv" ? t("series") : kind === "anime" ? t("anime") : t("movie");
 
   return (
-    <DialogContent className="z-100 max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[2rem] border-white/5 bg-zinc-950/95 p-0 text-white backdrop-blur-2xl no-scrollbar sm:max-w-175">
+    <DialogContent className="dark z-100 max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[2rem] border-line bg-surface/95 p-0 text-foreground backdrop-blur-2xl no-scrollbar sm:max-w-175">
       <div className="relative grid min-h-137.5 grid-cols-1 gap-8 p-6 md:min-h-0 md:grid-cols-2">
         {/* Poster: background on mobile, column on desktop */}
-        <div className="group absolute inset-0 aspect-2/3 overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_40px_rgba(6,182,212,0.15)] md:relative md:inset-auto">
+        <div className="group absolute inset-0 aspect-2/3 overflow-hidden rounded-2xl border border-line-strong shadow-[0_0_40px_rgba(6,182,212,0.15)] md:relative md:inset-auto">
           {poster ? (
             <Image
               src={poster}
@@ -94,7 +94,7 @@ function DetailsContent({
               className="object-cover transition-transform duration-700 md:group-hover:scale-105"
             />
           ) : (
-            <div className="h-full w-full bg-zinc-900" />
+            <div className="h-full w-full bg-elevated" />
           )}
           <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-black/20 md:hidden" />
           <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 md:flex">
@@ -112,31 +112,31 @@ function DetailsContent({
         <div className="relative z-10 flex flex-col justify-end py-4 md:justify-between">
           <div>
             <DialogHeader className="text-left">
-              <p className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300 md:text-zinc-500">
+              <p className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-fg-soft md:text-fg-subtle">
                 <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
                 {label}
               </p>
               <DialogTitle className="mb-4 line-clamp-3 text-4xl font-black uppercase italic leading-none tracking-tighter">
                 {title}
-                <span className="not-italic text-cyan-500">.</span>
+                <span className="not-italic text-brand">.</span>
               </DialogTitle>
             </DialogHeader>
 
             <div className="mb-6 flex items-center gap-4">
-              <div className="flex items-center gap-1 rounded-full border border-cyan-400/20 bg-cyan-400/20 px-3 py-1 text-sm font-black text-cyan-400 backdrop-blur-md md:bg-cyan-400/10">
+              <div className="flex items-center gap-1 rounded-full border border-cyan-400/20 bg-cyan-400/20 px-3 py-1 text-sm font-black text-brand-bright backdrop-blur-md md:bg-cyan-400/10">
                 <Star className="h-3.5 w-3.5 fill-current" />
                 <span className="sr-only">{t("rating")}: </span>
                 {(movie.vote_average ?? 0).toFixed(1)}
               </div>
               {year && (
-                <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-zinc-200 md:text-zinc-400">
+                <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-foreground/90 md:text-fg-muted">
                   <Calendar className="h-3.5 w-3.5" />
                   {year}
                 </div>
               )}
             </div>
 
-            <DialogDescription className="mb-8 max-h-36 overflow-y-auto pr-2 text-sm italic leading-relaxed text-zinc-200 md:text-zinc-400">
+            <DialogDescription className="mb-8 max-h-36 overflow-y-auto pr-2 text-sm italic leading-relaxed text-foreground/90 md:text-fg-muted">
               {movie.overview}
             </DialogDescription>
           </div>
@@ -145,15 +145,15 @@ function DetailsContent({
             <Link
               href={trailerHref}
               onClick={onNavigate}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/80 py-4 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md transition-colors hover:bg-zinc-800 md:bg-zinc-900"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl border border-line-strong bg-elevated/80 py-4 text-[10px] font-black uppercase tracking-widest text-foreground backdrop-blur-md transition-colors hover:bg-elevated-2 md:bg-elevated"
             >
-              <Film className="h-4 w-4 text-cyan-500" />
+              <Film className="h-4 w-4 text-brand" />
               {t("watchTrailer")}
             </Link>
             <Link
               href={playHref}
               onClick={onNavigate}
-              className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-transparent bg-white py-4 text-xs font-black uppercase tracking-widest text-black shadow-xl transition-colors hover:border-white/20 hover:bg-cyan-500 hover:text-white"
+              className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-transparent bg-inverse py-4 text-xs font-black uppercase tracking-widest text-inverse-fg shadow-xl transition-colors hover:border-line-stronger hover:bg-cyan-500 hover:text-foreground"
             >
               <Play className="h-4 w-4 fill-current transition-transform group-hover:scale-110" />
               {kind === "movie" ? t("startWatching") : t("exploreEpisodes")}

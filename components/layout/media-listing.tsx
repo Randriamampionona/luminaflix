@@ -67,7 +67,7 @@ export async function MediaListing({
             resetHref ? (
               <Link
                 href={resetHref}
-                className="text-xs font-black uppercase italic tracking-widest text-cyan-500 hover:underline"
+                className="text-xs font-black uppercase italic tracking-widest text-brand hover:underline"
               >
                 {t("reset")}
               </Link>
@@ -97,7 +97,7 @@ export function parsePage(value?: string) {
 
 /** Vertical divider used between filter and sort controls. */
 export function ControlDivider() {
-  return <span aria-hidden className="mx-1 h-6 w-px bg-white/10" />;
+  return <span aria-hidden className="mx-1 h-6 w-px bg-tint-strong" />;
 }
 
 /** Adds the original title in parentheses (used on anime & K-drama grids). */

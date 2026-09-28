@@ -43,8 +43,8 @@ export default async function SeriesDetailsView({
   const showOriginal = series.original_name && series.original_name !== series.name;
 
   return (
-    <main className={cn("min-h-screen bg-black text-white", spacing.pageBottom)}>
-      <section className="relative flex h-[69vh] min-h-130 w-full items-end">
+    <main className={cn("min-h-screen bg-background text-foreground", spacing.pageBottom)}>
+      <section className="dark relative flex h-[69vh] min-h-130 w-full items-end bg-background text-foreground">
         {backdrop && (
           <Image
             src={backdrop}
@@ -63,7 +63,7 @@ export default async function SeriesDetailsView({
               <span className="rounded-full bg-cyan-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]">
                 {badge}
               </span>
-              <span className="flex items-center gap-1 font-bold text-cyan-400">
+              <span className="flex items-center gap-1 font-bold text-brand-bright">
                 <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
                 <span className="text-sm">{(series.vote_average ?? 0).toFixed(1)}</span>
               </span>
@@ -71,10 +71,10 @@ export default async function SeriesDetailsView({
 
             <h1 className={cn(type.display, "wrap-break-word")}>
               {series.name}
-              <span className="text-cyan-500 not-italic">.</span>
+              <span className="text-brand not-italic">.</span>
             </h1>
             {showOriginal && (
-              <p className="text-2xl font-black uppercase tracking-tighter text-zinc-600 md:text-3xl">
+              <p className="text-2xl font-black uppercase tracking-tighter text-fg-faint md:text-3xl">
                 {series.original_name}
               </p>
             )}

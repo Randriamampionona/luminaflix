@@ -45,7 +45,7 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
     <section
       aria-roledescription="carousel"
       aria-label={t("heroLabel")}
-      className="relative h-[90vh] min-h-150 w-full overflow-hidden bg-black md:h-screen"
+      className="dark relative h-[90vh] min-h-150 w-full overflow-hidden bg-background text-foreground md:h-screen"
     >
       {slides.map((movie, index) => {
         const isActive = index === activeIndex;
@@ -91,10 +91,10 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
 
                 <h2 className={cn(typo.display, "line-clamp-2 drop-shadow-2xl")}>
                   {title}
-                  <span className="not-italic text-cyan-500">.</span>
+                  <span className="not-italic text-brand">.</span>
                 </h2>
 
-                <p className="line-clamp-3 max-w-xl text-base font-medium leading-relaxed text-white/70 md:text-lg">
+                <p className="line-clamp-3 max-w-xl text-base font-medium leading-relaxed text-foreground/70 md:text-lg">
                   {movie.overview}
                 </p>
 
@@ -102,7 +102,7 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
                   <Link
                     href={getWatchHref(movie.id, "movie")}
                     tabIndex={isActive ? 0 : -1}
-                    className="group flex items-center gap-3 rounded-full bg-white px-8 py-3 text-xs font-black uppercase text-black transition-colors duration-500 hover:bg-cyan-500 hover:text-white md:px-10 md:py-4 md:text-sm"
+                    className="group flex items-center gap-3 rounded-full bg-inverse px-8 py-3 text-xs font-black uppercase text-inverse-fg transition-colors duration-500 hover:bg-cyan-500 hover:text-foreground md:px-10 md:py-4 md:text-sm"
                   >
                     <Play className="h-5 w-5 fill-current" />
                     {t("playNow")}
@@ -111,9 +111,9 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
                     <button
                       type="button"
                       tabIndex={isActive ? 0 : -1}
-                      className="flex cursor-pointer items-center gap-3 rounded-full border border-white/10 bg-white/10 px-8 py-3 text-xs font-black uppercase text-white backdrop-blur-xl transition-colors hover:bg-white/20 md:px-10 md:py-4 md:text-sm"
+                      className="flex cursor-pointer items-center gap-3 rounded-full border border-line-strong bg-tint-strong px-8 py-3 text-xs font-black uppercase text-foreground backdrop-blur-xl transition-colors hover:bg-tint-stronger md:px-10 md:py-4 md:text-sm"
                     >
-                      <Info className="h-5 w-5 text-cyan-400" />
+                      <Info className="h-5 w-5 text-brand-bright" />
                       {t("moreInfo")}
                     </button>
                   </MovieDetails>
@@ -140,7 +140,7 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
                 <span
                   className={cn(
                     "relative h-1.5 overflow-hidden rounded-md transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                    isActive ? "w-12 bg-white/20" : "w-6 bg-white/5 group-hover:bg-white/10",
+                    isActive ? "w-12 bg-tint-stronger" : "w-6 bg-tint group-hover:bg-tint-strong",
                   )}
                 >
                   {isActive && (

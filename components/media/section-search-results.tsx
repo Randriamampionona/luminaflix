@@ -27,7 +27,7 @@ export default async function SectionSearchResults({
       <div className="space-y-8">
         <Link
           href={`/${section}`}
-          className="group inline-flex items-center gap-2 text-zinc-500 transition-colors hover:text-cyan-500"
+          className="group inline-flex items-center gap-2 text-fg-subtle transition-colors hover:text-brand"
         >
           <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           <span className="text-[10px] font-black uppercase tracking-widest">

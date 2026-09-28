@@ -9,7 +9,7 @@ import { MEDIA_GRID_CLASS } from "./media-grid";
  * content streams in.
  */
 /**
- * BUG FIX (skeletons "not showing"): the old `bg-zinc-900/80 animate-pulse`
+ * BUG FIX (skeletons "not showing"): the old `bg-elevated/80 animate-pulse`
  * was ~#131316 on the #000 page and faded to half of that — practically
  * invisible. `.skeleton` (globals.css) uses a lighter base plus a moving
  * shimmer, and respects prefers-reduced-motion.
@@ -90,7 +90,7 @@ export function FilterBarSkeleton() {
   return (
     <>
       <Skeleton className="h-10 w-32 rounded-full" />
-      <span aria-hidden className="mx-1 h-6 w-px bg-white/10" />
+      <span aria-hidden className="mx-1 h-6 w-px bg-tint-strong" />
       <Skeleton className="h-10 w-44 rounded-lg" />
     </>
   );
@@ -98,7 +98,7 @@ export function FilterBarSkeleton() {
 
 export function PaginationSkeleton() {
   return (
-    <div className="flex justify-center gap-2 border-t border-white/5 pt-10">
+    <div className="flex justify-center gap-2 border-t border-line pt-10">
       {Array.from({ length: 5 }, (_, i) => (
         <Skeleton key={i} className="h-9 w-9 rounded-xl sm:h-12 sm:w-12" />
       ))}

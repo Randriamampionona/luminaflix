@@ -17,7 +17,7 @@ export function PageShell({
   containerClassName?: string;
 }) {
   return (
-    <main className={cn("min-h-screen bg-black text-white", spacing.pageTop, spacing.pageBottom, className)}>
+    <main className={cn("min-h-screen bg-background text-foreground", spacing.pageTop, spacing.pageBottom, className)}>
       <Container className={cn(spacing.stack, containerClassName)}>{children}</Container>
     </main>
   );

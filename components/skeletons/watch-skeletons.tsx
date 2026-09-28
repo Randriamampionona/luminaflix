@@ -13,10 +13,10 @@ function PlayerSkeleton({ tabs = true }: { tabs?: boolean }) {
       {tabs && <Skeleton className="h-12 w-64 rounded-2xl" />}
       <Skeleton className="h-16 w-full rounded-2xl" />
       <div className="flex flex-col items-end space-y-2">
-        <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-zinc-950 md:max-h-[77vh]">
+        <div className="dark relative aspect-video w-full overflow-hidden border border-line-strong bg-surface md:max-h-[77vh]">
           <div
             aria-hidden
-            className="absolute inset-0 animate-pulse bg-linear-to-t from-black via-zinc-950 to-zinc-900/70"
+            className="absolute inset-0 animate-pulse bg-linear-to-t from-black via-surface to-elevated/70"
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
             <Skeleton className="h-7 w-64 max-w-[70%]" />
@@ -51,17 +51,17 @@ export function MovieWatchSkeleton() {
           <Skeleton className="h-10 w-3/4 max-w-2xl sm:h-14" />
         </div>
         <PlayerSkeleton />
-        <div className="grid grid-cols-1 gap-12 border-t border-white/5 pt-12 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-12 border-t border-line pt-12 lg:grid-cols-3">
           <div className="space-y-4 lg:col-span-2">
             <Skeleton className="h-2.5 w-24" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-11/12" />
             <Skeleton className="h-4 w-4/5" />
           </div>
-          <div className="space-y-6 rounded-[3rem] border border-white/5 bg-zinc-900/30 p-8">
+          <div className="space-y-6 rounded-[3rem] border border-line bg-elevated/30 p-8">
             <Skeleton className="h-2.5 w-20" />
             {Array.from({ length: 3 }, (_, i) => (
-              <div key={i} className="flex justify-between border-b border-white/5 pb-2">
+              <div key={i} className="flex justify-between border-b border-line pb-2">
                 <Skeleton className="h-2.5 w-16" />
                 <Skeleton className="h-3 w-20" />
               </div>
@@ -93,7 +93,7 @@ export function EpisodeWatchSkeleton({ tabs = true }: { tabs?: boolean }) {
           <Skeleton className="h-12 w-32 rounded-2xl" />
         </div>
         <PlayerSkeleton tabs={tabs} />
-        <div className="flex gap-6 rounded-[2.5rem] border border-white/5 bg-zinc-900/20 p-6 sm:p-8">
+        <div className="flex gap-6 rounded-[2.5rem] border border-line bg-elevated/20 p-6 sm:p-8">
           <Skeleton className="hidden h-14 w-14 rounded-2xl sm:block" />
           <div className="grow space-y-3">
             <Skeleton className="h-5 w-48" />
@@ -109,11 +109,11 @@ export function EpisodeWatchSkeleton({ tabs = true }: { tabs?: boolean }) {
 /** /anime/[id] and /k-drama/[id]: backdrop hero, then season tabs + episodes. */
 export function SeriesDetailsSkeleton() {
   return (
-    <LoadingRegion className={`min-h-screen bg-black ${spacing.pageBottom}`}>
-      <section className="relative flex h-[69vh] min-h-130 w-full items-end bg-zinc-950">
+    <LoadingRegion className={`min-h-screen bg-background ${spacing.pageBottom}`}>
+      <section className="dark relative flex h-[69vh] min-h-130 w-full items-end bg-surface">
         <div
           aria-hidden
-          className="absolute inset-0 animate-pulse bg-linear-to-t from-black via-zinc-950 to-zinc-900/60"
+          className="absolute inset-0 animate-pulse bg-linear-to-t from-black via-surface to-elevated/60"
         />
         <Container className="relative pb-10">
           <div className="max-w-4xl space-y-4">
@@ -131,7 +131,7 @@ export function SeriesDetailsSkeleton() {
         </Container>
       </section>
       <Container className={`${spacing.section} space-y-10`}>
-        <div className="flex flex-col justify-between gap-6 border-b border-white/5 pb-6 md:flex-row md:items-end">
+        <div className="flex flex-col justify-between gap-6 border-b border-line pb-6 md:flex-row md:items-end">
           <div className="space-y-2">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-2.5 w-24" />
@@ -177,7 +177,7 @@ export function TrailerSkeleton() {
               <Skeleton className="h-3.5 w-5/6" />
             </div>
           </div>
-          <div className="space-y-6 rounded-4xl border border-white/10 bg-zinc-950/70 p-6 lg:col-span-4">
+          <div className="space-y-6 rounded-4xl border border-line-strong bg-surface/70 p-6 lg:col-span-4">
             <Skeleton className="h-13 w-full rounded-2xl" />
             <Skeleton className="h-2.5 w-32" />
             <Skeleton className="h-12 w-full rounded-2xl" />

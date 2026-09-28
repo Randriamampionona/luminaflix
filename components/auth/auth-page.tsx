@@ -30,7 +30,7 @@ export async function resolveReturnTo(searchParams: AuthSearchParams): Promise<s
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-black pt-28 pb-16 sm:pt-32">
+    <main className="min-h-screen bg-background pt-28 pb-16 sm:pt-32">
       <Container className="flex justify-center">{children}</Container>
     </main>
   );

@@ -25,7 +25,7 @@ function FavoriteButton({ active, pending, disabled, onClick }: FavoriteButtonPr
         pending && "animate-pulse",
         active
           ? "border-cyan-400 bg-cyan-500 text-black shadow-[0_0_25px_rgba(6,182,212,0.3)]"
-          : "border-white/5 bg-white/5 text-zinc-400 hover:border-white/20 hover:text-white",
+          : "border-line bg-tint text-fg-muted hover:border-line-stronger hover:text-foreground",
       )}
     >
       {active ? (

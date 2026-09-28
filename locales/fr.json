@@ -655,7 +655,11 @@
       "greetingNamed": "Bonsoir {name}, votre programme est prêt.",
       "greeting": "Votre programme de ce soir est prêt.",
       "intro": "Nous avons choisi {count} titres pour votre soirée. Lancez la lecture, on s'occupe du reste.",
-      "kind": { "movie": "Film", "kdrama": "K-Drama", "anime": "Animé" },
+      "kind": {
+        "movie": "Film",
+        "kdrama": "K-Drama",
+        "anime": "Animé"
+      },
       "watchNow": "Regarder",
       "trailer": "Voir la bande-annonce",
       "alsoTonight": "Aussi ce soir",
@@ -663,7 +667,13 @@
       "bannerTitle": "Votre prochain coup de cœur est à un clic.",
       "bannerBody": "Films, séries, animés et K-dramas en HD — en français ou en anglais, sur tous vos appareils.",
       "openApp": "Ouvrir LuminaFlix",
-      "browse": { "movies": "Films", "tvShows": "Séries", "anime": "Animés", "kdrama": "K-Drama", "newPopular": "Nouveautés" },
+      "browse": {
+        "movies": "Films",
+        "tvShows": "Séries",
+        "anime": "Animés",
+        "kdrama": "K-Drama",
+        "newPopular": "Nouveautés"
+      },
       "favorites": "Mes favoris",
       "help": "Centre d'aide",
       "unsubscribe": "Se désabonner",
@@ -677,5 +687,11 @@
       "textUnsubscribe": "Se désabonner :",
       "webTitle": "LuminaFlix · Sélection du jour"
     }
+  },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
   }
 }

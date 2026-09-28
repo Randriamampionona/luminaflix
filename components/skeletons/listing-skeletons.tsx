@@ -55,7 +55,7 @@ export function LibrarySkeleton() {
     <PageShell>
       <LoadingRegion className="space-y-10 sm:space-y-14">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="flex min-h-48 flex-col justify-between rounded-[2.5rem] border border-white/5 bg-zinc-950 p-7 md:col-span-2 lg:p-10">
+          <div className="flex min-h-48 flex-col justify-between rounded-[2.5rem] border border-line bg-surface p-7 md:col-span-2 lg:p-10">
             <Skeleton className="h-12 w-3/4 max-w-md sm:h-14" />
             <Skeleton className="mt-8 h-2.5 w-40" />
           </div>
@@ -65,7 +65,7 @@ export function LibrarySkeleton() {
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-8">
           <div className="flex items-center gap-4">
             <Skeleton className="h-7 w-28 rounded-full" />
             <Skeleton className="h-2.5 w-36" />
@@ -137,7 +137,7 @@ export function FavoritesGridSkeleton() {
     <LoadingRegion>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="flex items-center gap-6 rounded-2xl border border-white/5 bg-white/2 p-4">
+          <div key={i} className="flex items-center gap-6 rounded-2xl border border-line bg-tint-soft p-4">
             <Skeleton className="h-32 w-24 shrink-0 rounded-xl" />
             <div className="min-w-0 grow space-y-3">
               <Skeleton className="h-5 w-3/4" />

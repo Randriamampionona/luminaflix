@@ -86,7 +86,7 @@ export default function GuardProtocol({ children }: { children: React.ReactNode 
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="lumina-guard-title"
-      className="fixed inset-0 z-999999 flex h-screen w-screen select-none flex-col items-center justify-center overflow-hidden bg-zinc-950 p-8 text-center"
+      className="dark fixed inset-0 z-999999 flex h-screen w-screen select-none flex-col items-center justify-center overflow-hidden bg-surface p-8 text-center text-foreground"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.12),transparent_60%)]" />
 
@@ -98,7 +98,7 @@ export default function GuardProtocol({ children }: { children: React.ReactNode 
         <div className="space-y-4">
           <h1
             id="lumina-guard-title"
-            className="text-3xl font-black uppercase italic tracking-tighter text-white md:text-4xl"
+            className="text-3xl font-black uppercase italic tracking-tighter text-foreground md:text-4xl"
           >
             {t("title")}
           </h1>
@@ -107,12 +107,12 @@ export default function GuardProtocol({ children }: { children: React.ReactNode 
           </span>
         </div>
 
-        <p className="text-sm leading-relaxed text-zinc-400">{t("body", { what: t(reason) })}</p>
+        <p className="text-sm leading-relaxed text-fg-muted">{t("body", { what: t(reason) })}</p>
 
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="group mx-auto flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-12 py-5 transition-all duration-500 hover:bg-cyan-500"
+          className="group mx-auto flex cursor-pointer items-center gap-3 rounded-2xl bg-inverse px-12 py-5 transition-all duration-500 hover:bg-cyan-500 hover:text-black"
         >
           <RefreshCcw className="h-4 w-4 text-black transition-transform duration-700 group-hover:rotate-180" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-black">{t("reload")}</span>

@@ -5,10 +5,10 @@ import { spacing } from "@/lib/typography";
 /** Mirrors <HeroSlider>: full-height backdrop with left-aligned copy and CTAs. */
 export function HeroSkeleton() {
   return (
-    <LoadingRegion className="relative h-[90vh] min-h-150 w-full overflow-hidden bg-zinc-950 md:h-screen">
+    <LoadingRegion className="dark relative h-[90vh] min-h-150 w-full overflow-hidden bg-surface md:h-screen">
       <div
         aria-hidden
-        className="absolute inset-0 animate-pulse bg-linear-to-r from-zinc-900/60 via-zinc-950 to-black"
+        className="absolute inset-0 animate-pulse bg-linear-to-r from-elevated/60 via-surface to-black"
       />
       <Container className="relative flex h-full flex-col justify-center gap-6">
         <Skeleton className="h-5 w-32" />
@@ -91,7 +91,7 @@ export function BannerSkeleton() {
 
 export function HomeSkeleton() {
   return (
-    <main className="relative min-h-screen bg-black">
+    <main className="relative min-h-screen bg-background">
       <HeroSkeleton />
       <RowSkeleton />
       <GenreTilesSkeleton />

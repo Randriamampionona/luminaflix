@@ -18,20 +18,20 @@ export default function NavbarActions() {
   return (
     <div className="hidden items-center gap-4 lg:flex">
       <SearchHub />
-      <div aria-hidden className="h-6 w-px bg-white/10" />
+      <div aria-hidden className="h-6 w-px bg-tint-strong" />
       <div className="flex items-center gap-2">
         <SignedOut>
-          <SignInLink className="px-4 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-400 transition-colors hover:text-white">
+          <SignInLink className="px-4 py-2.5 text-xs font-black uppercase tracking-widest text-fg-muted transition-colors hover:text-foreground">
             {t("signIn")}
           </SignInLink>
           <SignInLink
             route="/sign-up"
-            className="group flex items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 shadow-lg transition-transform hover:scale-105 active:scale-95"
+            className="group flex items-center gap-2 overflow-hidden rounded-xl bg-inverse px-6 py-3 shadow-lg transition-transform hover:scale-105 active:scale-95"
           >
-            <span className="whitespace-nowrap text-sm font-black uppercase italic tracking-tighter text-black">
+            <span className="whitespace-nowrap text-sm font-black uppercase italic tracking-tighter text-inverse-fg">
               {t("join")}
             </span>
-            <ArrowRight className="h-4 w-4 text-black" />
+            <ArrowRight className="h-4 w-4 text-inverse-fg" />
           </SignInLink>
         </SignedOut>
         <SignedIn>

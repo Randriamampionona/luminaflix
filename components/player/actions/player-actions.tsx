@@ -49,7 +49,7 @@ function PlayerActionsBar({ mediaRef, interaction }: PlayerActionsProps) {
   return (
     <div className="flex w-fit max-w-full flex-wrap items-center justify-end gap-2 p-1">
       <FavoriteButton active={state.isFavorite} pending={pending === "favorite"} disabled={busy} onClick={favorite} />
-      <div className="flex items-center gap-1 rounded-xl border border-white/5 bg-white/5 p-1">
+      <div className="flex items-center gap-1 rounded-xl border border-line bg-tint p-1">
         <LikeButton
           active={state.reaction === "like"}
           count={state.likes}
@@ -57,7 +57,7 @@ function PlayerActionsBar({ mediaRef, interaction }: PlayerActionsProps) {
           disabled={busy}
           onClick={like}
         />
-        <span aria-hidden className="h-4 w-px bg-white/10" />
+        <span aria-hidden className="h-4 w-px bg-tint-strong" />
         <DislikeButton
           active={state.reaction === "dislike"}
           count={state.dislikes}

@@ -33,7 +33,7 @@ export function ContactSkeleton() {
           <Skeleton className="h-20 w-full rounded-3xl" />
           <Skeleton className="h-20 w-full rounded-3xl" />
         </div>
-        <div className="space-y-6 rounded-4xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 lg:col-span-7">
+        <div className="space-y-6 rounded-4xl border border-line bg-surface/60 p-6 sm:p-8 lg:col-span-7">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {Array.from({ length: 2 }, (_, i) => (
               <div key={i} className="space-y-2">
@@ -64,7 +64,7 @@ export function PremiumSkeleton() {
   return (
     <PageShell>
       <LoadingRegion className="space-y-10 sm:space-y-14">
-        <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-white/5 bg-zinc-950 px-6 py-14 sm:py-20">
+        <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-line bg-surface px-6 py-14 sm:py-20">
           <Skeleton className="h-7 w-32 rounded-full" />
           <Skeleton className="h-12 w-72 max-w-full sm:h-16" />
           <Skeleton className="h-3.5 w-96 max-w-full" />
@@ -72,7 +72,7 @@ export function PremiumSkeleton() {
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
-            <div key={i} className="space-y-6 rounded-4xl border border-white/5 bg-zinc-950 p-8">
+            <div key={i} className="space-y-6 rounded-4xl border border-line bg-surface p-8">
               <Skeleton className="h-6 w-24" />
               <Skeleton className="h-3 w-3/4" />
               <Skeleton className="h-8 w-28" />
@@ -93,16 +93,16 @@ export function PremiumSkeleton() {
 /** Clerk sign-in / sign-up card placeholder (route loading + while Clerk's JS loads). */
 export function AuthCardSkeleton() {
   return (
-    <LoadingRegion className="w-full max-w-100 space-y-6 rounded-2xl border border-white/10 bg-zinc-950 p-8">
+    <LoadingRegion className="w-full max-w-100 space-y-6 rounded-2xl border border-line-strong bg-surface p-8">
       <div className="flex flex-col items-center gap-3">
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-3 w-56" />
       </div>
       <Skeleton className="h-10 w-full rounded-lg" />
       <div className="flex items-center gap-3">
-        <span aria-hidden className="h-px grow bg-white/10" />
+        <span aria-hidden className="h-px grow bg-tint-strong" />
         <Skeleton className="h-2.5 w-6" />
-        <span aria-hidden className="h-px grow bg-white/10" />
+        <span aria-hidden className="h-px grow bg-tint-strong" />
       </div>
       <div className="space-y-2">
         <Skeleton className="h-2.5 w-24" />

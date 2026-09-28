@@ -28,13 +28,13 @@ export default async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
         description={t(`${doc}.intro`)}
       />
 
-      <nav aria-label={t(`${doc}.title`)} className="rounded-3xl border border-white/5 bg-zinc-950 p-6">
+      <nav aria-label={t(`${doc}.title`)} className="rounded-3xl border border-line bg-surface p-6">
         <ol className="grid gap-2 sm:grid-cols-2">
           {sections.map((section, index) => (
             <li key={section.title}>
               <a
                 href={`#section-${index + 1}`}
-                className="text-sm text-zinc-400 transition-colors hover:text-cyan-400"
+                className="text-sm text-fg-muted transition-colors hover:text-brand-bright"
               >
                 {index + 1}. {section.title}
               </a>
@@ -47,16 +47,16 @@ export default async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
         {sections.map((section, index) => (
           <section key={section.title} id={`section-${index + 1}`} className="scroll-mt-28 space-y-3">
             <h2 className={type.h3}>
-              <span className="text-cyan-500 not-italic">{index + 1}.</span> {section.title}
+              <span className="text-brand not-italic">{index + 1}.</span> {section.title}
             </h2>
             <p className={type.prose}>{section.body}</p>
           </section>
         ))}
       </div>
 
-      <p className={cn(type.body, "border-t border-white/5 pt-8")}>
+      <p className={cn(type.body, "border-t border-line pt-8")}>
         {t("contactPrompt")}{" "}
-        <Link href="/contact" className="font-bold text-cyan-400 hover:underline">
+        <Link href="/contact" className="font-bold text-brand-bright hover:underline">
           {t("contactCta")}
         </Link>
       </p>

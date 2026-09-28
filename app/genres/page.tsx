@@ -22,14 +22,14 @@ export default async function AllGenresPage() {
     <PageShell>
       <PageHeader eyebrow={t("eyebrow")} title={t("title")} meta={t("total", { count: genres.length })} />
 
-      <div className="media-grid grid grid-cols-1 border-t border-l border-white/5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="media-grid grid grid-cols-1 border-t border-l border-line sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {genres.map((genre, index) => {
           const backdrop = tmdbImage(genre.backdrop);
           return (
             <Link
               key={genre.id}
               href={`/genres/${genre.id}`}
-              className="group relative flex aspect-video flex-col justify-between overflow-hidden border-r border-b border-white/5 bg-zinc-950 p-6 transition-all duration-700 sm:p-8 md:aspect-square"
+              className="dark group relative flex aspect-video flex-col justify-between overflow-hidden border-r border-b border-line bg-surface p-6 text-foreground transition-all duration-700 sm:p-8 md:aspect-square"
             >
               {backdrop && (
                 <div className="absolute inset-0">
@@ -47,18 +47,18 @@ export default async function AllGenresPage() {
 
               <div className="relative flex items-start justify-between">
                 <span className="flex items-center gap-2">
-                  <Hash className="h-3 w-3 text-cyan-500 opacity-50" aria-hidden />
-                  <span className="font-mono text-[10px] text-zinc-500 transition-colors group-hover:text-cyan-500">
+                  <Hash className="h-3 w-3 text-brand opacity-50" aria-hidden />
+                  <span className="font-mono text-[10px] text-fg-subtle transition-colors group-hover:text-brand">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                 </span>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 transition-all duration-500 group-hover:border-cyan-500 group-hover:bg-cyan-500 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.5)]">
-                  <ChevronRight className="h-5 w-5 text-zinc-500 group-hover:text-black" />
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line-strong transition-all duration-500 group-hover:border-cyan-500 group-hover:bg-cyan-500 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+                  <ChevronRight className="h-5 w-5 text-fg-subtle group-hover:text-black" />
                 </span>
               </div>
 
               <div className="relative">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500 transition-colors group-hover:text-cyan-400">
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-fg-subtle transition-colors group-hover:text-brand-bright">
                   {t("explore")}
                 </span>
                 <h2 className="mt-2 text-3xl font-black uppercase italic tracking-tighter wrap-break-word transition-transform duration-500 group-hover:translate-x-2 sm:text-4xl">

@@ -119,7 +119,7 @@ export default function StreamPlayer({
             <div
               role="tablist"
               aria-label={t("servers")}
-              className="flex max-w-full items-center gap-1.5 rounded-2xl border border-white/5 bg-zinc-900/40 p-1.5 backdrop-blur-md"
+              className="flex max-w-full items-center gap-1.5 rounded-2xl border border-line bg-elevated/40 p-1.5 backdrop-blur-md"
             >
               {groups.map((group, index) => {
                 const selected = group.key === activeGroup.key;
@@ -134,9 +134,9 @@ export default function StreamPlayer({
                       "cursor-pointer whitespace-nowrap rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-500 sm:px-8 sm:text-[11px] sm:tracking-widest",
                       selected
                         ? index === 0
-                          ? "bg-white text-black"
+                          ? "bg-inverse text-inverse-fg"
                           : "bg-cyan-500 text-black"
-                        : "text-zinc-500 hover:text-zinc-300",
+                        : "text-fg-subtle hover:text-fg-soft",
                     )}
                   >
                     {group.key === "all" ? t("languages.all") : t(`tabs.${group.key}`)}
@@ -144,8 +144,8 @@ export default function StreamPlayer({
                 );
               })}
             </div>
-            <div className="hidden items-center rounded-2xl border border-white/5 bg-zinc-900/20 px-6 py-3 md:flex">
-              <Activity className="h-4 w-4 animate-pulse text-cyan-500" />
+            <div className="hidden items-center rounded-2xl border border-line bg-elevated/20 px-6 py-3 md:flex">
+              <Activity className="h-4 w-4 animate-pulse text-brand" />
             </div>
           </div>
         )}
@@ -155,7 +155,8 @@ export default function StreamPlayer({
         <div className="flex flex-col items-end space-y-2">
           <div
             className={cn(
-              "overflow-hidden border border-white/10 bg-black shadow-2xl ring-1 ring-white/5 transition-all duration-500",
+              // Always dark: artwork, video and overlay controls.
+              "dark overflow-hidden border border-line-strong bg-background text-foreground shadow-2xl ring-1 ring-line transition-all duration-500",
               isFullscreen
                 ? "fixed inset-0 z-9999 m-0 h-screen w-screen p-0 portrait:top-1/2 portrait:left-1/2 portrait:h-[100vw] portrait:w-[100vh] portrait:origin-center portrait:-translate-x-1/2 portrait:-translate-y-1/2 portrait:rotate-90"
                 : "relative aspect-video max-h-[73vh] w-full md:max-h-[77vh]",
@@ -183,18 +184,18 @@ export default function StreamPlayer({
                     className="object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-linear-to-tr from-zinc-950 via-zinc-900 to-zinc-950" />
+                  <div className="absolute inset-0 bg-linear-to-tr from-surface via-elevated to-surface" />
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/60" />
 
                 <div className="relative z-10 flex flex-col items-center space-y-5 px-4 text-center sm:space-y-6">
                   {title && (
-                    <h2 className="max-w-xl text-xl font-black tracking-tight text-white drop-shadow-md md:text-3xl">
+                    <h2 className="max-w-xl text-xl font-black tracking-tight text-foreground drop-shadow-md md:text-3xl">
                       {title}
                     </h2>
                   )}
                   {isEpisode && season != null && episode != null && (
-                    <span className="rounded-full border border-cyan-500/30 bg-cyan-950/80 px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-cyan-400">
+                    <span className="rounded-full border border-cyan-500/30 bg-cyan-950/80 px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-brand-bright">
                       {t("episodeTag", { season, episode })}
                     </span>
                   )}
@@ -217,16 +218,16 @@ export default function StreamPlayer({
               onClick={() => setIsFullscreen((v) => !v)}
               aria-pressed={isFullscreen}
               aria-label={isFullscreen ? t("exitFullscreen") : t("fullscreen")}
-              className="group absolute top-2 right-2 z-150 flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/80 px-4 py-3 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-cyan-500/50 hover:bg-zinc-900/80 hover:shadow-[0_0_40px_rgba(6,182,212,0.25)] active:scale-95 md:gap-0 md:bg-zinc-950/60 md:px-3 md:hover:gap-3 md:hover:pr-5"
+              className="group absolute top-2 right-2 z-150 flex cursor-pointer items-center gap-3 rounded-2xl border border-line-strong bg-surface/80 px-4 py-3 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-cyan-500/50 hover:bg-elevated/80 hover:shadow-[0_0_40px_rgba(6,182,212,0.25)] active:scale-95 md:gap-0 md:bg-surface/60 md:px-3 md:hover:gap-3 md:hover:pr-5"
             >
               <span className="relative flex h-6 w-6 items-center justify-center">
                 {isFullscreen ? (
-                  <Minimize className="h-5 w-5 text-zinc-400 transition-all duration-300 group-hover:text-white" />
+                  <Minimize className="h-5 w-5 text-fg-muted transition-all duration-300 group-hover:text-foreground" />
                 ) : (
-                  <Maximize className="h-5 w-5 text-zinc-400 transition-all duration-300 group-hover:text-cyan-400 md:group-hover:rotate-90" />
+                  <Maximize className="h-5 w-5 text-fg-muted transition-all duration-300 group-hover:text-brand-bright md:group-hover:rotate-90" />
                 )}
               </span>
-              <span className="max-w-50 overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 transition-all duration-500 ease-in-out md:max-w-0 md:text-zinc-400 md:group-hover:max-w-37.5 md:group-hover:text-cyan-400">
+              <span className="max-w-50 overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] text-brand-bright transition-all duration-500 ease-in-out md:max-w-0 md:text-fg-muted md:group-hover:max-w-37.5 md:group-hover:text-brand-bright">
                 {isFullscreen ? t("exitFullscreen") : t("fullscreen")}
               </span>
             </button>
@@ -252,22 +253,22 @@ export default function StreamPlayer({
                 onClick={() => selectSource(provider.id)}
                 className={cn(
                   "relative flex cursor-pointer items-center gap-4 rounded-3xl border px-6 py-5 transition-all duration-500",
-                  isActive ? "border-white bg-white" : "border-white/5 bg-zinc-900/40 hover:border-white/15",
+                  isActive ? "border-inverse bg-inverse" : "border-line bg-elevated/40 hover:border-line-stronger",
                 )}
               >
-                <span className={cn("rounded-xl p-3", isActive ? "bg-black text-cyan-500" : "bg-white/5 text-zinc-500")}>
+                <span className={cn("rounded-xl p-3", isActive ? "bg-inverse-fg text-brand" : "bg-tint text-fg-subtle")}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="flex flex-col items-start text-left">
                   <span
                     className={cn(
                       "text-[11px] font-black uppercase tracking-widest",
-                      isActive ? "text-black" : "text-white",
+                      isActive ? "text-inverse-fg" : "text-foreground",
                     )}
                   >
                     {provider.name}
                   </span>
-                  <span className={cn("text-[9px] font-bold uppercase", isActive ? "text-zinc-500" : "text-zinc-600")}>
+                  <span className={cn("text-[9px] font-bold uppercase", isActive ? "text-fg-subtle" : "text-fg-faint")}>
                     {isActive ? t("active") : t("standby")}
                   </span>
                 </span>
@@ -278,16 +279,16 @@ export default function StreamPlayer({
 
         <DirectLuminaLinker embedUrl={embedUrl} title={title || `Lumina_${kind}_${mediaId}`} />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-4xl border border-white/5 bg-zinc-950 px-6 py-5 shadow-2xl sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-4xl border border-line bg-surface px-6 py-5 shadow-2xl sm:px-8">
           <div className="flex items-center gap-3">
-            <Cpu className="h-4 w-4 text-cyan-500/50" />
-            <span className="text-[10px] font-bold uppercase tracking-tighter text-zinc-400">
+            <Cpu className="h-4 w-4 text-brand/50" />
+            <span className="text-[10px] font-bold uppercase tracking-tighter text-fg-muted">
               {t("sourceId", { id: imdbId || mediaId })}
             </span>
           </div>
-          <div className="flex items-center gap-3 rounded-full border border-white/5 bg-white/5 px-4 py-2">
-            <Languages className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+          <div className="flex items-center gap-3 rounded-full border border-line bg-tint px-4 py-2">
+            <Languages className="h-3.5 w-3.5 text-fg-subtle" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-fg-muted">
               {t("readyIn", { language: languageLabel })}
             </span>
           </div>

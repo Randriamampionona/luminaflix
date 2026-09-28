@@ -58,9 +58,9 @@ export default async function EpisodePlayView({
         <div className="min-w-0 space-y-6">
           <Link
             href={`/${path}/${series.id}`}
-            className="group inline-flex items-center gap-2 text-zinc-500 transition-colors hover:text-white"
+            className="group inline-flex items-center gap-2 text-fg-subtle transition-colors hover:text-foreground"
           >
-            <span className="rounded-full bg-zinc-900 p-2 transition-colors group-hover:bg-cyan-500 group-hover:text-black">
+            <span className="rounded-full bg-elevated p-2 transition-colors group-hover:bg-cyan-500 group-hover:text-black">
               <ChevronLeft className="h-4 w-4" />
             </span>
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t("backToSeries")}</span>
@@ -70,26 +70,26 @@ export default async function EpisodePlayView({
             <p className={type.eyebrow}>{t("nowStreaming")}</p>
             <h1 className={cn(type.h1, "wrap-break-word")}>
               {series.name}
-              <span className="text-cyan-500 not-italic">.</span>
+              <span className="text-brand not-italic">.</span>
             </h1>
             <p className="flex items-center gap-3 pt-1">
-              <Clapperboard className="h-4 w-4 shrink-0 text-zinc-600" aria-hidden />
-              <span className="text-lg font-bold uppercase italic tracking-tight text-zinc-400 md:text-xl">
+              <Clapperboard className="h-4 w-4 shrink-0 text-fg-faint" aria-hidden />
+              <span className="text-lg font-bold uppercase italic tracking-tight text-fg-muted md:text-xl">
                 {episodeTitle}
               </span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-start rounded-2xl border border-white/5 bg-zinc-900/50 px-4 py-2 md:self-end">
+        <div className="flex items-center gap-3 self-start rounded-2xl border border-line bg-elevated/50 px-4 py-2 md:self-end">
           <div className="flex flex-col">
-            <span className="text-xs font-black leading-none text-white">S{pad(season)}</span>
-            <span className="text-[8px] font-bold uppercase text-zinc-500">{t("season")}</span>
+            <span className="text-xs font-black leading-none text-foreground">S{pad(season)}</span>
+            <span className="text-[8px] font-bold uppercase text-fg-subtle">{t("season")}</span>
           </div>
-          <span aria-hidden className="h-6 w-px bg-white/10" />
+          <span aria-hidden className="h-6 w-px bg-tint-strong" />
           <div className="flex flex-col">
-            <span className="text-xs font-black leading-none text-cyan-500">E{pad(episode)}</span>
-            <span className="text-[8px] font-bold uppercase text-zinc-500">{t("episode")}</span>
+            <span className="text-xs font-black leading-none text-brand">E{pad(episode)}</span>
+            <span className="text-[8px] font-bold uppercase text-fg-subtle">{t("episode")}</span>
           </div>
         </div>
       </header>
@@ -105,7 +105,7 @@ export default async function EpisodePlayView({
         interaction={interaction}
       />
 
-      <section className="flex items-start gap-6 rounded-[2.5rem] border border-white/5 bg-zinc-900/20 p-6 backdrop-blur-sm sm:p-8">
+      <section className="flex items-start gap-6 rounded-[2.5rem] border border-line bg-elevated/20 p-6 backdrop-blur-sm sm:p-8">
         <div className="hidden rounded-2xl bg-cyan-500 p-4 shadow-[0_0_20px_rgba(6,182,212,0.4)] sm:block">
           <Info className="h-6 w-6 text-black" />
         </div>

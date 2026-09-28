@@ -15,7 +15,7 @@ export default async function FeaturedBanner({ movie }: { movie: Movie }) {
   return (
     <section className="py-10 sm:py-14">
       <Container>
-        <div className="group relative min-h-75 w-full overflow-hidden rounded-xl border border-white/10 md:min-h-100">
+        <div className="dark group relative min-h-75 w-full overflow-hidden rounded-xl border border-line-strong bg-background text-foreground md:min-h-100">
           {backdrop && (
             <Image
               src={backdrop}
@@ -40,10 +40,10 @@ export default async function FeaturedBanner({ movie }: { movie: Movie }) {
 
             <h2 className={cn(typo.h1)}>
               {movie.title}
-              <span className="not-italic text-cyan-500">.</span>
+              <span className="not-italic text-brand">.</span>
             </h2>
 
-            <p className="line-clamp-2 max-w-lg text-sm leading-relaxed text-zinc-300 md:text-base">
+            <p className="line-clamp-2 max-w-lg text-sm leading-relaxed text-fg-soft md:text-base">
               {movie.overview}
             </p>
 
@@ -51,7 +51,7 @@ export default async function FeaturedBanner({ movie }: { movie: Movie }) {
               <MovieDetails movie={movie}>
                 <button
                   type="button"
-                  className="flex cursor-pointer items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs font-bold uppercase text-black shadow-lg transition-colors hover:bg-cyan-500 hover:text-white"
+                  className="flex cursor-pointer items-center gap-2 rounded-full bg-inverse px-6 py-2.5 text-xs font-bold uppercase text-inverse-fg shadow-lg transition-colors hover:bg-cyan-500 hover:text-foreground"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   {t("viewDetails")}

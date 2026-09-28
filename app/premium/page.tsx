@@ -24,15 +24,15 @@ export default async function PremiumPage() {
 
   return (
     <PageShell>
-      <header className="relative flex flex-col items-center gap-6 overflow-hidden rounded-[2.5rem] border border-white/5 bg-linear-to-b from-zinc-900 to-black px-6 py-14 text-center sm:py-20">
+      <header className="relative flex flex-col items-center gap-6 overflow-hidden rounded-[2.5rem] border border-line bg-linear-to-b from-elevated to-background px-6 py-14 text-center sm:py-20">
         <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-64 w-2/3 -translate-x-1/2 rounded-full bg-cyan-500/15 blur-[100px]" />
-        <span className="relative inline-flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-cyan-400">
+        <span className="relative inline-flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-brand-bright">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" aria-hidden />
           {t("badge")}
         </span>
         <h1 className={cn(type.display, "relative")}>
-          {t("title")} <span className="text-cyan-500">{t("accent")}</span>
-          <span className="text-cyan-500 not-italic">.</span>
+          {t("title")} <span className="text-brand">{t("accent")}</span>
+          <span className="text-brand not-italic">.</span>
         </h1>
         <p className={cn(type.body, "relative max-w-2xl")}>{t("description")}</p>
         <Link
@@ -56,7 +56,7 @@ export default async function PremiumPage() {
                 key={plan}
                 className={cn(
                   "relative flex flex-col gap-6 rounded-4xl border p-8",
-                  featured ? "border-cyan-500/50 bg-cyan-500/5 shadow-[0_0_60px_-20px_rgba(6,182,212,0.4)]" : "border-white/5 bg-zinc-950",
+                  featured ? "border-cyan-500/50 bg-cyan-500/5 shadow-[0_0_60px_-20px_rgba(6,182,212,0.4)]" : "border-line bg-surface",
                 )}
               >
                 {featured && (
@@ -66,18 +66,18 @@ export default async function PremiumPage() {
                 )}
                 <div className="space-y-2">
                   <h3 className={cn(type.h3, "flex items-center gap-2")}>
-                    {!isFree && <Sparkles className="h-4 w-4 text-cyan-500" aria-hidden />}
+                    {!isFree && <Sparkles className="h-4 w-4 text-brand" aria-hidden />}
                     {t(`plans.${plan}.name`)}
                   </h3>
                   <p className={type.body}>{t(`plans.${plan}.tagline`)}</p>
                 </div>
-                <p className="text-3xl font-black tracking-tight text-white">
-                  {isFree ? t("free") : <span className="text-xl text-zinc-400">{t("priceTba")}</span>}
+                <p className="text-3xl font-black tracking-tight text-foreground">
+                  {isFree ? t("free") : <span className="text-xl text-fg-muted">{t("priceTba")}</span>}
                 </p>
                 <ul className="flex-1 space-y-3">
                   {features.map((feature) => (
-                    <li key={feature} className="flex gap-3 text-sm text-zinc-300">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-cyan-500" aria-hidden />
+                    <li key={feature} className="flex gap-3 text-sm text-fg-soft">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
                       {feature}
                     </li>
                   ))}
@@ -87,7 +87,7 @@ export default async function PremiumPage() {
                   disabled
                   className={cn(
                     "inline-flex items-center justify-center gap-2 rounded-2xl border py-3.5 text-[10px] font-black uppercase tracking-widest disabled:cursor-not-allowed",
-                    isFree ? "border-white/20 text-white" : "border-white/10 text-zinc-500",
+                    isFree ? "border-line-stronger text-foreground" : "border-line-strong text-fg-subtle",
                   )}
                 >
                   {!isFree && <Lock className="h-3.5 w-3.5" aria-hidden />}
@@ -103,10 +103,10 @@ export default async function PremiumPage() {
         <SectionHeader id="premium-faq" title={t("faqTitle")} />
         <div className="space-y-3">
           {faq.map((item) => (
-            <details key={item.q} className="group rounded-2xl border border-white/5 bg-zinc-950 p-5 open:border-cyan-500/30">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-white">
+            <details key={item.q} className="group rounded-2xl border border-line bg-surface p-5 open:border-cyan-500/30">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-foreground">
                 {item.q}
-                <span aria-hidden className="text-cyan-500 transition-transform group-open:rotate-45">+</span>
+                <span aria-hidden className="text-brand transition-transform group-open:rotate-45">+</span>
               </summary>
               <p className={cn(type.prose, "mt-3")}>{item.a}</p>
             </details>

@@ -16,7 +16,7 @@ export default async function HomeCTA() {
         <p className={cn(typo.body, "mb-10 max-w-2xl sm:text-lg")}>{t("ctaBody")}</p>
         <Link
           href="/library"
-          className="group flex items-center gap-3 rounded-full bg-cyan-500 px-12 py-4 text-sm font-black uppercase text-black shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-colors duration-300 hover:bg-white"
+          className="group flex items-center gap-3 rounded-full bg-cyan-500 px-12 py-4 text-sm font-black uppercase text-inverse-fg shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-colors duration-300 hover:bg-inverse"
         >
           {t("ctaButton")}
           <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />

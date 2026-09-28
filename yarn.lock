@@ -195,7 +195,7 @@
     std-env "^3.9.0"
     swr "2.3.4"
 
-"@clerk/shared@^3.48.0":
+"@clerk/shared@^3.47.2", "@clerk/shared@^3.48.0":
   version "3.48.0"
   resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.48.0.tgz#35380731d05dc8a0539b9eafadb2df85c5f9157f"
   integrity sha512-4VBHItiLUZJGptWNwLazcOvz4yAFBzrjuJaf1yF35KGZWSNg3FrDCNsn8PZdPs5l4kJjx6aIGSmoRZmbOruuSg==
@@ -206,6 +206,14 @@
     js-cookie "3.0.7"
     std-env "^3.9.0"
     swr "2.3.4"
+
+"@clerk/themes@^2.4.57":
+  version "2.4.57"
+  resolved "https://registry.yarnpkg.com/@clerk/themes/-/themes-2.4.57.tgz#e33e27aad570f7ec2fa5eed0d113373813578ec9"
+  integrity sha512-Nb3bO79rMTU/MPVTC/dde6LG27/IgOMKIYi5KSvAmO4ZUHlj0OWufu6CMvz5OYVZ0YdyMnTBU2aPGRUiRzO+2w==
+  dependencies:
+    "@clerk/shared" "^3.47.2"
+    tslib "2.8.1"
 
 "@clerk/types@^4.101.13":
   version "4.101.13"
@@ -3785,6 +3793,11 @@ next-intl@^4.14.0:
     negotiator "^1.0.0"
     next-intl-swc-plugin-extractor "4.14.7"
     use-intl "^4.14.7"
+
+next-themes@^0.4.6:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.4.6.tgz#8d7e92d03b8fea6582892a50a928c9b23502e8b6"
+  integrity sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==
 
 next@16.1.4:
   version "16.1.4"

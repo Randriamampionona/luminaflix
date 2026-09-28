@@ -20,7 +20,7 @@ const chip = (active: boolean) =>
     "rounded-xl border px-4 py-2 text-[11px] font-bold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-500",
     active
       ? "border-cyan-400 bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-      : "border-white/5 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-white",
+      : "border-line bg-elevated/50 text-fg-muted hover:bg-elevated-2 hover:text-foreground",
   );
 
 /**
@@ -87,9 +87,9 @@ export default function AdvancedFilter({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-full border border-white/5 bg-zinc-900 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-zinc-400 shadow-xl outline-none transition-colors hover:border-cyan-500/50 hover:text-white focus-visible:ring-2 focus-visible:ring-cyan-500"
+          className="flex items-center gap-2 rounded-full border border-line bg-elevated px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-fg-muted shadow-xl outline-none transition-colors hover:border-cyan-500/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-cyan-500"
         >
-          <ListFilter className="h-4 w-4 text-cyan-500" />
+          <ListFilter className="h-4 w-4 text-brand" />
           {t("filters.button")}
           {activeCount > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-500 px-1.5 text-[10px] font-black text-black">
@@ -99,18 +99,18 @@ export default function AdvancedFilter({
         </button>
       </DialogTrigger>
 
-      <DialogContent className="z-100 rounded-md border-white/10 bg-zinc-950/95 p-8 shadow-2xl ring-1 ring-white/5 backdrop-blur-2xl sm:max-w-md">
+      <DialogContent className="z-100 rounded-md border-line-strong bg-surface/95 p-8 shadow-2xl ring-1 ring-line backdrop-blur-2xl sm:max-w-md">
         <DialogHeader className="pb-6">
-          <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter text-white">
+          <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter text-foreground">
             {t("filters.title")}
-            <span className="text-cyan-500">.</span>
+            <span className="text-brand">.</span>
           </DialogTitle>
           <DialogDescription className="sr-only">{t("filters.emptyBody")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-8">
           <fieldset>
-            <legend className="mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+            <legend className="mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-fg-subtle">
               {t("filters.genres")}
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -127,7 +127,7 @@ export default function AdvancedFilter({
 
           {showYear && (
             <fieldset>
-              <legend className="mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+              <legend className="mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-fg-subtle">
                 {t("filters.year")}
               </legend>
               <div className="flex flex-wrap gap-2">
@@ -147,14 +147,14 @@ export default function AdvancedFilter({
             onClick={reset}
             aria-label={t("filters.reset")}
             title={t("filters.reset")}
-            className="rounded-2xl border border-white/5 bg-zinc-900 p-4 text-zinc-500 transition-colors hover:text-white active:scale-90"
+            className="rounded-2xl border border-line bg-elevated p-4 text-fg-subtle transition-colors hover:text-foreground active:scale-90"
           >
             <RotateCcw className="h-5 w-5" />
           </button>
           <button
             type="button"
             onClick={apply}
-            className="flex-1 rounded-2xl bg-white py-4 text-xs font-black uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-cyan-500 hover:text-white active:scale-95"
+            className="flex-1 rounded-2xl bg-inverse py-4 text-xs font-black uppercase tracking-widest text-inverse-fg shadow-lg transition-colors hover:bg-cyan-500 hover:text-foreground active:scale-95"
           >
             {t("filters.apply")}
           </button>

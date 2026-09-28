@@ -655,7 +655,11 @@
       "greetingNamed": "Hey {name}, tonight's watch is ready.",
       "greeting": "Tonight's watch is ready.",
       "intro": "We picked {count} titles to start your evening. Press play, we'll handle the rest.",
-      "kind": { "movie": "Movie", "kdrama": "K-Drama", "anime": "Anime" },
+      "kind": {
+        "movie": "Movie",
+        "kdrama": "K-Drama",
+        "anime": "Anime"
+      },
       "watchNow": "Watch now",
       "trailer": "Watch the trailer",
       "alsoTonight": "Also on tonight",
@@ -663,7 +667,13 @@
       "bannerTitle": "Your next favorite is one click away.",
       "bannerBody": "Movies, series, anime and K-dramas in HD — in English or French, on any device.",
       "openApp": "Open LuminaFlix",
-      "browse": { "movies": "Movies", "tvShows": "TV Shows", "anime": "Anime", "kdrama": "K-Drama", "newPopular": "New & Popular" },
+      "browse": {
+        "movies": "Movies",
+        "tvShows": "TV Shows",
+        "anime": "Anime",
+        "kdrama": "K-Drama",
+        "newPopular": "New & Popular"
+      },
       "favorites": "My favorites",
       "help": "Help center",
       "unsubscribe": "Unsubscribe",
@@ -677,5 +687,11 @@
       "textUnsubscribe": "Unsubscribe:",
       "webTitle": "LuminaFlix · Daily picks"
     }
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

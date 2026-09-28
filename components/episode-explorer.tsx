@@ -101,10 +101,10 @@ export default function EpisodeExplorer({
 
   return (
     <section className="space-y-10" aria-labelledby="episodes-heading">
-      <div className="flex flex-col justify-between gap-6 border-b border-white/5 pb-6 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-6 border-b border-line pb-6 md:flex-row md:items-end">
         <div className="space-y-2">
           <SectionHeader id="episodes-heading" title={t("title")} />
-          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
+          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-fg-subtle">
             <span
               aria-hidden
               className="h-1.5 w-1.5 rounded-full bg-cyan-500"
@@ -131,7 +131,7 @@ export default function EpisodeExplorer({
                 "h-10 rounded-xl border px-5 text-[10px] font-black uppercase tracking-widest transition-colors duration-300",
                 activeSeason === season.season_number
                   ? "border-cyan-400 bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-                  : "border-white/5 bg-zinc-900/40 text-zinc-500 hover:border-white/20 hover:text-white",
+                  : "border-line bg-elevated/40 text-fg-subtle hover:border-line-stronger hover:text-foreground",
               )}
             >
               {t("seasonShort", { season: season.season_number })}
@@ -140,14 +140,14 @@ export default function EpisodeExplorer({
 
           {overflowSeasons.length > 0 && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex h-10 items-center gap-2 rounded-xl border border-white/5 bg-zinc-900/40 px-4 text-[10px] font-black uppercase text-zinc-400 outline-none transition-colors hover:border-cyan-500/30 hover:text-white">
+              <DropdownMenuTrigger className="flex h-10 items-center gap-2 rounded-xl border border-line bg-elevated/40 px-4 text-[10px] font-black uppercase text-fg-muted outline-none transition-colors hover:border-cyan-500/30 hover:text-foreground">
                 <Plus className="h-3 w-3" />
                 {t("moreSeasons")}
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="max-h-64 min-w-30 rounded-2xl border-white/10 bg-[#050505] p-1 shadow-2xl backdrop-blur-3xl"
+                className="max-h-64 min-w-30 rounded-2xl border-line-strong bg-surface p-1 shadow-2xl backdrop-blur-3xl"
               >
                 {overflowSeasons.map((season) => (
                   <DropdownMenuItem
@@ -156,8 +156,8 @@ export default function EpisodeExplorer({
                     className={cn(
                       "mb-1 cursor-pointer rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest last:mb-0",
                       activeSeason === season.season_number
-                        ? "bg-white text-black"
-                        : "text-zinc-400 focus:bg-white focus:text-black",
+                        ? "bg-inverse text-inverse-fg"
+                        : "text-fg-muted focus:bg-inverse focus:text-inverse-fg",
                     )}
                   >
                     {t("seasonLong", { season: season.season_number })}
@@ -180,11 +180,11 @@ export default function EpisodeExplorer({
         ) : status === "error" ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-[3rem] border border-dashed border-red-500/20 py-24 text-center">
             <AlertTriangle className="h-8 w-8 text-red-500/70" />
-            <p className="text-sm font-bold text-zinc-400">{t("loadError")}</p>
+            <p className="text-sm font-bold text-fg-muted">{t("loadError")}</p>
             <button
               type="button"
               onClick={() => void loadSeason(activeSeason)}
-              className="rounded-xl bg-white px-6 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-cyan-500"
+              className="rounded-xl bg-inverse px-6 py-3 text-[10px] font-black uppercase tracking-widest text-inverse-fg hover:bg-cyan-500 hover:text-black"
             >
               {tc("retry")}
             </button>
@@ -207,7 +207,7 @@ export default function EpisodeExplorer({
                 ref={sentinelRef}
                 className="flex flex-col items-center gap-3 pt-10"
               >
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-fg-faint">
                   {t("showing", { shown: visible, total: episodes.length })}
                 </p>
                 <button
@@ -217,7 +217,7 @@ export default function EpisodeExplorer({
                       Math.min(count + BATCH, episodes.length),
                     )
                   }
-                  className="rounded-xl border border-white/10 bg-zinc-900 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-300 transition-colors hover:border-cyan-500/50 hover:text-white"
+                  className="rounded-xl border border-line-strong bg-elevated px-6 py-3 text-[10px] font-black uppercase tracking-widest text-fg-soft transition-colors hover:border-cyan-500/50 hover:text-foreground"
                 >
                   {t("loadMore")}
                 </button>
@@ -225,12 +225,12 @@ export default function EpisodeExplorer({
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-[3rem] border border-dashed border-white/5 bg-zinc-900/5 py-32">
-            <LayoutGrid className="mb-4 h-8 w-8 text-zinc-800" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">
+          <div className="flex flex-col items-center justify-center rounded-[3rem] border border-dashed border-line bg-elevated/5 py-32">
+            <LayoutGrid className="mb-4 h-8 w-8 text-fg-ghost" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-fg-subtle">
               {t("empty")}
             </h3>
-            <p className="mt-2 text-[10px] font-bold uppercase text-zinc-700">
+            <p className="mt-2 text-[10px] font-bold uppercase text-fg-ghost">
               {t("emptyBody", { season: activeSeason })}
             </p>
           </div>

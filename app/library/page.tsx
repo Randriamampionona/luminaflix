@@ -53,10 +53,10 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
   return (
     <PageShell>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <header className="flex flex-col justify-between rounded-[2.5rem] border border-white/5 bg-linear-to-br from-zinc-900 to-black p-7 md:col-span-2 lg:p-10">
+        <header className="flex flex-col justify-between rounded-[2.5rem] border border-line bg-linear-to-br from-elevated to-background p-7 md:col-span-2 lg:p-10">
           <h1 className={type.h1}>
-            {t("title")} <span className="text-cyan-500">{t("accent")}</span>
-            <span className="text-cyan-500 not-italic">.</span>
+            {t("title")} <span className="text-brand">{t("accent")}</span>
+            <span className="text-brand not-italic">.</span>
           </h1>
           <p className={cn(type.meta, "mt-8 flex items-center gap-2")}>
             <span aria-hidden className="h-2 w-2 animate-pulse rounded-full bg-cyan-500" />
@@ -74,11 +74,11 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
               aria-current={active ? "page" : undefined}
               className={cn(
                 "group flex flex-col items-center justify-center gap-3 rounded-4xl border p-6 text-center transition-all",
-                active ? "border-cyan-500/60 bg-cyan-500/10" : "border-white/5 bg-zinc-900/50 hover:border-cyan-500/50",
+                active ? "border-cyan-500/60 bg-cyan-500/10" : "border-line bg-elevated/50 hover:border-cyan-500/50",
               )}
             >
-              <Icon className="h-6 w-6 text-cyan-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white">
+              <Icon className="h-6 w-6 text-brand" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-fg-muted group-hover:text-foreground">
                 {label}
               </span>
             </Link>
@@ -86,7 +86,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
         </nav>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-8">
         <div className="flex flex-wrap items-center gap-4">
           <span className="rounded-full bg-cyan-500 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-black">
             {t("allContent")}

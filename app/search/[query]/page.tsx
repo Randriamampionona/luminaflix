@@ -26,9 +26,9 @@ export default async function SearchPage({ params }: { params: Params }) {
         eyebrow={t("resultsEyebrow")}
         title={`“${decodedQuery}”`}
         actions={
-          <span className="flex items-center gap-2 rounded-full border border-white/5 bg-zinc-900/40 px-4 py-2">
-            <Sparkles className="h-3 w-3 text-cyan-500" aria-hidden />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+          <span className="flex items-center gap-2 rounded-full border border-line bg-elevated/40 px-4 py-2">
+            <Sparkles className="h-3 w-3 text-brand" aria-hidden />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-fg-muted">
               {t("matches", { count: results.length })}
             </span>
           </span>

@@ -55,8 +55,8 @@ export default async function WatchPage({ params, searchParams }: { params: Para
 
         <section className="space-y-8">
           {fallback && (
-            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-              <Sparkles className="h-4 w-4 shrink-0 text-cyan-500" />
+            <div className="flex items-center gap-3 border-b border-line-strong pb-4">
+              <Sparkles className="h-4 w-4 shrink-0 text-brand" />
               <h2 className={cn(type.meta, "min-w-0 wrap-break-word")}>{t("similarTo", { query: fallback })}</h2>
             </div>
           )}
@@ -70,9 +70,9 @@ export default async function WatchPage({ params, searchParams }: { params: Para
                   <Link
                     key={item.id}
                     href={`/movies/${item.id}?fallback=${encodeURIComponent(title.toLowerCase())}`}
-                    className="group rounded-4xl border border-white/5 bg-zinc-900/40 p-4 transition-all hover:scale-[1.02] hover:bg-zinc-800/60"
+                    className="group rounded-4xl border border-line bg-elevated/40 p-4 transition-all hover:scale-[1.02] hover:bg-elevated-2/60"
                   >
-                    <div className="relative mb-4 aspect-video overflow-hidden rounded-2xl bg-zinc-900">
+                    <div className="relative mb-4 aspect-video overflow-hidden rounded-2xl bg-elevated">
                       {image && (
                         <Image
                           src={image}
@@ -86,8 +86,8 @@ export default async function WatchPage({ params, searchParams }: { params: Para
                     </div>
                     <h3 className="truncate text-left text-sm font-black uppercase italic tracking-tight">{title}</h3>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-cyan-500">{getReleaseYear(item) || "—"}</span>
-                      <ArrowRight className="h-3 w-3 text-zinc-600 transition-colors group-hover:text-white" />
+                      <span className="text-[10px] font-bold text-brand">{getReleaseYear(item) || "—"}</span>
+                      <ArrowRight className="h-3 w-3 text-fg-faint transition-colors group-hover:text-foreground" />
                     </div>
                   </Link>
                 );
@@ -100,7 +100,7 @@ export default async function WatchPage({ params, searchParams }: { params: Para
           <div className="text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-cyan-500"
+              className="inline-flex items-center gap-2 rounded-2xl bg-inverse px-8 py-4 text-[10px] font-black uppercase tracking-widest text-inverse-fg transition-all hover:bg-cyan-500 hover:text-black"
             >
               {t("backHome")}
             </Link>
@@ -123,7 +123,7 @@ export default async function WatchPage({ params, searchParams }: { params: Para
         </div>
         <h1 className={cn(type.h1, "wrap-break-word")}>
           {movie.title}
-          <span className="text-cyan-500 not-italic">.</span>
+          <span className="text-brand not-italic">.</span>
         </h1>
       </header>
 
@@ -142,32 +142,32 @@ export default async function WatchPage({ params, searchParams }: { params: Para
         <NativeBannerAd />
       </AdWrapper>
 
-      <section className="grid grid-cols-1 gap-12 border-t border-white/5 pt-12 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-12 border-t border-line pt-12 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <h2 className={cn(type.meta, "flex items-center gap-2")}>
-            <Search className="h-4 w-4 text-cyan-500" aria-hidden />
+            <Search className="h-4 w-4 text-brand" aria-hidden />
             {t("synopsis")}
           </h2>
-          {movie.overview && <p className="text-lg italic leading-relaxed text-zinc-400">“{movie.overview}”</p>}
+          {movie.overview && <p className="text-lg italic leading-relaxed text-fg-muted">“{movie.overview}”</p>}
         </div>
 
-        <div className="group relative space-y-6 overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-900/30 p-8 backdrop-blur-sm">
-          <Sparkles className="absolute top-4 right-4 h-12 w-12 text-cyan-500 opacity-10 transition-opacity group-hover:opacity-20" />
+        <div className="group relative space-y-6 overflow-hidden rounded-[3rem] border border-line bg-elevated/30 p-8 backdrop-blur-sm">
+          <Sparkles className="absolute top-4 right-4 h-12 w-12 text-brand opacity-10 transition-opacity group-hover:opacity-20" />
           <h2 className={type.meta}>{t("details")}</h2>
           <dl className="space-y-6">
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("runtime")}</dt>
-              <dd className="text-sm font-bold tracking-widest text-white">
+            <div className="flex items-center justify-between border-b border-line pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-fg-faint">{t("runtime")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-foreground">
                 {movie.runtime ? t("runtimeValue", { minutes: movie.runtime }) : "—"}
               </dd>
             </div>
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("released")}</dt>
-              <dd className="text-sm font-bold tracking-widest text-white">{released ?? "—"}</dd>
+            <div className="flex items-center justify-between border-b border-line pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-fg-faint">{t("released")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-foreground">{released ?? "—"}</dd>
             </div>
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <dt className="text-[10px] font-bold uppercase tracking-tighter text-zinc-600">{t("rating")}</dt>
-              <dd className="text-sm font-bold tracking-widest text-white">{(movie.vote_average ?? 0).toFixed(1)}</dd>
+            <div className="flex items-center justify-between border-b border-line pb-2">
+              <dt className="text-[10px] font-bold uppercase tracking-tighter text-fg-faint">{t("rating")}</dt>
+              <dd className="text-sm font-bold tracking-widest text-foreground">{(movie.vote_average ?? 0).toFixed(1)}</dd>
             </div>
           </dl>
         </div>

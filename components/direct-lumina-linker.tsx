@@ -72,7 +72,7 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
                 : "pointer-events-none scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100",
             )}
           >
-            <div className="mr-2 whitespace-nowrap rounded-md bg-white px-6 py-3 text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+            <div className="mr-2 whitespace-nowrap rounded-md bg-inverse px-6 py-3 text-inverse-fg shadow-[0_0_30px_rgba(255,255,255,0.2)]">
               <div className="flex flex-col items-start leading-none">
                 <span className="flex items-center gap-2 text-[11px] font-black uppercase italic tracking-tighter">
                   {isSignedIn ? (
@@ -93,21 +93,21 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
             type="button"
             onClick={handleClick}
             aria-label={isSignedIn ? t("buttonLabel") : t("loginRequired")}
-            className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-black shadow-[0_0_40px_-10px_rgba(0,0,0,1)] transition-all duration-500 hover:border-cyan-500/50 focus-visible:border-cyan-500"
+            className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-md border border-line-strong bg-background shadow-[0_0_40px_-10px_rgba(0,0,0,1)] transition-all duration-500 hover:border-cyan-500/50 focus-visible:border-cyan-500"
           >
             <span
               aria-hidden
               className={cn(
                 "absolute inset-0 animate-pulse rounded-md group-hover:hidden",
-                isSignedIn ? "bg-cyan-500/10" : "bg-white/5",
+                isSignedIn ? "bg-cyan-500/10" : "bg-tint",
               )}
             />
-            <Download className="h-6 w-6 text-white transition-colors group-hover:text-cyan-400" />
+            <Download className="h-6 w-6 text-foreground transition-colors group-hover:text-brand-bright" />
             <span
               aria-hidden
               className={cn(
-                "absolute top-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black transition-colors",
-                isSignedIn ? "bg-cyan-500" : "bg-zinc-600",
+                "absolute top-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background transition-colors",
+                isSignedIn ? "bg-cyan-500" : "bg-fg-faint",
               )}
             />
           </button>
@@ -120,11 +120,11 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
           aria-modal="true"
           aria-labelledby="lumina-qr-title"
           onClick={() => setShowQR(false)}
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 p-6 backdrop-blur-xl animate-in fade-in duration-300"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 p-6 backdrop-blur-xl animate-in fade-in duration-300"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="no-scrollbar relative max-h-full w-full max-w-100 overflow-y-auto rounded-[3rem] border border-white/10 bg-zinc-900 p-6 text-center shadow-2xl sm:p-10"
+            className="no-scrollbar relative max-h-full w-full max-w-100 overflow-y-auto rounded-[3rem] border border-line-strong bg-elevated p-6 text-center shadow-2xl sm:p-10"
           >
             <div className="absolute top-0 left-0 h-1 w-full bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
 
@@ -132,7 +132,7 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
               type="button"
               onClick={() => setShowQR(false)}
               aria-label={t("close")}
-              className="absolute top-8 right-8 cursor-pointer rounded-full bg-white/5 p-2 text-zinc-500 transition-all hover:bg-white/10 hover:text-white"
+              className="absolute top-8 right-8 cursor-pointer rounded-full bg-tint p-2 text-fg-subtle transition-all hover:bg-tint-strong hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>
@@ -140,18 +140,18 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
             <div className="space-y-8">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1">
-                  <Smartphone className="h-3 w-3 text-cyan-500" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-cyan-500">
+                  <Smartphone className="h-3 w-3 text-brand" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-brand">
                     {t("qrBadge")}
                   </span>
                 </div>
                 <h3
                   id="lumina-qr-title"
-                  className="text-2xl font-black uppercase italic tracking-tighter text-white"
+                  className="text-2xl font-black uppercase italic tracking-tighter text-foreground"
                 >
                   {t("qrTitle")}
                 </h3>
-                <p className="px-4 text-xs leading-relaxed text-zinc-400">{t("qrBody")}</p>
+                <p className="px-4 text-xs leading-relaxed text-fg-muted">{t("qrBody")}</p>
               </div>
 
               <div className="relative mx-auto w-fit rounded-[2.5rem] bg-white p-6 shadow-[0_0_60px_rgba(6,182,212,0.15)]">
