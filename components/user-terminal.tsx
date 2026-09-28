@@ -3,16 +3,22 @@
 import { UserButton, useUser } from "@clerk/nextjs";
 import { ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
-export default function UserTerminal() {
+export default function UserTerminal({ className }: { className?: string }) {
   const t = useTranslations("auth");
   const { user, isLoaded } = useUser();
 
   // Reserve the space while Clerk loads to avoid a navbar layout shift.
-  if (!isLoaded || !user) return <div aria-hidden className="h-13.5 w-40" />;
+  if (!isLoaded || !user) return <div aria-hidden className={cn("h-13.5 w-40", className)} />;
 
   return (
-    <div className="group relative flex items-center gap-3 rounded-md border border-line bg-elevated/40 p-2 backdrop-blur-md transition-colors duration-500 hover:border-cyan-500/50">
+    <div
+      className={cn(
+        "group relative flex items-center gap-3 rounded-md border border-line bg-elevated/40 p-2 backdrop-blur-md transition-colors duration-500 hover:border-cyan-500/50",
+        className,
+      )}
+    >
       <div className="flex flex-col items-end">
         <div className="flex items-center gap-2">
           <span className="max-w-28 truncate text-[10px] font-black uppercase italic leading-none tracking-tighter text-foreground">
@@ -26,7 +32,10 @@ export default function UserTerminal() {
       </div>
 
       <div className="relative">
-        <div aria-hidden className="absolute -inset-1 rounded-full bg-linear-to-tr from-cyan-500 to-blue-600 opacity-20 blur-xs transition-opacity duration-500 group-hover:opacity-100" />
+        <div
+          aria-hidden
+          className="absolute -inset-1 rounded-full bg-linear-to-tr from-cyan-500 to-blue-600 opacity-20 blur-xs transition-opacity duration-500 group-hover:opacity-100"
+        />
         <div className="relative flex items-center justify-center rounded-full bg-background">
           <UserButton
             appearance={{

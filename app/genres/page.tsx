@@ -29,7 +29,7 @@ export default async function AllGenresPage() {
             <Link
               key={genre.id}
               href={`/genres/${genre.id}`}
-              className="dark group relative flex aspect-video flex-col justify-between overflow-hidden border-r border-b border-line bg-surface p-6 text-foreground transition-all duration-700 sm:p-8 md:aspect-square"
+              className="group relative flex aspect-video flex-col justify-between overflow-hidden border-r border-b border-line bg-surface p-6 text-foreground transition-all duration-700 sm:p-8 md:aspect-square"
             >
               {backdrop && (
                 <div className="absolute inset-0">
@@ -40,8 +40,8 @@ export default async function AllGenresPage() {
                     sizes="(min-width: 1280px) 300px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     className="object-cover opacity-20 grayscale transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-40 group-hover:grayscale-0"
                   />
-                  <div className="absolute inset-0 bg-black/60 transition-colors duration-700 group-hover:bg-black/20" />
-                  <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-background/60 transition-colors duration-700 group-hover:bg-background/20" />
+                  <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
                 </div>
               )}
 

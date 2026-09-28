@@ -44,7 +44,7 @@ export default async function SeriesDetailsView({
 
   return (
     <main className={cn("min-h-screen bg-background text-foreground", spacing.pageBottom)}>
-      <section className="dark relative flex h-[69vh] min-h-130 w-full items-end bg-background text-foreground">
+      <section className="relative flex h-[69vh] min-h-130 w-full items-end bg-background text-foreground">
         {backdrop && (
           <Image
             src={backdrop}
@@ -55,7 +55,7 @@ export default async function SeriesDetailsView({
             className="object-cover opacity-40"
           />
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/20 to-transparent" />
 
         <Container className="relative pb-10">
           <div className="max-w-4xl space-y-4">

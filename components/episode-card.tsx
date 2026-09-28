@@ -29,7 +29,7 @@ function EpisodeCard({
     <Link
       href={`/${path}/play/${seriesId}?s=${seasonNumber}&e=${ep.episode_number}`}
       aria-label={t("episodes.play", { number: ep.episode_number })}
-      className="dark group relative block aspect-video overflow-hidden rounded-2xl border border-line bg-elevated text-foreground outline-none transition-colors hover:border-cyan-500/50 focus-visible:ring-2 focus-visible:ring-cyan-500"
+      className="group relative block aspect-video overflow-hidden rounded-2xl border border-line bg-elevated text-foreground outline-none transition-colors hover:border-cyan-500/50 focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       <Image
         src={tmdbImage(ep.still_path) ?? FALLBACK_STILL}
@@ -38,7 +38,7 @@ function EpisodeCard({
         sizes="(min-width: 1280px) 290px, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
         className="object-cover opacity-60 transition-[opacity,transform] duration-700 group-hover:scale-110 group-hover:opacity-100"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
 
       <div className="absolute bottom-4 left-4 right-4">
         <div className="mb-1 flex items-center justify-between">

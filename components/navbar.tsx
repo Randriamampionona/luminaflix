@@ -1,36 +1,23 @@
 "use client";
 
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import {
-  ArrowRight,
-  ChevronDown,
-  Loader2,
-  Menu,
-  Search,
-  X,
-  Zap,
-} from "lucide-react";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { ArrowRight, ChevronDown, Loader2, Menu, Search, X, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { memo, useCallback, useState } from "react";
+import AccountCard from "@/components/auth/account-card";
 import SignInLink from "@/components/auth/sign-in-link";
 import LanguageSwitcher from "@/components/i18n/language-switcher";
-import ThemeToggle from "@/components/theme-toggle";
 import { Container } from "@/components/layout/container";
+import ThemeToggle from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useScrolled } from "@/hooks/use-scrolled";
 import { NAV_INLINE_COUNT, NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -39,16 +26,12 @@ import NavbarActions from "./navbar-actions";
 const inlineItems = NAV_ITEMS.slice(0, NAV_INLINE_COUNT);
 const overflowItems = NAV_ITEMS.slice(NAV_INLINE_COUNT);
 
-export const Logo = memo(function Logo({
-  size = "md",
-}: {
-  size?: "sm" | "md";
-}) {
+export const Logo = memo(function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   const t = useTranslations("common");
   return (
     <Link
       href="/"
-      className="group flex items-center gap-2"
+      className="group flex shrink-0 items-center gap-2"
       aria-label={`${t("brandFirst")}${t("brandSecond")} — ${t("home")}`}
     >
       <span
@@ -57,12 +40,7 @@ export const Logo = memo(function Logo({
           size === "md" ? "h-10 w-10" : "h-8 w-8 rounded-lg",
         )}
       >
-        <span
-          className={cn(
-            "font-black italic leading-none text-black",
-            size === "md" ? "text-xl" : "text-base",
-          )}
-        >
+        <span className={cn("font-black italic leading-none text-black", size === "md" ? "text-xl" : "text-base")}>
           L
         </span>
       </span>
@@ -74,6 +52,35 @@ export const Logo = memo(function Logo({
   );
 });
 
+/** Hamburger button; shows the user's avatar when signed in. */
+function MenuButton(props: React.ComponentProps<"button">) {
+  const t = useTranslations("nav");
+  const { user } = useUser();
+  return (
+    <button
+      type="button"
+      aria-label={t("openMenu")}
+      {...props}
+      className="relative flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-line-strong bg-elevated/50 px-3 text-foreground transition-colors hover:border-cyan-500/50 hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+    >
+      <Menu className="h-5 w-5" aria-hidden />
+      {user?.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element -- Clerk avatar (the global image loader is TMDB-only)
+        <img src={user.imageUrl} alt="" className="h-7 w-7 rounded-full border border-line-strong object-cover" />
+      )}
+    </button>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-[10px] font-black uppercase tracking-[0.3em] text-fg-subtle">{children}</p>;
+}
+
+/**
+ * Bar: logo, main links (xl+), search (lg+) and a menu button on every screen
+ * size. Account, theme and language live in the menu drawer, which keeps the
+ * bar uncluttered (no wrapping labels) at any width.
+ */
 export default function Navbar() {
   const t = useTranslations();
   const router = useRouter();
@@ -84,10 +91,7 @@ export default function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
 
   // Keep the item highlighted on nested pages (e.g. /movies/123).
-  const isActive = useCallback(
-    (href: string) => pathname === href || pathname.startsWith(`${href}/`),
-    [pathname],
-  );
+  const isActive = useCallback((href: string) => pathname === href || pathname.startsWith(`${href}/`), [pathname]);
   const isMoreActive = overflowItems.some((item) => isActive(item.href));
 
   const handleMobileSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,16 +109,15 @@ export default function Navbar() {
     <nav
       aria-label={t("nav.mainNavigation")}
       className={cn(
-        "fixed top-0 z-100 w-full transition-[padding,background-color,border-color] duration-500",
+        "fixed top-0 z-100 w-full transition-[padding,background-color] duration-500",
         isScrolled
-          ? "border-b border-line bg-background/80 py-4 backdrop-blur-xl"
-          : // Light theme: frosted bar so links stay readable over the dark hero artwork.
-            "border-b border-line bg-background/90 py-6 backdrop-blur-xl dark:border-transparent dark:bg-transparent dark:backdrop-blur-none",
+          ? "border-b border-line bg-background/85 py-3 backdrop-blur-xl"
+          : "bg-linear-to-b from-background/90 to-transparent py-5",
       )}
     >
       {/* UI STANDARD: same container as every page and the footer. */}
       <Container className="flex items-center justify-between gap-6">
-        <div className="flex items-center gap-10">
+        <div className="flex min-w-0 items-center gap-10">
           <Logo />
 
           <div className="hidden items-center gap-8 xl:flex">
@@ -124,8 +127,8 @@ export default function Navbar() {
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
                 className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.2em] transition-colors hover:text-brand",
-                  isActive(item.href) ? "text-brand" : "text-fg-subtle",
+                  "whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] transition-colors hover:text-brand",
+                  isActive(item.href) ? "text-brand" : "text-fg-muted",
                 )}
               >
                 {t(`nav.${item.key}`)}
@@ -135,8 +138,8 @@ export default function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
-                  "group flex cursor-pointer items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] outline-none transition-colors hover:text-brand focus-visible:text-brand",
-                  isMoreActive ? "text-brand" : "text-fg-subtle",
+                  "group flex cursor-pointer items-center gap-1 whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] outline-none transition-colors hover:text-brand focus-visible:text-brand",
+                  isMoreActive ? "text-brand" : "text-fg-muted",
                 )}
               >
                 {t("nav.more")}
@@ -166,32 +169,12 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-3">
           <NavbarActions />
-          {/* Desktop (≥ 768px): theme switch in the top-right cluster; on
-              smaller screens it lives in the menu drawer. */}
-          <div className="hidden md:block">
-            <ThemeToggle />
-          </div>
-          <div className="hidden xl:block">
-            <LanguageSwitcher />
-          </div>
-
-          <div className="flex items-center lg:hidden">
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label={t("nav.openMenu")}
-                className="rounded-xl border border-line-strong bg-elevated/50 p-3 text-foreground transition-colors hover:bg-elevated-2 xl:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
+              <MenuButton />
             </SheetTrigger>
 
             <SheetContent
@@ -200,6 +183,10 @@ export default function Navbar() {
               className="z-100 flex w-full flex-col border-line-strong bg-background/95 p-0 backdrop-blur-2xl sm:w-100 sm:max-w-100"
             >
               <div className="flex w-full shrink-0 items-center justify-between p-6">
+                <SheetTitle className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
+                  {t("nav.menuTitle")}
+                  <span className="text-brand">.</span>
+                </SheetTitle>
                 <SheetClose asChild>
                   <button
                     type="button"
@@ -209,15 +196,37 @@ export default function Navbar() {
                     <X className="h-5 w-5" />
                   </button>
                 </SheetClose>
-                <LanguageSwitcher />
               </div>
 
-              <div className="flex flex-1 flex-col overflow-y-auto p-8 no-scrollbar">
-                <form
-                  onSubmit={handleMobileSearch}
-                  role="search"
-                  className="group relative mb-12 shrink-0"
-                >
+              <div className="flex flex-1 flex-col gap-10 overflow-y-auto px-6 pb-10 no-scrollbar">
+                {/* Account */}
+                <section className="space-y-3">
+                  <SectionLabel>{t("nav.account")}</SectionLabel>
+                  <SignedIn>
+                    <AccountCard onAction={() => setIsOpen(false)} />
+                  </SignedIn>
+                  <SignedOut>
+                    <div className="grid grid-cols-2 gap-3">
+                      <SignInLink
+                        onNavigate={() => setIsOpen(false)}
+                        className="rounded-2xl border border-line-strong py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-foreground transition-colors hover:border-cyan-500/50"
+                      >
+                        {t("auth.signIn")}
+                      </SignInLink>
+                      <SignInLink
+                        route="/sign-up"
+                        onNavigate={() => setIsOpen(false)}
+                        className="flex items-center justify-center gap-2 rounded-2xl bg-inverse py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-inverse-fg transition-colors hover:bg-cyan-500 hover:text-black"
+                      >
+                        {t("auth.join")}
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                      </SignInLink>
+                    </div>
+                  </SignedOut>
+                </section>
+
+                {/* Search (the bar has its own search from lg up) */}
+                <form onSubmit={handleMobileSearch} role="search" className="group relative shrink-0 lg:hidden">
                   <div
                     aria-hidden
                     className={cn(
@@ -226,96 +235,67 @@ export default function Navbar() {
                     )}
                   />
                   <div className="relative flex items-center overflow-hidden rounded-2xl border border-line-strong bg-surface">
-                    <Search
-                      className={cn(
-                        "ml-4 h-5 w-5",
-                        searchQuery ? "text-brand-bright" : "text-fg-subtle",
-                      )}
-                    />
+                    <Search className={cn("ml-4 h-5 w-5", searchQuery ? "text-brand-bright" : "text-fg-subtle")} />
                     <input
                       type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t("search.mobilePlaceholder")}
                       aria-label={t("search.placeholder")}
-                      className="w-full border-none bg-transparent px-4 py-5 text-sm font-bold uppercase tracking-widest text-foreground outline-none placeholder:text-fg-ghost"
+                      className="w-full border-none bg-transparent px-4 py-4 text-sm font-bold uppercase tracking-widest text-foreground outline-none placeholder:text-fg-faint"
                     />
                     <button
                       type="submit"
                       aria-label={t("search.submit")}
                       className="mr-2 rounded-xl bg-inverse p-3 text-inverse-fg"
                     >
-                      {isSearching ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-4 w-4" />
-                      )}
+                      {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                     </button>
                   </div>
                 </form>
 
-                <SheetTitle className="mb-12 text-3xl font-black uppercase italic tracking-tighter text-foreground">
-                  {t("nav.menu")}
-                  <span className="text-brand">.</span>
-                </SheetTitle>
-
-                <div className="mb-12 flex flex-col gap-6">
-                  {NAV_ITEMS.map((item) => {
-                    const active = isActive(item.href);
-                    return (
-                      <SheetClose key={item.key} asChild>
-                        <Link
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          className={cn(
-                            "group flex items-center justify-between font-black uppercase italic tracking-tighter transition-colors",
-                            active
-                              ? "text-2xl text-foreground"
-                              : "text-fg-subtle hover:text-foreground",
-                          )}
-                        >
-                          <span>{t(`nav.${item.key}`)}</span>
-                          <Zap
+                {/* Navigation */}
+                <section className="space-y-4">
+                  <SectionLabel>{t("nav.menu")}</SectionLabel>
+                  <div className="flex flex-col gap-4">
+                    {NAV_ITEMS.map((item) => {
+                      const active = isActive(item.href);
+                      return (
+                        <SheetClose key={item.key} asChild>
+                          <Link
+                            href={item.href}
+                            aria-current={active ? "page" : undefined}
                             className={cn(
-                              "h-6 w-6 text-brand",
-                              active
-                                ? "scale-125 opacity-100"
-                                : "opacity-0 group-hover:opacity-100",
+                              "group flex items-center justify-between text-xl font-black uppercase italic tracking-tighter transition-colors",
+                              active ? "text-foreground" : "text-fg-subtle hover:text-foreground",
                             )}
-                          />
-                        </Link>
-                      </SheetClose>
-                    );
-                  })}
-                </div>
+                          >
+                            <span>{t(`nav.${item.key}`)}</span>
+                            <Zap
+                              className={cn(
+                                "h-5 w-5 text-brand",
+                                active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                              )}
+                            />
+                          </Link>
+                        </SheetClose>
+                      );
+                    })}
+                  </div>
+                </section>
 
-                <div className="mb-12 space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-fg-subtle">
-                    {t("theme.label")}
-                  </p>
-                  <ThemeToggle variant="full" />
-                </div>
-
-                <div className="mt-auto shrink-0 space-y-6 pb-12">
-                  <div className="h-px w-full bg-tint" />
-                  <SignedOut>
-                    <div className="flex flex-col gap-4">
-                      <SignInLink
-                        onNavigate={() => setIsOpen(false)}
-                        className="w-full py-4 text-center text-xs font-black uppercase tracking-[0.3em] text-fg-subtle hover:text-foreground"
-                      >
-                        {t("auth.signIn")}
-                      </SignInLink>
-                      <SignInLink
-                        route="/sign-up"
-                        onNavigate={() => setIsOpen(false)}
-                        className="w-full rounded-2xl bg-inverse py-5 text-center text-xs font-black uppercase tracking-widest text-inverse-fg transition-colors hover:bg-cyan-500 hover:text-foreground"
-                      >
-                        {t("auth.joinNow")}
-                      </SignInLink>
-                    </div>
-                  </SignedOut>
-                </div>
+                {/* Preferences */}
+                <section className="mt-auto space-y-4 rounded-3xl border border-line bg-tint-soft p-5">
+                  <SectionLabel>{t("nav.preferences")}</SectionLabel>
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-fg-muted">{t("theme.label")}</p>
+                    <ThemeToggle variant="full" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-fg-muted">{t("language.label")}</p>
+                    <LanguageSwitcher align="start" className="w-full justify-between" />
+                  </div>
+                </section>
               </div>
             </SheetContent>
           </Sheet>

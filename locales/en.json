@@ -52,14 +52,19 @@
     "menu": "Navigation",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "mainNavigation": "Main navigation"
+    "mainNavigation": "Main navigation",
+    "preferences": "Preferences",
+    "account": "Account",
+    "menuTitle": "Menu"
   },
   "auth": {
     "signIn": "Sign in",
     "join": "Join Lumina",
     "joinNow": "Join Lumina now",
     "account": "Account",
-    "memberBadge": "Member"
+    "memberBadge": "Member",
+    "manageAccount": "Manage",
+    "signOut": "Sign out"
   },
   "language": {
     "label": "Language",

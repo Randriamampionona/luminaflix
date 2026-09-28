@@ -52,14 +52,19 @@
     "menu": "Navigation",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
-    "mainNavigation": "Navigation principale"
+    "mainNavigation": "Navigation principale",
+    "preferences": "Préférences",
+    "account": "Compte",
+    "menuTitle": "Menu"
   },
   "auth": {
     "signIn": "Connexion",
     "join": "Rejoindre Lumina",
     "joinNow": "Rejoindre Lumina",
     "account": "Compte",
-    "memberBadge": "Membre"
+    "memberBadge": "Membre",
+    "manageAccount": "Gérer",
+    "signOut": "Déconnexion"
   },
   "language": {
     "label": "Langue",

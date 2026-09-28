@@ -45,7 +45,7 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
     <section
       aria-roledescription="carousel"
       aria-label={t("heroLabel")}
-      className="dark relative h-[90vh] min-h-150 w-full overflow-hidden bg-background text-foreground md:h-screen"
+      className="relative h-[90vh] min-h-150 w-full overflow-hidden bg-background text-foreground md:h-screen"
     >
       {slides.map((movie, index) => {
         const isActive = index === activeIndex;
@@ -68,11 +68,11 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
                   fill
                   sizes="100vw"
                   priority={index === 0}
-                  className="object-cover opacity-50"
+                  className="object-cover opacity-80 dark:opacity-50"
                 />
               )}
-              <div className="absolute inset-0 bg-linear-to-r from-black via-black/40 to-transparent" />
-              <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-r from-background via-background/40 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
             </div>
 
             {/* UI STANDARD: hero copy aligns with the shared container. */}

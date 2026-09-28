@@ -110,10 +110,10 @@ export function EpisodeWatchSkeleton({ tabs = true }: { tabs?: boolean }) {
 export function SeriesDetailsSkeleton() {
   return (
     <LoadingRegion className={`min-h-screen bg-background ${spacing.pageBottom}`}>
-      <section className="dark relative flex h-[69vh] min-h-130 w-full items-end bg-surface">
+      <section className="relative flex h-[69vh] min-h-130 w-full items-end bg-surface">
         <div
           aria-hidden
-          className="absolute inset-0 animate-pulse bg-linear-to-t from-black via-surface to-elevated/60"
+          className="absolute inset-0 animate-pulse bg-linear-to-t from-background via-surface to-elevated/60"
         />
         <Container className="relative pb-10">
           <div className="max-w-4xl space-y-4">

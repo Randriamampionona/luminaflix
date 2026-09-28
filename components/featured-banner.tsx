@@ -15,7 +15,7 @@ export default async function FeaturedBanner({ movie }: { movie: Movie }) {
   return (
     <section className="py-10 sm:py-14">
       <Container>
-        <div className="dark group relative min-h-75 w-full overflow-hidden rounded-xl border border-line-strong bg-background text-foreground md:min-h-100">
+        <div className="group relative min-h-75 w-full overflow-hidden rounded-xl border border-line-strong bg-background text-foreground md:min-h-100">
           {backdrop && (
             <Image
               src={backdrop}
@@ -25,7 +25,7 @@ export default async function FeaturedBanner({ movie }: { movie: Movie }) {
               className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
           )}
-          <div className="absolute inset-0 bg-linear-to-r from-black via-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-background via-background/60 to-transparent" />
 
           <div className="relative flex min-h-75 max-w-2xl flex-col justify-center space-y-4 p-6 sm:p-8 md:min-h-100 md:p-12">
             <div className="flex items-center gap-3">

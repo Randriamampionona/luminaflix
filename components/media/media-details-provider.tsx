@@ -81,7 +81,7 @@ function DetailsContent({
   const label = kind === "tv" ? t("series") : kind === "anime" ? t("anime") : t("movie");
 
   return (
-    <DialogContent className="dark z-100 max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[2rem] border-line bg-surface/95 p-0 text-foreground backdrop-blur-2xl no-scrollbar sm:max-w-175">
+    <DialogContent className="z-100 max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[2rem] border-line bg-surface/95 p-0 text-foreground backdrop-blur-2xl no-scrollbar sm:max-w-175">
       <div className="relative grid min-h-137.5 grid-cols-1 gap-8 p-6 md:min-h-0 md:grid-cols-2">
         {/* Poster: background on mobile, column on desktop */}
         <div className="group absolute inset-0 aspect-2/3 overflow-hidden rounded-2xl border border-line-strong shadow-[0_0_40px_rgba(6,182,212,0.15)] md:relative md:inset-auto">
@@ -96,7 +96,7 @@ function DetailsContent({
           ) : (
             <div className="h-full w-full bg-elevated" />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-black/20 md:hidden" />
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/90 to-background/20 md:hidden" />
           <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100 md:flex">
             <Link
               href={playHref}
