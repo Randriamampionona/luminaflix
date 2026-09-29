@@ -368,7 +368,15 @@
     "qrTitle": "Scanner pour télécharger",
     "qrBody": "Ouvrez l'appareil photo de votre téléphone et scannez le code pour continuer sur mobile.",
     "qrBadge": "Continuer sur mobile",
-    "close": "Fermer"
+    "close": "Fermer",
+    "ctaSub": "HD · Hors ligne",
+    "lockedSub": "Compte gratuit",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "copyFailed": "Impossible de copier le lien",
+    "step1": "Ouvrez l'appareil photo",
+    "step2": "Visez le code",
+    "step3": "Le téléchargement démarre sur votre téléphone"
   },
   "guard": {
     "title": "Lecture bloquée",

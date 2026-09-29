@@ -368,7 +368,15 @@
     "qrTitle": "Scan to download",
     "qrBody": "Open your phone's camera and scan the code to continue on your mobile device.",
     "qrBadge": "Continue on mobile",
-    "close": "Close"
+    "close": "Close",
+    "ctaSub": "HD · Watch offline",
+    "lockedSub": "Free account",
+    "copyLink": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Couldn't copy the link",
+    "step1": "Open your phone's camera",
+    "step2": "Point it at the code",
+    "step3": "The download starts on your phone"
   },
   "guard": {
     "title": "Playback blocked",

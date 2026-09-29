@@ -358,3 +358,34 @@ body {
     animation: none;
   }
 }
+
+/* Download CTA (components/direct-lumina-linker.tsx) */
+@keyframes download-shine {
+  0%,
+  55% {
+    transform: translateX(0) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(450%) skewX(-12deg);
+  }
+}
+
+@keyframes download-bob {
+  0%,
+  100% {
+    transform: translateY(-1.5px);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes qr-scan {
+  0%,
+  100% {
+    top: 1.25rem;
+  }
+  50% {
+    top: calc(100% - 1.25rem);
+  }
+}
