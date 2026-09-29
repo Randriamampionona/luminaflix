@@ -374,9 +374,16 @@
     "copyLink": "Copier le lien",
     "copied": "Lien copié",
     "copyFailed": "Impossible de copier le lien",
-    "step1": "Ouvrez l'appareil photo",
-    "step2": "Visez le code",
-    "step3": "Le téléchargement démarre sur votre téléphone"
+    "step1": "Scannez le QR code avec votre téléphone",
+    "step2": "Ouvrez le lien dans votre navigateur",
+    "step3": "Appuyez sur « Ouvrir dans 1DM »",
+    "step4": "Téléchargez depuis 1DM",
+    "mobileCta": "Ouvrir dans 1DM",
+    "hintTitle": "Recommandé : 1DM",
+    "hintBody": "Pour télécharger, nous vous recommandons d'installer l'application 1DM sur votre téléphone.",
+    "hintCta": "Pas encore 1DM ? Téléchargez-la ici :",
+    "googlePlay": "Google Play",
+    "appStore": "App Store"
   },
   "guard": {
     "title": "Lecture bloquée",

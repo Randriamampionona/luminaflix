@@ -374,9 +374,16 @@
     "copyLink": "Copy link",
     "copied": "Link copied",
     "copyFailed": "Couldn't copy the link",
-    "step1": "Open your phone's camera",
-    "step2": "Point it at the code",
-    "step3": "The download starts on your phone"
+    "step1": "Scan the QR code with your phone",
+    "step2": "Open the link in your browser",
+    "step3": "Tap “Open in 1DM”",
+    "step4": "Download from 1DM",
+    "mobileCta": "Open in 1DM",
+    "hintTitle": "Recommended: 1DM",
+    "hintBody": "For downloads, we recommend having the 1DM app installed on your phone.",
+    "hintCta": "Don't have 1DM yet? Get it here:",
+    "googlePlay": "Google Play",
+    "appStore": "App Store"
   },
   "guard": {
     "title": "Playback blocked",

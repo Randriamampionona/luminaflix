@@ -2,11 +2,21 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Copy, Download, Lock, Smartphone, X } from "lucide-react";
+import { Apple, Check, Copy, Download, ExternalLink, Info, Lock, Play, Smartphone, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { useAuthGate } from "@/hooks/use-auth-gate";
 import { cn } from "@/lib/utils";
+
+/** 1DM (download manager) — recommended app for downloads on the phone. */
+const ONE_DM_STORES = [
+  {
+    key: "googlePlay",
+    icon: Play,
+    href: "https://play.google.com/store/apps/details?id=idm.internet.download.manager&hl=en&pli=1",
+  },
+  { key: "appStore", icon: Apple, href: "https://apps.apple.com/us/app/1dm-browser-downloader/id6670422630" },
+] as const;
 
 const subscribeNoop = () => () => {};
 const detectMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -86,7 +96,8 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
     }
   };
 
-  const label = isSignedIn ? t("download") : t("loginRequired");
+  // On the phone the button hands off to 1DM — say so (step 3 of the QR guide).
+  const label = isSignedIn ? (isMobile ? t("mobileCta") : t("download")) : t("loginRequired");
   const sub = isSignedIn ? t("ctaSub") : t("lockedSub");
 
   return (
@@ -96,7 +107,7 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
           {/* Attention ring: pulses three times after the page loads, then rests. */}
           <span
             aria-hidden
-            className="absolute inset-0 animate-ping rounded-2xl bg-cyan-400/40 [repeat-3] motion-reduce:hidden"
+            className="absolute inset-0 animate-ping rounded-2xl bg-cyan-400/40 [animation-iteration-count:3] motion-reduce:hidden"
           />
           {/* Soft glow that grows on hover */}
           <span
@@ -126,7 +137,7 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
               ) : (
                 <Lock className="h-4.5 w-4.5" strokeWidth={2.5} />
               )}
-              {/* Status dot: white when ready, dark when sign-in is needed */}
+              {/* Status dot: cyan-white when ready, dark when sign-in is needed */}
               <span
                 aria-hidden
                 className={cn(
@@ -155,7 +166,7 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="no-scrollbar relative max-h-full w-full max-w-md overflow-y-auto rounded-4xl border border-line-strong bg-surface shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+            className="no-scrollbar relative max-h-full w-full max-w-md overflow-y-auto sm:max-w-3xl rounded-4xl border border-line-strong bg-surface shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
           >
             {/* Header */}
             <div className="relative overflow-hidden border-b border-line px-6 pt-6 pb-5 sm:px-8">
@@ -194,53 +205,90 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
             </div>
 
             {/* QR with animated scanner frame */}
-            <div className="flex flex-col items-center gap-6 px-6 py-7 sm:px-8">
-              <div className="relative rounded-3xl bg-white p-5 shadow-[0_0_60px_rgba(6,182,212,0.18)]">
-                {(
-                  [
-                    "top-2 left-2 border-t-3 border-l-3 rounded-tl-xl",
-                    "top-2 right-2 border-t-3 border-r-3 rounded-tr-xl",
-                    "bottom-2 left-2 border-b-3 border-l-3 rounded-bl-xl",
-                    "bottom-2 right-2 border-b-3 border-r-3 rounded-br-xl",
-                  ] as const
-                ).map((corner) => (
-                  <span key={corner} aria-hidden className={cn("absolute h-7 w-7 border-cyan-500", corner)} />
-                ))}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-5 h-0.5 rounded-full bg-cyan-500/70 shadow-[0_0_12px_rgba(6,182,212,0.9)] animate-[qr-scan_2.6s_ease-in-out_infinite] motion-reduce:hidden"
-                />
-                <QRCodeSVG
-                  value={currentUrl}
-                  size={200}
-                  level="H"
-                  marginSize={0}
-                  imageSettings={{ src: "/favicon.ico", height: 44, width: 44, excavate: true }}
-                />
+            <div className="grid gap-6 px-6 py-7 sm:grid-cols-[auto_1fr] sm:items-start sm:gap-8 sm:px-8">
+              {/* Left: QR + copy link */}
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative rounded-3xl bg-white p-5 shadow-[0_0_60px_rgba(6,182,212,0.18)]">
+                  {(
+                    [
+                      "top-2 left-2 border-t-3 border-l-3 rounded-tl-xl",
+                      "top-2 right-2 border-t-3 border-r-3 rounded-tr-xl",
+                      "bottom-2 left-2 border-b-3 border-l-3 rounded-bl-xl",
+                      "bottom-2 right-2 border-b-3 border-r-3 rounded-br-xl",
+                    ] as const
+                  ).map((corner) => (
+                    <span key={corner} aria-hidden className={cn("absolute h-7 w-7 border-cyan-500", corner)} />
+                  ))}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-5 h-0.5 rounded-full bg-cyan-500/70 shadow-[0_0_12px_rgba(6,182,212,0.9)] animate-[qr-scan_2.6s_ease-in-out_infinite] motion-reduce:hidden"
+                  />
+                  <QRCodeSVG
+                    value={currentUrl}
+                    size={180}
+                    level="H"
+                    marginSize={0}
+                    imageSettings={{ src: "/favicon.ico", height: 44, width: 44, excavate: true }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line-strong bg-tint py-3.5 text-[11px] font-black uppercase tracking-widest text-foreground transition-colors hover:border-cyan-500/50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                >
+                  {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  {copied ? t("copied") : t("copyLink")}
+                </button>
               </div>
 
-              <ol className="grid w-full gap-2.5">
-                {[t("step1"), t("step2"), t("step3")].map((step, index) => (
-                  <li
-                    key={step}
-                    className="flex items-center gap-3 rounded-2xl border border-line bg-tint-soft px-4 py-3"
-                  >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-[11px] font-black text-black">
-                      {index + 1}
-                    </span>
-                    <span className="text-xs font-semibold text-fg-soft">{step}</span>
-                  </li>
-                ))}
-              </ol>
+              {/* Right: steps + 1DM recommendation */}
+              <div className="space-y-4">
+                <ol className="grid w-full gap-2.5">
+                  {[t("step1"), t("step2"), t("step3"), t("step4")].map((step, index) => (
+                    <li
+                      key={step}
+                      className="flex items-center gap-3 rounded-2xl border border-line bg-tint-soft px-4 py-2.5"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-[11px] font-black text-black">
+                        {index + 1}
+                      </span>
+                      <span className="text-xs font-semibold text-fg-soft">{step}</span>
+                    </li>
+                  ))}
+                </ol>
 
-              <button
-                type="button"
-                onClick={copyLink}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line-strong bg-tint py-3.5 text-[11px] font-black uppercase tracking-widest text-foreground transition-colors hover:border-cyan-500/50 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
-              >
-                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                {copied ? t("copied") : t("copyLink")}
-              </button>
+                {/* 1DM recommendation */}
+                <div className="w-full rounded-2xl border border-cyan-500/25 bg-cyan-500/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 text-brand">
+                      <Info className="h-4 w-4" aria-hidden />
+                    </span>
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">{t("hintTitle")}</p>
+                      <p className="text-xs leading-relaxed text-fg-soft">{t("hintBody")}</p>
+                      <p className="pt-1 text-xs font-semibold text-fg-muted">{t("hintCta")}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {ONE_DM_STORES.map(({ key, icon: Icon, href }) => (
+                      <a
+                        key={key}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center justify-center gap-2 rounded-xl bg-inverse px-3 py-2.5 text-[11px] font-black uppercase tracking-wider text-inverse-fg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 active:translate-y-0"
+                      >
+                        <Icon className="h-4 w-4" aria-hidden />
+                        {t(key)}
+                        <ExternalLink
+                          className="h-3 w-3 opacity-50 transition-opacity group-hover:opacity-100"
+                          aria-hidden
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
