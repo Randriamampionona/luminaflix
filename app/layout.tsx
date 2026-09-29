@@ -14,6 +14,7 @@ import ThemeProvider from "@/components/providers/theme-provider";
 import { MediaDetailsProvider } from "@/components/media/media-details-provider";
 import Toaster from "@/components/providers/toaster";
 import { localeMeta, type Locale } from "@/i18n/config";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -102,6 +103,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </ThemeProvider>
         </body>
       </html>
+      <SpeedInsights />
     </ClerkProvider>
   );
 }
