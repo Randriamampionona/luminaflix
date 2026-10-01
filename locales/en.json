@@ -143,7 +143,12 @@
     "ctaTitle": "Ready to dive in?",
     "ctaBody": "Browse the whole collection of movies and series. Filter by genre, year or rating to find exactly what you're in the mood for.",
     "ctaButton": "Explore the library",
-    "loadError": "The home feed is unavailable right now. Try again in a moment."
+    "loadError": "The home feed is unavailable right now. Try again in a moment.",
+    "newUsers": {
+      "title": "Welcome to our newest Luminas! ✨",
+      "subtitle": "{count, plural, one {# new member joined us recently} other {# new members joined us recently}}",
+      "label": "Newest members"
+    }
   },
   "media": {
     "movie": "Movie",

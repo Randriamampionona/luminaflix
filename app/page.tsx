@@ -16,6 +16,10 @@ import {
   HeroSkeleton,
   RowSkeleton,
 } from "@/components/skeletons/home-skeletons";
+import NewUsersBanner, {
+  isWelcomeWindow,
+  NewUsersBannerSkeleton,
+} from "@/components/new-users-banner";
 
 /**
  * Streams section by section: each block has a skeleton that matches its
@@ -27,6 +31,13 @@ export default function HomePage() {
       <Suspense fallback={<HeroSkeleton />}>
         <HeroSection />
       </Suspense>
+
+      {/* First week of every month: welcome the 11 newest members. */}
+      {isWelcomeWindow() && (
+        <Suspense fallback={<NewUsersBannerSkeleton />}>
+          <NewUsersBanner />
+        </Suspense>
+      )}
 
       <div className="relative">
         <Suspense fallback={<RowSkeleton />}>

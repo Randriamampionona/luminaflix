@@ -143,7 +143,12 @@
     "ctaTitle": "Prêt à plonger ?",
     "ctaBody": "Parcourez toute la collection de films et de séries. Filtrez par genre, année ou note pour trouver exactement ce qui vous tente.",
     "ctaButton": "Explorer la bibliothèque",
-    "loadError": "L'accueil est momentanément indisponible. Réessayez dans un instant."
+    "loadError": "L'accueil est momentanément indisponible. Réessayez dans un instant.",
+    "newUsers": {
+      "title": "Bienvenue à nos nouveaux Luminas ! ✨",
+      "subtitle": "{count, plural, one {# nouveau membre nous a rejoints} other {# nouveaux membres nous ont rejoints}}",
+      "label": "Nouveaux membres"
+    }
   },
   "media": {
     "movie": "Film",
