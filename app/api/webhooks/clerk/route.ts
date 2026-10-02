@@ -2,6 +2,8 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { getDb, logFirebaseError } from "@/lib/firebase-admin";
+import { after } from "next/server";
+import { sendRegistrationEmails } from "@/lib/emails/registration-emails";
 import admin from "firebase-admin";
 
 export async function POST(req: Request) {
@@ -82,6 +84,28 @@ export async function POST(req: Request) {
           },
           { merge: true },
         );
+    }
+
+    if (eventType === "user.created") {
+      const data = evt.data;
+      const primaryEmail =
+        data.email_addresses.find((e) => e.id === data.primary_email_address_id)?.email_address ??
+        data.email_addresses[0]?.email_address ??
+        "";
+      const metaLocale = (data.unsafe_metadata as { locale?: unknown } | undefined)?.locale;
+      after(() =>
+        sendRegistrationEmails({
+          id: data.id,
+          email: primaryEmail,
+          firstName: data.first_name ?? "",
+          lastName: data.last_name ?? "",
+          fullName: `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() || data.username || "",
+          imageUrl: data.image_url || null,
+          createdAt: new Date(data.created_at || Date.now()),
+          // Captured at sign-up (see app/sign-up page & useAuthGate). French by default.
+          locale: metaLocale === "en" ? "en" : "fr",
+        }),
+      );
     }
 
     if (eventType === "user.deleted") {

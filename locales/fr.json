@@ -711,6 +711,29 @@
       "textOpen": "Ouvrir LuminaFlix :",
       "textUnsubscribe": "Se désabonner :",
       "webTitle": "LuminaFlix · Sélection du jour"
+    },
+    "welcome": {
+      "subject": "Bienvenue sur Lumina ! 🎉",
+      "preheader": "Votre compte est prêt. Des milliers de films, séries, animés et K-dramas vous attendent.",
+      "eyebrow": "Compte créé",
+      "greetingNamed": "Bienvenue à bord, {name} !",
+      "greeting": "Bienvenue à bord !",
+      "intro": "Votre compte LuminaFlix est prêt. Films, séries, animés et K-dramas en HD — en français ou en anglais, sur tous vos appareils. Votre prochain coup de cœur est à un clic.",
+      "cta": "Commencer à regarder",
+      "feature1Title": "En HD",
+      "feature1Body": "Des milliers de titres, avec plusieurs serveurs pour chacun.",
+      "feature2Title": "Vos favoris",
+      "feature2Body": "Créez votre liste et reprenez là où vous en étiez.",
+      "feature3Title": "FR & EN",
+      "feature3Body": "L'interface et les résumés dans votre langue.",
+      "shareTitle": "C'est mieux à plusieurs 💙",
+      "shareBody": "Vous connaissez quelqu'un qui adorerait LuminaFlix ? Partagez-le avec vos amis et votre famille — ça prend une seconde.",
+      "shareMessage": "Je regarde sur LuminaFlix — films, séries, animés et K-dramas en HD. Rejoins-moi !",
+      "inviteLabel": "Votre lien d'invitation",
+      "inviteHint": "Copiez ce lien et envoyez-le à qui vous voulez.",
+      "help": "Centre d'aide",
+      "contact": "Nous contacter",
+      "reason": "Vous recevez cet e-mail car vous venez de créer un compte LuminaFlix."
     }
   },
   "theme": {

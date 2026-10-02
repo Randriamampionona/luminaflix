@@ -2,6 +2,7 @@
 
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useCallback } from "react";
 import { buildSignInHref, getCurrentLocation, rememberReturnTo } from "@/lib/auth-redirect";
 
@@ -17,6 +18,7 @@ export function useAuthGate() {
   const { isLoaded, isSignedIn } = useAuth();
   const clerk = useClerk();
   const router = useRouter();
+  const locale = useLocale();
 
   const requireAuth = useCallback((): boolean => {
     if (isSignedIn) return true;
@@ -30,12 +32,14 @@ export function useAuthGate() {
       clerk.openSignIn({
         forceRedirectUrl: returnTo,
         signUpForceRedirectUrl: returnTo,
+        // Saved on the new user: the welcome email is sent in this language.
+        unsafeMetadata: { locale },
       });
     } else {
       router.push(buildSignInHref(returnTo));
     }
     return false;
-  }, [clerk, isLoaded, isSignedIn, router]);
+  }, [clerk, isLoaded, isSignedIn, locale, router]);
 
   return { isLoaded, isSignedIn: !!isSignedIn, requireAuth };
 }

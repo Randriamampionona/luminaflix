@@ -711,6 +711,29 @@
       "textOpen": "Open LuminaFlix:",
       "textUnsubscribe": "Unsubscribe:",
       "webTitle": "LuminaFlix · Daily picks"
+    },
+    "welcome": {
+      "subject": "Welcome to Lumina! 🎉",
+      "preheader": "Your account is ready. Thousands of movies, series, anime and K-dramas are waiting for you.",
+      "eyebrow": "Account created",
+      "greetingNamed": "Welcome aboard, {name}!",
+      "greeting": "Welcome aboard!",
+      "intro": "Your LuminaFlix account is ready. Movies, series, anime and K-dramas in HD — in English or French, on any device. Your next favorite is one click away.",
+      "cta": "Start watching",
+      "feature1Title": "Watch in HD",
+      "feature1Body": "Thousands of titles, with several servers for every one.",
+      "feature2Title": "Save favorites",
+      "feature2Body": "Build your watchlist and pick up where you left off.",
+      "feature3Title": "EN & FR",
+      "feature3Body": "The interface and synopses in your language.",
+      "shareTitle": "Better with friends 💙",
+      "shareBody": "Know someone who would love LuminaFlix? Share it with your friends and family — it only takes a second.",
+      "shareMessage": "I'm watching on LuminaFlix — movies, series, anime and K-dramas in HD. Join me!",
+      "inviteLabel": "Your invite link",
+      "inviteHint": "Copy this link and send it to anyone you like.",
+      "help": "Help center",
+      "contact": "Contact us",
+      "reason": "You're receiving this email because you just created a LuminaFlix account."
     }
   },
   "theme": {

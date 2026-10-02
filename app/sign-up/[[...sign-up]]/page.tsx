@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { ClerkLoaded, ClerkLoading, SignUp } from "@clerk/nextjs";
-import { getTranslations } from "next-intl/server";
-import { AuthShell, resolveReturnTo, type AuthSearchParams } from "@/components/auth/auth-page";
+import { getLocale, getTranslations } from "next-intl/server";
+import {
+  AuthShell,
+  resolveReturnTo,
+  type AuthSearchParams,
+} from "@/components/auth/auth-page";
 import { AuthCardSkeleton } from "@/components/skeletons/support-skeletons";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -10,9 +14,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** AUTH FIX: sign-up used to ignore the return URL entirely. */
-export default async function SignUpPage({ searchParams }: { searchParams: AuthSearchParams }) {
-  const returnTo = await resolveReturnTo(searchParams);
-  const signInUrl = returnTo === "/" ? "/sign-in" : `/sign-in?redirect_url=${encodeURIComponent(returnTo)}`;
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: AuthSearchParams;
+}) {
+  const [returnTo, locale] = await Promise.all([
+    resolveReturnTo(searchParams),
+    getLocale(),
+  ]);
+  const signInUrl =
+    returnTo === "/"
+      ? "/sign-in"
+      : `/sign-in?redirect_url=${encodeURIComponent(returnTo)}`;
 
   return (
     <AuthShell>
@@ -21,7 +35,13 @@ export default async function SignUpPage({ searchParams }: { searchParams: AuthS
         <AuthCardSkeleton />
       </ClerkLoading>
       <ClerkLoaded>
-        <SignUp forceRedirectUrl={returnTo} signInForceRedirectUrl={returnTo} signInUrl={signInUrl} />
+        <SignUp
+          // Saved on the new user: the welcome email is sent in this language.
+          unsafeMetadata={{ locale }}
+          forceRedirectUrl={returnTo}
+          signInForceRedirectUrl={returnTo}
+          signInUrl={signInUrl}
+        />
       </ClerkLoaded>
     </AuthShell>
   );
