@@ -22,8 +22,15 @@ export interface SmartSearchResult {
 
 const searchers: Record<SearchScope, (query: string, page: number) => Promise<TMDBResponse>> = {
   all: (q, p) => getSearchResults(q, p),
-  anime: getSearchAnime,
-  kdrama: getSearchKDramas,
+  anime: (q, p) => getSearchAnime(q, p),
+  kdrama: (q, p) => getSearchKDramas(q, p),
+};
+
+/** AI-inferred titles are precise: one TMDB page per title is enough. */
+const titleSearchers: Record<SearchScope, (title: string) => Promise<TMDBResponse>> = {
+  all: (t) => getSearchResults(t, 1),
+  anime: (t) => getSearchAnime(t, 1, 1),
+  kdrama: (t) => getSearchKDramas(t, 1, 1),
 };
 
 // AI calls cost money: 30 per IP per 10 minutes (cached repeats count too).
@@ -42,7 +49,7 @@ const normalize = (value: string) =>
 
 /** Search each inferred title, exact title matches first, deduplicated. */
 async function searchTitles(titles: string[], scope: SearchScope): Promise<Movie[]> {
-  const pages = await Promise.all(titles.map((title) => searchers[scope](title, 1)));
+  const pages = await Promise.all(titles.map((title) => titleSearchers[scope](title)));
   const seen = new Set<string>();
   const merged: Movie[] = [];
 
@@ -83,7 +90,7 @@ async function aiSearch(query: string, scope: SearchScope): Promise<SmartSearchR
  *    the AI infers 1–3 canonical titles → each is searched and merged.
  * 3. A title search with no results gets a second chance through the AI
  *    (typos, translated or half-remembered titles).
- * AI only runs on page 1; without OPENAI_API_KEY everything is plain search.
+ * AI only runs on page 1; without an AI key everything is plain search.
  */
 export async function smartSearch({
   query,

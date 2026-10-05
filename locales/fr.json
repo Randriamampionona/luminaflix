@@ -98,7 +98,13 @@
       "denied": "L'accès au micro est bloqué. Autorisez-le dans les réglages du navigateur.",
       "unsupported": "La recherche vocale n'est pas prise en charge par ce navigateur.",
       "failed": "Impossible de comprendre l'enregistrement. Réessayez.",
-      "noSpeech": "Aucune voix détectée. Réessayez."
+      "noSpeech": "Aucune voix détectée. Réessayez.",
+      "hintTitle": "Recherche vocale",
+      "hintBody": "Décrivez l'intrigue, un personnage ou une scène, et notre IA trouvera le titre le plus pertinent !",
+      "startNow": "Commencer",
+      "cancel": "Annuler",
+      "autoStart": "L'enregistrement démarre automatiquement…",
+      "listeningHint": "Parlez maintenant — touchez le micro quand vous avez fini."
     },
     "smart": {
       "label": "IA",
@@ -108,7 +114,8 @@
       "noticeTitle": "Recherche IA",
       "noticeBody": "D'après votre description, nous avons cherché :",
       "exact": "Rechercher les mots exacts"
-    }
+    },
+    "matchesApprox": "{count, plural, =0 {Aucun résultat} one {Environ # résultat} other {Environ # résultats}}"
   },
   "footer": {
     "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",

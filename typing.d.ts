@@ -32,6 +32,8 @@ export type TMDBResponse = {
   results: Movie[];
   total_pages: number;
   total_results: number;
+  /** total_results is an estimate (filtered searches, see lib/search/tmdb-search.ts). */
+  approximate_total?: boolean;
 };
 
 export type Genre = {

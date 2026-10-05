@@ -98,7 +98,13 @@
       "denied": "Microphone access is blocked. Allow it in your browser settings.",
       "unsupported": "Voice search isn't supported in this browser.",
       "failed": "We couldn't understand the recording. Try again.",
-      "noSpeech": "No speech detected. Try again."
+      "noSpeech": "No speech detected. Try again.",
+      "hintTitle": "Voice search",
+      "hintBody": "Describe a movie plot, character, or scene, and our AI will find the most relevant title for you!",
+      "startNow": "Start now",
+      "cancel": "Cancel",
+      "autoStart": "Recording starts automatically…",
+      "listeningHint": "Speak now — tap the mic when you're done."
     },
     "smart": {
       "label": "AI",
@@ -108,7 +114,8 @@
       "noticeTitle": "AI search",
       "noticeBody": "From your description, we searched for:",
       "exact": "Search the exact words instead"
-    }
+    },
+    "matchesApprox": "{count, plural, =0 {No matches} one {About # match} other {About # matches}}"
   },
   "footer": {
     "tagline": "Movies, series, anime and K-dramas in one place. Pick a title, press play, and share it with the people you watch with.",

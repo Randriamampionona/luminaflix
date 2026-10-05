@@ -48,7 +48,7 @@ export default async function SectionSearchResults({
           accent={query}
           meta={
             <StreamedText data={data} streamKey={streamKey}>
-              {(d) => t("matches", { count: d.total_results })}
+              {(d) => t(d.approximate_total ? "matchesApprox" : "matches", { count: d.total_results })}
             </StreamedText>
           }
         />

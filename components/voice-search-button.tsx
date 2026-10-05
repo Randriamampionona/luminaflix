@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Loader2, Mic, Square } from "lucide-react";
+import { Loader2, Mic, Sparkles, Square } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type Status = "idle" | "recording" | "transcribing";
+type Status = "idle" | "hint" | "recording" | "transcribing";
 
+/** The guidance popover shows this long before recording starts on its own. */
+const HINT_MS = 2_000;
 const MAX_RECORDING_MS = 12_000;
 const SILENCE_STOP_MS = 1_600;
 const SPEECH_LEVEL = 0.06; // RMS level counted as speech
@@ -40,6 +42,8 @@ const checkServer = () =>
 /**
  * Microphone button for voice search.
  *
+ * - First shows a short guidance popover ("describe a plot, character or
+ *   scene…"); recording starts after 2 s, or right away with "Start now".
  * - Records with MediaRecorder and sends the clip to /api/search/transcribe
  *   (Whisper: French, English and Malagasy are auto-detected).
  * - Stops on its own after a short silence or 12 s; click again to stop.
@@ -67,6 +71,9 @@ export default function VoiceSearchButton({
   const rafRef = useRef(0);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const ringRef = useRef<HTMLSpanElement>(null);
+  const meterRef = useRef<HTMLSpanElement>(null);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popoverId = useId();
 
   const cleanup = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
@@ -77,10 +84,12 @@ export default function VoiceSearchButton({
     void audioCtxRef.current?.close().catch(() => {});
     audioCtxRef.current = null;
     if (ringRef.current) ringRef.current.style.transform = "scale(1)";
+    if (meterRef.current) meterRef.current.style.transform = "scaleX(0)";
   }, []);
 
   useEffect(
     () => () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       recognitionRef.current?.stop();
       if (recorderRef.current?.state === "recording") recorderRef.current.stop();
       cleanup();
@@ -114,6 +123,7 @@ export default function VoiceSearchButton({
     const Recognition = getSpeechRecognition();
     if (!Recognition) {
       toast.error(t("unsupported"));
+      setStatus("idle");
       return;
     }
     const recognition = new Recognition();
@@ -142,6 +152,7 @@ export default function VoiceSearchButton({
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
     } catch (error) {
       toast.error(error instanceof DOMException && error.name === "NotAllowedError" ? t("denied") : t("failed"));
+      setStatus("idle");
       return;
     }
     streamRef.current = stream;
@@ -156,7 +167,7 @@ export default function VoiceSearchButton({
     };
     recorderRef.current = recorder;
 
-    // Live level → pulse ring + stop after a short silence once speech started.
+    // Live level → pulse ring + meter, and stop after a short silence once speech started.
     try {
       const ctx = new AudioContext();
       audioCtxRef.current = ctx;
@@ -170,6 +181,7 @@ export default function VoiceSearchButton({
         analyser.getFloatTimeDomainData(samples);
         const rms = Math.sqrt(samples.reduce((sum, v) => sum + v * v, 0) / samples.length);
         if (ringRef.current) ringRef.current.style.transform = `scale(${1 + Math.min(rms * 6, 0.9)})`;
+        if (meterRef.current) meterRef.current.style.transform = `scaleX(${Math.min(rms * 8, 1)})`;
         const now = performance.now();
         if (rms > SPEECH_LEVEL) {
           heardSpeech = true;
@@ -194,21 +206,49 @@ export default function VoiceSearchButton({
     setStatus("recording");
   };
 
-  const onClick = async () => {
-    if (status === "transcribing") return;
-    if (status === "recording") {
-      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
-      recognitionRef.current?.stop();
-      return;
-    }
+  const beginCapture = async () => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    hintTimerRef.current = null;
     const canRecord = typeof window !== "undefined" && "MediaRecorder" in window && !!navigator.mediaDevices;
     if (canRecord && (await checkServer())) await startRecording();
     else startBrowserRecognition();
   };
 
+  const cancelHint = useCallback(() => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    hintTimerRef.current = null;
+    setStatus("idle");
+  }, []);
+
+  // Escape closes the guidance popover.
+  useEffect(() => {
+    if (status !== "hint") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        cancelHint();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [status, cancelHint]);
+
+  const onClick = () => {
+    if (status === "transcribing") return;
+    if (status === "hint") return void beginCapture(); // second click = start now
+    if (status === "recording") {
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      recognitionRef.current?.stop();
+      return;
+    }
+    setStatus("hint");
+    hintTimerRef.current = setTimeout(() => void beginCapture(), HINT_MS);
+  };
+
   const dims = { sm: "h-8 w-8", md: "h-10 w-10", lg: "h-12 w-12" }[size];
   const icon = { sm: "h-3.5 w-3.5", md: "h-4 w-4", lg: "h-5 w-5" }[size];
   const recording = status === "recording";
+  const showPopover = status !== "idle";
 
   return (
     <span className={cn("relative inline-flex shrink-0", className)}>
@@ -226,12 +266,14 @@ export default function VoiceSearchButton({
         type="button"
         onClick={onClick}
         aria-pressed={recording}
-        aria-label={recording ? t("stop") : t("start")}
+        aria-expanded={showPopover}
+        aria-controls={showPopover ? popoverId : undefined}
+        aria-label={recording ? t("stop") : status === "hint" ? t("startNow") : t("start")}
         title={recording ? t("stop") : t("start")}
         className={cn(
           "relative flex cursor-pointer items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
           dims,
-          recording
+          recording || status === "hint"
             ? "border-cyan-400 bg-cyan-500 text-black"
             : "border-line-strong bg-tint text-fg-muted hover:border-cyan-500/50 hover:text-brand",
           status === "transcribing" && "cursor-wait",
@@ -245,9 +287,70 @@ export default function VoiceSearchButton({
           <Mic className={icon} aria-hidden />
         )}
       </button>
-      <span className="sr-only" aria-live="polite">
-        {recording ? t("listening") : status === "transcribing" ? t("transcribing") : ""}
-      </span>
+
+      {/* Guidance popover: shown before recording, then live status. */}
+      {showPopover && (
+        <span
+          id={popoverId}
+          role="group"
+          aria-label={t("hintTitle")}
+          className="absolute top-full right-0 z-50 mt-3 block w-72 rounded-2xl border border-line-strong bg-surface p-4 text-left shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+        >
+          <span
+            aria-hidden
+            className="absolute -top-1.5 right-4 h-3 w-3 rotate-45 border-t border-l border-line-strong bg-surface"
+          />
+          <span className="flex items-start gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 text-brand">
+              <Sparkles className="h-4 w-4" aria-hidden />
+            </span>
+            <span className="block min-w-0 space-y-1">
+              <span aria-live="polite" className="block text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                {status === "hint" ? t("hintTitle") : status === "recording" ? t("listening") : t("transcribing")}
+              </span>
+              <span className="block text-xs leading-relaxed font-medium normal-case not-italic tracking-normal text-fg-soft">
+                {status === "recording" ? t("listeningHint") : t("hintBody")}
+              </span>
+            </span>
+          </span>
+
+          {status === "hint" && (
+            <>
+              {/* 2-second countdown before recording starts by itself */}
+              <span className="mt-3 block h-1 overflow-hidden rounded-full bg-tint-strong">
+                <span className="block h-full origin-left rounded-full bg-cyan-500 animate-[voice-countdown_2s_linear_forwards]" />
+              </span>
+              <span className="mt-1.5 block text-[10px] text-fg-subtle">{t("autoStart")}</span>
+              <span className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void beginCapture()}
+                  className="flex-1 cursor-pointer rounded-xl bg-cyan-500 py-2 text-[10px] font-black uppercase tracking-widest text-black transition-colors hover:bg-cyan-400"
+                >
+                  {t("startNow")}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelHint}
+                  className="cursor-pointer rounded-xl border border-line-strong px-3 py-2 text-[10px] font-black uppercase tracking-widest text-fg-muted transition-colors hover:text-foreground"
+                >
+                  {t("cancel")}
+                </button>
+              </span>
+            </>
+          )}
+
+          {recording && (
+            // Live microphone level
+            <span className="mt-3 block h-1.5 overflow-hidden rounded-full bg-tint-strong">
+              <span
+                ref={meterRef}
+                className="block h-full origin-left scale-x-0 rounded-full bg-linear-to-r from-cyan-400 to-blue-500 transition-transform duration-75"
+              />
+            </span>
+          )}
+        </span>
+      )}
     </span>
   );
 }

@@ -43,7 +43,7 @@ export default async function SearchPage({ params, searchParams }: { params: Par
             <Sparkles className="h-3 w-3 text-brand" aria-hidden />
             <span className="text-[10px] font-bold uppercase tracking-widest text-fg-muted">
               <StreamedText data={data} streamKey={streamKey}>
-                {(d) => t("matches", { count: d.total_results })}
+                {(d) => t(d.approximate_total ? "matchesApprox" : "matches", { count: d.total_results })}
               </StreamedText>
             </span>
           </span>

@@ -1,15 +1,12 @@
-import { EMPTY_PAGE, REVALIDATE, tmdb } from "@/lib/tmdb";
-import type { TMDBResponse } from "@/typing";
+import { searchFilteredTv } from "@/lib/search/tmdb-search";
+import type { Movie, TMDBResponse } from "@/typing";
 
-export async function getSearchKDramas(query: string, page = 1): Promise<TMDBResponse> {
-  const data = await tmdb<TMDBResponse>(
-    "/search/tv",
-    { query, page, include_adult: true },
-    { revalidate: REVALIDATE.default },
-  );
-  if (!data) return EMPTY_PAGE;
-  const results = data.results.filter(
-    (item) => item.origin_country?.includes("KR") || item.original_language === "ko",
-  );
-  return { ...data, results, total_results: results.length };
+const isKorean = (item: Movie) => Boolean(item.origin_country?.includes("KR") || item.original_language === "ko");
+
+/**
+ * K-drama search (Korean series on TMDB). Reads several TMDB pages per app
+ * page so each page is full after filtering. `chunk` = TMDB pages read.
+ */
+export async function getSearchKDramas(query: string, page = 1, chunk = 4): Promise<TMDBResponse> {
+  return searchFilteredTv(query, page, isKorean, chunk);
 }

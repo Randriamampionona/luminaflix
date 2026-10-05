@@ -389,3 +389,13 @@ body {
     top: calc(100% - 1.25rem);
   }
 }
+
+/* Voice search: countdown before recording starts (components/voice-search-button.tsx) */
+@keyframes voice-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
