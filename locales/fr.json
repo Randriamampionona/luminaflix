@@ -115,7 +115,19 @@
       "noticeBody": "D'après votre description, nous avons cherché :",
       "exact": "Rechercher les mots exacts"
     },
-    "matchesApprox": "{count, plural, =0 {Aucun résultat} one {Environ # résultat} other {Environ # résultats}}"
+    "matchesApprox": "{count, plural, =0 {Aucun résultat} one {Environ # résultat} other {Environ # résultats}}",
+    "hub": {
+      "placeholderAi": "Cherchez un titre ou décrivez une histoire…",
+      "clear": "Effacer",
+      "recent": "Recherches récentes",
+      "clearRecent": "Effacer",
+      "tryAi": "Essayez de décrire une histoire",
+      "example1": "un garçon trouve un carnet qui tue les gens",
+      "example2": "un homme qui voyage dans le temps avec une voiture",
+      "example3": "une héritière coréenne qui atterrit en Corée du Nord en parapente",
+      "enterHint": "pour rechercher",
+      "toggleHint": "ouvrir / fermer"
+    }
   },
   "footer": {
     "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",

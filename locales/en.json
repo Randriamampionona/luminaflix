@@ -115,7 +115,19 @@
       "noticeBody": "From your description, we searched for:",
       "exact": "Search the exact words instead"
     },
-    "matchesApprox": "{count, plural, =0 {No matches} one {About # match} other {About # matches}}"
+    "matchesApprox": "{count, plural, =0 {No matches} one {About # match} other {About # matches}}",
+    "hub": {
+      "placeholderAi": "Search a title or describe a story…",
+      "clear": "Clear",
+      "recent": "Recent searches",
+      "clearRecent": "Clear",
+      "tryAi": "Try describing a story",
+      "example1": "a boy finds a notebook that kills people",
+      "example2": "un homme qui voyage dans le temps avec une voiture",
+      "example3": "Korean drama about a pilot who lands in North Korea",
+      "enterHint": "to search",
+      "toggleHint": "open / close"
+    }
   },
   "footer": {
     "tagline": "Movies, series, anime and K-dramas in one place. Pick a title, press play, and share it with the people you watch with.",
