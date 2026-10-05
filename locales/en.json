@@ -89,7 +89,26 @@
     "animePlaceholder": "Search anime…",
     "kdramaPlaceholder": "Search K-dramas…",
     "resultsFor": "Results for",
-    "backTo": "Back to {section}"
+    "backTo": "Back to {section}",
+    "voice": {
+      "start": "Search by voice",
+      "stop": "Stop recording",
+      "listening": "Listening… speak now",
+      "transcribing": "Transcribing…",
+      "denied": "Microphone access is blocked. Allow it in your browser settings.",
+      "unsupported": "Voice search isn't supported in this browser.",
+      "failed": "We couldn't understand the recording. Try again.",
+      "noSpeech": "No speech detected. Try again."
+    },
+    "smart": {
+      "label": "AI",
+      "on": "AI search on — describe a story and we'll find the title",
+      "off": "AI search off — exact title search",
+      "hint": "Tip: describe the story, e.g. “a boy finds a notebook that kills people”",
+      "noticeTitle": "AI search",
+      "noticeBody": "From your description, we searched for:",
+      "exact": "Search the exact words instead"
+    }
   },
   "footer": {
     "tagline": "Movies, series, anime and K-dramas in one place. Pick a title, press play, and share it with the people you watch with.",

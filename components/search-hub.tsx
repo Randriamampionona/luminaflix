@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import SmartSearchToggle from "@/components/search/smart-search-toggle";
+import VoiceSearchButton from "@/components/voice-search-button";
+import { useSmartSearch } from "@/hooks/use-smart-search";
 import { SEARCH_GENRES } from "@/lib/filters";
 
 export default function SearchHub() {
@@ -13,6 +16,7 @@ export default function SearchHub() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const { searchHref } = useSmartSearch();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -36,7 +40,13 @@ export default function SearchHub() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const value = query.trim();
-    if (value) navigate(`/search/${encodeURIComponent(value)}`);
+    if (value) navigate(searchHref("/search", value));
+  };
+
+  // Voice: fill the input, then search right away.
+  const onVoice = (text: string) => {
+    setQuery(text);
+    navigate(searchHref("/search", text));
   };
 
   return (
@@ -55,12 +65,15 @@ export default function SearchHub() {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="z-100 max-w-2xl overflow-hidden rounded-md border-line-strong bg-background/85 p-0 shadow-[0_0_100px_rgba(6,182,212,0.2)] outline-none backdrop-blur-3xl sm:max-w-2xl">
+        <DialogContent className="z-100 max-w-2xl overflow-hidden rounded-md border-line-strong bg-background/95 p-0 shadow-[0_0_100px_rgba(6,182,212,0.2)] outline-none backdrop-blur-3xl sm:max-w-2xl">
           <DialogTitle className="sr-only">{t("search.dialogTitle")}</DialogTitle>
           <DialogDescription className="sr-only">{t("search.categories")}</DialogDescription>
 
           <form onSubmit={handleSearch} role="search" className="relative">
-            <Search aria-hidden className="pointer-events-none absolute left-8 top-1/2 h-6 w-6 -translate-y-1/2 text-fg-ghost" />
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute left-8 top-1/2 h-6 w-6 -translate-y-1/2 text-fg-ghost"
+            />
             <input
               autoFocus
               type="search"
@@ -68,8 +81,13 @@ export default function SearchHub() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("search.placeholder")}
               aria-label={t("search.placeholder")}
-              className="w-full border-none bg-transparent py-11 pl-20 pr-14 text-2xl font-black uppercase italic tracking-tighter text-foreground outline-none placeholder:text-fg-ghost sm:text-3xl"
+              className="w-full border-none bg-transparent py-11 pl-20 pr-32 text-2xl font-black uppercase italic tracking-tighter text-foreground outline-none placeholder:text-fg-ghost sm:text-3xl"
             />
+            {/* AI switch + microphone */}
+            <div className="absolute top-1/2 right-6 flex -translate-y-1/2 items-center gap-2">
+              <SmartSearchToggle compact />
+              <VoiceSearchButton onTranscript={onVoice} size="lg" />
+            </div>
             {query.trim().length > 0 && (
               <p className="pointer-events-none absolute left-20 right-8 top-[calc(50%+1.75rem)] flex items-center gap-2 text-brand">
                 <Zap className="h-3 w-3 fill-current" />
@@ -81,9 +99,12 @@ export default function SearchHub() {
           </form>
 
           <div className="px-8 pb-8">
+            <p className="mb-6 text-[11px] text-fg-subtle">{t("search.smart.hint")}</p>
             <p className="mb-4 flex items-center gap-2">
               <Film className="h-3 w-3 text-brand" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-fg-subtle">{t("search.categories")}</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-fg-subtle">
+                {t("search.categories")}
+              </span>
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

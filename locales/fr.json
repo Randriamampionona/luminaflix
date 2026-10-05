@@ -89,7 +89,26 @@
     "animePlaceholder": "Rechercher un anime…",
     "kdramaPlaceholder": "Rechercher un K-drama…",
     "resultsFor": "Résultats pour",
-    "backTo": "Retour à {section}"
+    "backTo": "Retour à {section}",
+    "voice": {
+      "start": "Recherche vocale",
+      "stop": "Arrêter l'enregistrement",
+      "listening": "À l'écoute… parlez maintenant",
+      "transcribing": "Transcription…",
+      "denied": "L'accès au micro est bloqué. Autorisez-le dans les réglages du navigateur.",
+      "unsupported": "La recherche vocale n'est pas prise en charge par ce navigateur.",
+      "failed": "Impossible de comprendre l'enregistrement. Réessayez.",
+      "noSpeech": "Aucune voix détectée. Réessayez."
+    },
+    "smart": {
+      "label": "IA",
+      "on": "Recherche IA activée — décrivez une histoire, on trouve le titre",
+      "off": "Recherche IA désactivée — recherche exacte par titre",
+      "hint": "Astuce : décrivez l'histoire, ex. « un garçon trouve un carnet qui tue les gens »",
+      "noticeTitle": "Recherche IA",
+      "noticeBody": "D'après votre description, nous avons cherché :",
+      "exact": "Rechercher les mots exacts"
+    }
   },
   "footer": {
     "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",

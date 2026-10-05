@@ -11,6 +11,8 @@ import SignInLink from "@/components/auth/sign-in-link";
 import LanguageSwitcher from "@/components/i18n/language-switcher";
 import { Container } from "@/components/layout/container";
 import ThemeToggle from "@/components/theme-toggle";
+import VoiceSearchButton from "@/components/voice-search-button";
+import { useSmartSearch } from "@/hooks/use-smart-search";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,6 +91,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const { searchHref } = useSmartSearch();
 
   // Keep the item highlighted on nested pages (e.g. /movies/123).
   const isActive = useCallback((href: string) => pathname === href || pathname.startsWith(`${href}/`), [pathname]);
@@ -99,7 +102,7 @@ export default function Navbar() {
     const query = searchQuery.trim();
     if (!query || isSearching) return;
     setIsSearching(true);
-    router.push(`/search/${encodeURIComponent(query)}`);
+    router.push(searchHref("/search", query));
     setIsOpen(false);
     setIsSearching(false);
     setSearchQuery("");
@@ -243,6 +246,15 @@ export default function Navbar() {
                       placeholder={t("search.mobilePlaceholder")}
                       aria-label={t("search.placeholder")}
                       className="w-full border-none bg-transparent px-4 py-4 text-sm font-bold uppercase tracking-widest text-foreground outline-none placeholder:text-fg-faint"
+                    />
+                    <VoiceSearchButton
+                      size="md"
+                      className="mr-2"
+                      onTranscript={(text) => {
+                        setIsOpen(false);
+                        setSearchQuery("");
+                        router.push(searchHref("/search", text));
+                      }}
                     />
                     <button
                       type="submit"
