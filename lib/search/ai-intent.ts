@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { OPENAI_SEARCH_MODEL, OpenAIError, isOpenAIConfigured, openaiRequest } from "@/lib/ai/openai";
+import { OpenAIError, getModel, isOpenAIConfigured, openaiRequest, resetModels } from "@/lib/ai/openai";
 
 export type SearchScope = "all" | "anime" | "kdrama";
 
@@ -90,13 +90,18 @@ let pausedUntil = 0;
 const PAUSE_MS = 10 * 60 * 1000;
 
 async function complete(query: string, scope: SearchScope, withSchema: boolean) {
+  const model = await getModel("search");
+  // gpt-oss models "think" before answering: keep it short, and leave room
+  // in the token budget for the reasoning plus the JSON answer.
+  const reasoning = model.includes("gpt-oss");
   const completion = await openaiRequest<{ choices: { message: { content: string | null } }[] }>("/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: OPENAI_SEARCH_MODEL,
+      model,
       temperature: 0.2,
-      max_tokens: 300,
+      max_tokens: reasoning ? 1200 : 300,
+      ...(reasoning && { reasoning_effort: "low" }),
       response_format: withSchema ? { type: "json_schema", json_schema: RESPONSE_SCHEMA } : { type: "json_object" },
       messages: [
         {
@@ -137,7 +142,10 @@ export async function resolveSearchIntent(query: string, scope: SearchScope): Pr
   try {
     return await cachedCallModel(clean.toLowerCase(), scope);
   } catch (error) {
-    if (error instanceof OpenAIError && [401, 402, 403, 429].includes(error.status ?? 0)) {
+    if (error instanceof OpenAIError && error.status === 404) {
+      resetModels(); // model retired: pick another one on the next search
+      console.error("[ai-intent] Model not found, re-checking available models.", error.message);
+    } else if (error instanceof OpenAIError && [401, 402, 403, 429].includes(error.status ?? 0)) {
       pausedUntil = Date.now() + PAUSE_MS;
       console.error(
         `[ai-intent] AI paused for 10 min (${error.status}). Searches use plain TMDB meanwhile.`,

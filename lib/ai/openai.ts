@@ -5,19 +5,24 @@ import "server-only";
  *
  * Providers (first configured wins):
  * 1. Groq — free tier, no card needed: set GROQ_API_KEY.
- *    Defaults: llama-3.3-70b-versatile (search) + whisper-large-v3-turbo (voice).
+ *    Defaults: openai/gpt-oss-20b (search) + whisper-large-v3-turbo (voice).
+ *    (Groq moved its Llama models to enterprise-only in 2026.)
  * 2. OpenAI — paid (prepaid credits): set OPENAI_API_KEY.
  *    Defaults: gpt-4o-mini + whisper-1.
  *
  * Overrides: AI_BASE_URL, AI_SEARCH_MODEL, AI_TRANSCRIBE_MODEL
  * (the older OPENAI_BASE_URL / OPENAI_SEARCH_MODEL / OPENAI_TRANSCRIBE_MODEL still work).
+ *
+ * Providers retire models often, so the model actually used is checked
+ * against the provider's /models list once and replaced by the first
+ * available fallback if needed (see getModel).
  */
 type Provider = "groq" | "openai";
 
 const PROVIDERS: Record<Provider, { baseUrl: string; searchModel: string; transcribeModel: string }> = {
   groq: {
     baseUrl: "https://api.groq.com/openai/v1",
-    searchModel: "llama-3.3-70b-versatile",
+    searchModel: "openai/gpt-oss-20b",
     transcribeModel: "whisper-large-v3-turbo",
   },
   openai: {
@@ -33,10 +38,58 @@ const defaults = PROVIDERS[PROVIDER ?? "openai"];
 
 const BASE_URL = (process.env.AI_BASE_URL || process.env.OPENAI_BASE_URL || defaults.baseUrl).replace(/\/$/, "");
 
-export const OPENAI_SEARCH_MODEL =
-  process.env.AI_SEARCH_MODEL || process.env.OPENAI_SEARCH_MODEL || defaults.searchModel;
-export const OPENAI_TRANSCRIBE_MODEL =
-  process.env.AI_TRANSCRIBE_MODEL || process.env.OPENAI_TRANSCRIBE_MODEL || defaults.transcribeModel;
+const CONFIGURED = {
+  search: process.env.AI_SEARCH_MODEL || process.env.OPENAI_SEARCH_MODEL || defaults.searchModel,
+  transcribe: process.env.AI_TRANSCRIBE_MODEL || process.env.OPENAI_TRANSCRIBE_MODEL || defaults.transcribeModel,
+};
+
+/** Fallbacks, best first, across Groq and OpenAI model names. */
+const FALLBACKS = {
+  search: [
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+    "gpt-4o-mini",
+    "gpt-4.1-mini",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+  ],
+  transcribe: ["whisper-large-v3-turbo", "whisper-large-v3", "gpt-4o-mini-transcribe", "whisper-1"],
+};
+
+type ModelKind = keyof typeof CONFIGURED;
+const resolved: Partial<Record<ModelKind, Promise<string>>> = {};
+
+async function listModels(): Promise<Set<string> | null> {
+  try {
+    const data = await openaiRequest<{ data?: { id: string }[] }>("/models", { timeoutMs: 8_000 });
+    return new Set((data.data ?? []).map((m) => m.id));
+  } catch {
+    return null; // can't list: trust the configured model
+  }
+}
+
+/**
+ * The model to use for search or transcription: the configured one if the
+ * provider still serves it, otherwise the first available fallback.
+ */
+export function getModel(kind: ModelKind): Promise<string> {
+  return (resolved[kind] ??= listModels().then((available) => {
+    const wanted = CONFIGURED[kind];
+    if (!available || available.has(wanted)) return wanted;
+    const fallback = FALLBACKS[kind].find((id) => available.has(id));
+    if (fallback) {
+      console.warn(`[ai] Model "${wanted}" is not available on ${PROVIDER}; using "${fallback}" instead.`);
+      return fallback;
+    }
+    return wanted;
+  }));
+}
+
+/** Forget the resolved models (e.g. after a 404 model_not_found). */
+export function resetModels() {
+  delete resolved.search;
+  delete resolved.transcribe;
+}
 
 export function isOpenAIConfigured() {
   return Boolean(API_KEY);

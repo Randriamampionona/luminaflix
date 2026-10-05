@@ -1,4 +1,4 @@
-import { OPENAI_TRANSCRIBE_MODEL, OpenAIError, isOpenAIConfigured, openaiRequest } from "@/lib/ai/openai";
+import { OpenAIError, getModel, isOpenAIConfigured, openaiRequest, resetModels } from "@/lib/ai/openai";
 import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 /**
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
   const form = new FormData();
   form.append("file", audio, `voice-search.${extension}`);
-  form.append("model", OPENAI_TRANSCRIBE_MODEL);
+  form.append("model", await getModel("transcribe"));
   form.append("response_format", "json");
   // Vocabulary hint: titles, and the three languages we expect.
   form.append(
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     return Response.json({ text }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("[transcribe]", error instanceof Error ? error.message : error);
+    if (error instanceof OpenAIError && error.status === 404) resetModels();
     const status = error instanceof OpenAIError && error.status === 429 ? 503 : 502;
     return Response.json({ error: "Transcription failed" }, { status });
   }
