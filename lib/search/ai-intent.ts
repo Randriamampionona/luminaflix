@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { OPENAI_SEARCH_MODEL, isOpenAIConfigured, openaiRequest } from "@/lib/ai/openai";
+import { OPENAI_SEARCH_MODEL, OpenAIError, isOpenAIConfigured, openaiRequest } from "@/lib/ai/openai";
 
 export type SearchScope = "all" | "anime" | "kdrama";
 
@@ -75,35 +75,57 @@ function sanitize(intent: Partial<SearchIntent>): SearchIntent {
   };
 }
 
-async function callModel(query: string, scope: SearchScope): Promise<SearchIntent | null> {
+const JSON_FORMAT_HINT =
+  'Answer with a JSON object only, exactly: {"detectedLanguage":"fr|en|mg|other","isTitleQuery":true|false,"extractedTitles":["..."]}';
+
+/**
+ * Not every model supports strict JSON schemas (e.g. Llama on Groq), so we
+ * try `json_schema` first and fall back to plain JSON mode once; the choice
+ * is remembered for the lifetime of the server instance.
+ */
+let useJsonSchema = true;
+
+/** Quota / auth errors: pause AI for a while instead of failing every search. */
+let pausedUntil = 0;
+const PAUSE_MS = 10 * 60 * 1000;
+
+async function complete(query: string, scope: SearchScope, withSchema: boolean) {
+  const completion = await openaiRequest<{ choices: { message: { content: string | null } }[] }>("/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: OPENAI_SEARCH_MODEL,
+      temperature: 0.2,
+      max_tokens: 300,
+      response_format: withSchema ? { type: "json_schema", json_schema: RESPONSE_SCHEMA } : { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: `${SYSTEM_PROMPT}\nCatalog section: ${SCOPE_HINT[scope]}.${withSchema ? "" : `\n${JSON_FORMAT_HINT}`}`,
+        },
+        { role: "user", content: query },
+      ],
+    }),
+  });
+  return completion.choices?.[0]?.message?.content ?? null;
+}
+
+/** Throws on failure, so that failures are never cached. */
+async function callModel(query: string, scope: SearchScope): Promise<SearchIntent> {
+  let content: string | null;
   try {
-    const completion = await openaiRequest<{ choices: { message: { content: string | null } }[] }>(
-      "/chat/completions",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: OPENAI_SEARCH_MODEL,
-          temperature: 0.2,
-          max_tokens: 200,
-          response_format: { type: "json_schema", json_schema: RESPONSE_SCHEMA },
-          messages: [
-            { role: "system", content: `${SYSTEM_PROMPT}\nCatalog section: ${SCOPE_HINT[scope]}.` },
-            { role: "user", content: query },
-          ],
-        }),
-      },
-    );
-    const content = completion.choices?.[0]?.message?.content;
-    return content ? sanitize(JSON.parse(content)) : null;
+    content = await complete(query, scope, useJsonSchema);
   } catch (error) {
-    console.error("[ai-intent]", error instanceof Error ? error.message : error);
-    return null;
+    if (!(useJsonSchema && error instanceof OpenAIError && error.status === 400)) throw error;
+    useJsonSchema = false; // model doesn't support json_schema → JSON mode
+    content = await complete(query, scope, false);
   }
+  if (!content) throw new Error("Empty model response");
+  return sanitize(JSON.parse(content));
 }
 
 // Same description → same answer for a day: no repeated cost for popular queries.
-const cachedCallModel = unstable_cache(callModel, ["ai-search-intent-v1"], { revalidate: 86_400 });
+const cachedCallModel = unstable_cache(callModel, ["ai-search-intent-v2"], { revalidate: 86_400 });
 
 /**
  * Natural-language query → canonical titles. Returns null when AI search is
@@ -111,6 +133,19 @@ const cachedCallModel = unstable_cache(callModel, ["ai-search-intent-v1"], { rev
  */
 export async function resolveSearchIntent(query: string, scope: SearchScope): Promise<SearchIntent | null> {
   const clean = query.replace(/\s+/g, " ").trim().slice(0, MAX_QUERY_LENGTH);
-  if (!clean || !isOpenAIConfigured()) return null;
-  return cachedCallModel(clean.toLowerCase(), scope);
+  if (!clean || !isOpenAIConfigured() || Date.now() < pausedUntil) return null;
+  try {
+    return await cachedCallModel(clean.toLowerCase(), scope);
+  } catch (error) {
+    if (error instanceof OpenAIError && [401, 402, 403, 429].includes(error.status ?? 0)) {
+      pausedUntil = Date.now() + PAUSE_MS;
+      console.error(
+        `[ai-intent] AI paused for 10 min (${error.status}). Searches use plain TMDB meanwhile.`,
+        error.message,
+      );
+    } else {
+      console.error("[ai-intent]", error instanceof Error ? error.message : error);
+    }
+    return null;
+  }
 }
