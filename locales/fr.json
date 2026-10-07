@@ -796,7 +796,9 @@
       "close": "Fermer",
       "enabled": "Notifications activées 🎉",
       "denied": "Les notifications sont bloquées. Autorisez-les dans les paramètres du site de votre navigateur.",
-      "failed": "Impossible d'activer les notifications. Réessayez plus tard."
+      "failed": "Impossible d'activer les notifications. Réessayez plus tard.",
+      "waiting": "Votre navigateur demande l'autorisation dans la barre d'adresse : cliquez sur l'icône 🔔 à côté de l'adresse et choisissez « Autoriser ».",
+      "waitingButton": "En attente du navigateur…"
     },
     "pref": {
       "label": "Notifications",

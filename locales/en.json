@@ -796,7 +796,9 @@
       "close": "Close",
       "enabled": "Notifications are on 🎉",
       "denied": "Notifications are blocked. Allow them in your browser's site settings.",
-      "failed": "Couldn't turn on notifications. Try again later."
+      "failed": "Couldn't turn on notifications. Try again later.",
+      "waiting": "Your browser is asking in the address bar: click the 🔔 icon next to the address and choose “Allow”.",
+      "waitingButton": "Waiting for your browser…"
     },
     "pref": {
       "label": "Notifications",

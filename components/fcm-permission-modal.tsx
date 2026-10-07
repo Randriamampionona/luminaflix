@@ -39,6 +39,7 @@ export default function FcmPermissionModal() {
   const pathname = usePathname();
   const { supported, permission, isSignedIn, busy, enable } = usePushNotifications();
   const [open, setOpen] = useState(false);
+  const [waitingForBrowser, setWaitingForBrowser] = useState(false);
 
   const eligible =
     supported && isSignedIn && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
@@ -65,7 +66,11 @@ export default function FcmPermissionModal() {
   }, [open, dismiss]);
 
   const allow = async () => {
-    const result = await enable();
+    setWaitingForBrowser(false);
+    const result = await enable({ onWaitingForBrowser: () => setWaitingForBrowser(true) }).catch(
+      () => "failed" as const,
+    );
+    setWaitingForBrowser(false);
     if (result === "enabled") {
       toast.success(t("enabled"));
       setOpen(false);
@@ -163,6 +168,16 @@ export default function FcmPermissionModal() {
             ))}
           </ul>
 
+          {waitingForBrowser && (
+            <p
+              role="status"
+              className="flex items-start gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed font-semibold text-amber-700 dark:text-amber-300"
+            >
+              <BellRing className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              {t("waiting")}
+            </p>
+          )}
+
           <div className="flex gap-2">
             <button
               type="button"
@@ -170,8 +185,8 @@ export default function FcmPermissionModal() {
               disabled={busy}
               className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-cyan-500 py-3 text-[11px] font-black uppercase tracking-widest text-black transition-colors hover:bg-cyan-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/40 disabled:cursor-wait disabled:opacity-60"
             >
-              <BellRing className="h-4 w-4" aria-hidden />
-              {t("allow")}
+              <BellRing className={busy ? "h-4 w-4 animate-pulse" : "h-4 w-4"} aria-hidden />
+              {busy ? t("waitingButton") : t("allow")}
             </button>
             <button
               type="button"

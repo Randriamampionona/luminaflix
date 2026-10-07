@@ -21,7 +21,9 @@ export default function PushPreference() {
       toast.success(t("pref.disabled"));
       return;
     }
-    const result = await enable();
+    const result = await enable({
+      onWaitingForBrowser: () => toast.info(t("modal.waiting"), { duration: 10_000 }),
+    }).catch(() => "failed" as const);
     if (result === "enabled") toast.success(t("modal.enabled"));
     else toast.error(result === "denied" ? t("modal.denied") : t("modal.failed"));
   };

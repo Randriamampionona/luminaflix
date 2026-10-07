@@ -33,6 +33,23 @@ export async function isPushSupported(): Promise<boolean> {
   }
 }
 
+/** Rejects with a labelled error if `promise` takes longer than `ms` (so the UI never spins forever). */
+function withTimeout<T>(promise: Promise<T>, ms: number, step: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`[push] ${step} timed out after ${ms / 1000}s`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 async function messagingInstance() {
   const [{ initializeApp, getApps, getApp }, { getMessaging }] = await Promise.all([
     import("firebase/app"),
@@ -43,8 +60,12 @@ async function messagingInstance() {
 }
 
 async function registerWorker() {
-  const registration = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
-  await navigator.serviceWorker.ready;
+  const registration = await withTimeout(
+    navigator.serviceWorker.register(SW_URL, { scope: "/" }),
+    15_000,
+    "service worker registration",
+  );
+  await withTimeout(navigator.serviceWorker.ready, 15_000, "service worker activation");
   return registration;
 }
 
@@ -55,7 +76,11 @@ export async function getPushToken(): Promise<string | null> {
     messagingInstance(),
     registerWorker(),
   ]);
-  const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+  const token = await withTimeout(
+    getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration }),
+    20_000,
+    "FCM getToken",
+  );
   return token || null;
 }
 
