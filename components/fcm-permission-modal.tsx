@@ -3,9 +3,9 @@
 import { BellRing, Clapperboard, Film, Megaphone, Sparkles, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { PUSH_OPT_OUT_KEY, usePushNotifications } from "@/hooks/use-push-notifications";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 /** Timestamp of the last "Not now" (or refusal). The card comes back 24 h later. */
 const DISMISSED_KEY = "fcm_prompt_dismissed_at";
@@ -30,7 +30,8 @@ const remember = (key: string) => {
 };
 
 /**
- * Soft permission prompt for push notifications (signed-in users only).
+ * Soft permission prompt for push notifications (signed-in users only),
+ * shown as a centered dialog.
  * The real browser prompt only opens when the user clicks "Turn on", which
  * keeps the "Block" rate low. "Not now" hides it for 24 hours.
  */
@@ -40,13 +41,13 @@ export default function FcmPermissionModal() {
   const { supported, permission, isSignedIn, busy, enable } = usePushNotifications();
   const [open, setOpen] = useState(false);
   const [waitingForBrowser, setWaitingForBrowser] = useState(false);
+  const allowRef = useRef<HTMLButtonElement>(null);
 
   const eligible =
     supported && isSignedIn && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
   useEffect(() => {
     if (!eligible) return;
-    if (readNumber(PUSH_OPT_OUT_KEY)) return; // turned off in the menu: don't nag
     const dismissedAt = readNumber(DISMISSED_KEY);
     if (dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS) return;
     const timer = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
@@ -58,11 +59,18 @@ export default function FcmPermissionModal() {
     setOpen(false);
   }, []);
 
+  // Centered dialog: Escape closes it, focus starts on "Turn on", the page doesn't scroll behind.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && dismiss();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    allowRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open, dismiss]);
 
   const allow = async () => {
@@ -91,13 +99,17 @@ export default function FcmPermissionModal() {
 
   return (
     <div
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="push-prompt-title"
-      aria-describedby="push-prompt-body"
-      className="fixed inset-x-3 bottom-3 z-110 animate-in fade-in slide-in-from-bottom-8 duration-500 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-100"
+      className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-300"
+      onClick={dismiss}
     >
-      <div className="relative overflow-hidden rounded-3xl border border-line-strong bg-surface shadow-[0_24px_80px_-20px_rgba(6,182,212,0.45)]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="push-prompt-title"
+        aria-describedby="push-prompt-body"
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-full w-full max-w-md overflow-y-auto rounded-3xl border border-line-strong bg-surface shadow-[0_24px_80px_-20px_rgba(6,182,212,0.45)] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 no-scrollbar"
+      >
         <div
           aria-hidden
           className="absolute top-0 left-0 h-1 w-full bg-linear-to-r from-cyan-400 via-cyan-500 to-blue-500"
@@ -180,6 +192,7 @@ export default function FcmPermissionModal() {
 
           <div className="flex gap-2">
             <button
+              ref={allowRef}
               type="button"
               onClick={allow}
               disabled={busy}

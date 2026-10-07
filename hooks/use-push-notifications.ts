@@ -3,30 +3,8 @@
 import { useAuth } from "@clerk/nextjs";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { removePushToken, savePushToken } from "@/action/push-tokens.action";
-import { deletePushToken, getPushToken, isPushSupported } from "@/lib/push-client";
-
-const TOKEN_KEY = "luminaflix:fcm-token";
-/** Set when the user turns notifications off in the menu: we stop asking. */
-export const PUSH_OPT_OUT_KEY = "luminaflix:push-opt-out";
-
-const storage = {
-  get: (key: string) => {
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  },
-  set: (key: string, value: string | null) => {
-    try {
-      if (value === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, value);
-    } catch {
-      // storage blocked
-    }
-  },
-};
+import { savePushToken } from "@/action/push-tokens.action";
+import { getPushToken, isPushSupported } from "@/lib/push-client";
 
 type PushResult = "enabled" | "denied" | "failed";
 
@@ -60,7 +38,7 @@ function explain(error: unknown) {
 
 /**
  * Push notification state for the signed-in user on this browser:
- * support detection, permission, enable / disable, and silent token refresh
+ * support detection, permission, enable, and silent token refresh
  * (FCM tokens rotate; the newest one is re-saved on every visit).
  */
 export function usePushNotifications() {
@@ -68,7 +46,6 @@ export function usePushNotifications() {
   const locale = useLocale();
   const [supported, setSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
-  const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -78,7 +55,6 @@ export function usePushNotifications() {
       setSupported(ok);
       if (ok) {
         setPermission(Notification.permission);
-        setSubscribed(Notification.permission === "granted" && !!storage.get(TOKEN_KEY));
       }
     });
     return () => {
@@ -88,16 +64,12 @@ export function usePushNotifications() {
 
   // Keep the stored token fresh (and in the right language) on each visit.
   useEffect(() => {
-    if (!supported || !isSignedIn || permission !== "granted" || storage.get(PUSH_OPT_OUT_KEY)) return;
+    if (!supported || !isSignedIn || permission !== "granted") return;
     let active = true;
     void getPushToken()
       .then(async (token) => {
         if (!active || !token) return;
-        const res = await savePushToken(token, locale);
-        if (res.ok && active) {
-          storage.set(TOKEN_KEY, token);
-          setSubscribed(true);
-        }
+        await savePushToken(token, locale);
       })
       .catch(() => {});
     return () => {
@@ -127,10 +99,6 @@ export function usePushNotifications() {
         if (!token) return "failed";
         const res = await savePushToken(token, locale);
         if (!res.ok) return "failed";
-
-        storage.set(TOKEN_KEY, token);
-        storage.set(PUSH_OPT_OUT_KEY, null);
-        setSubscribed(true);
         return "enabled";
       } catch (error) {
         console.error("[push] enable failed", error);
@@ -144,21 +112,5 @@ export function usePushNotifications() {
     [supported, locale],
   );
 
-  const disable = useCallback(async () => {
-    setBusy(true);
-    try {
-      const token = storage.get(TOKEN_KEY);
-      if (token) await removePushToken(token);
-      await deletePushToken();
-    } catch (error) {
-      console.error("[push] disable failed", error);
-    } finally {
-      storage.set(TOKEN_KEY, null);
-      storage.set(PUSH_OPT_OUT_KEY, String(Date.now()));
-      setSubscribed(false);
-      setBusy(false);
-    }
-  }, []);
-
-  return { supported, permission, subscribed, busy, enable, disable, isSignedIn: !!isSignedIn };
+  return { supported, permission, busy, enable, isSignedIn: !!isSignedIn };
 }

@@ -44,24 +44,3 @@ export async function savePushToken(token: string, locale: string): Promise<{ ok
     return { ok: false };
   }
 }
-
-/** Called when the user turns notifications off on this device. */
-export async function removePushToken(token: string): Promise<{ ok: boolean }> {
-  const { userId } = await auth();
-  if (!userId || typeof token !== "string" || !TOKEN_RE.test(token)) return { ok: false };
-
-  try {
-    const ref = getDb().collection("USERS").doc(userId);
-    await ref.set(
-      {
-        fcmTokens: admin.firestore.FieldValue.arrayRemove(token),
-        pushUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-    return { ok: true };
-  } catch (error) {
-    logFirebaseError("push-token:remove", error);
-    return { ok: false };
-  }
-}

@@ -784,7 +784,7 @@
     "modal": {
       "eyebrow": "Notifications",
       "title": "Never miss tonight's pick",
-      "body": "Turn on notifications and we'll send you one great title a day. No spam, turn it off anytime.",
+      "body": "Turn on notifications and we'll send you one great title a day.",
       "bullet1": "New releases worth watching",
       "bullet2": "Picks chosen for you",
       "bullet3": "Important updates",
@@ -799,13 +799,6 @@
       "failed": "Couldn't turn on notifications. Try again later.",
       "waiting": "Your browser is asking in the address bar: click the 🔔 icon next to the address and choose “Allow”.",
       "waitingButton": "Waiting for your browser…"
-    },
-    "pref": {
-      "label": "Notifications",
-      "on": "On",
-      "off": "Off",
-      "blocked": "Blocked in your browser settings",
-      "disabled": "Notifications turned off"
     },
     "message": {
       "title": "🍿 Tonight's pick: {title}",

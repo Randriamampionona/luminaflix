@@ -83,10 +83,3 @@ export async function getPushToken(): Promise<string | null> {
   );
   return token || null;
 }
-
-/** Unsubscribe this browser from FCM. */
-export async function deletePushToken(): Promise<void> {
-  const [{ deleteToken }, messaging] = await Promise.all([import("firebase/messaging"), messagingInstance()]);
-  await registerWorker();
-  await deleteToken(messaging).catch(() => {});
-}

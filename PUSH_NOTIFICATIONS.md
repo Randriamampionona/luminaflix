@@ -26,7 +26,7 @@ The response is JSON: `{ success, title, devices, sent, failed, removed, testOnl
 
 ## How it works
 - Signed-in users see a "Turn on notifications" card 8 s after arriving. "Not now" hides it for 24 h.
-  It can also be switched on/off in the menu → Preferences → Notifications.
+  To stop notifications, users block them in their browser's site settings.
 - Tokens are stored on `USERS/{clerkId}.fcmTokens` (max 10 devices), with `locale` and `pushEnabled`.
 - `public/firebase-messaging-sw.js` shows the notification (image, icon, "Watch now" / "Trailer" buttons) and opens the page on click.
 - Dead tokens are removed automatically after each send. The last pushed title is kept in `META/push` so the same title isn't sent twice in a row.
