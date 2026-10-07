@@ -779,5 +779,38 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "push": {
+    "modal": {
+      "eyebrow": "Notifications",
+      "title": "Never miss tonight's pick",
+      "body": "Turn on notifications and we'll send you one great title a day. No spam, turn it off anytime.",
+      "bullet1": "New releases worth watching",
+      "bullet2": "Picks chosen for you",
+      "bullet3": "Important updates",
+      "previewApp": "LuminaFlix · now",
+      "previewTitle": "🍿 Tonight's pick: Dune: Part Two",
+      "previewBody": "Paul Atreides unites with the Fremen to take back Arrakis…",
+      "allow": "Turn on notifications",
+      "later": "Not now",
+      "close": "Close",
+      "enabled": "Notifications are on 🎉",
+      "denied": "Notifications are blocked. Allow them in your browser's site settings.",
+      "failed": "Couldn't turn on notifications. Try again later."
+    },
+    "pref": {
+      "label": "Notifications",
+      "on": "On",
+      "off": "Off",
+      "blocked": "Blocked in your browser settings",
+      "disabled": "Notifications turned off"
+    },
+    "message": {
+      "title": "🍿 Tonight's pick: {title}",
+      "titleSeries": "📺 Tonight's series: {title}",
+      "watch": "▶ Watch now",
+      "trailer": "🎬 Trailer",
+      "fallbackBody": "Tap to start watching on LuminaFlix."
+    }
   }
 }

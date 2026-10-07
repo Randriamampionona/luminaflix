@@ -779,5 +779,38 @@
     "light": "Clair",
     "dark": "Sombre",
     "system": "Système"
+  },
+  "push": {
+    "modal": {
+      "eyebrow": "Notifications",
+      "title": "Ne ratez plus le choix du soir",
+      "body": "Activez les notifications et recevez un titre à ne pas manquer chaque jour. Pas de spam, désactivable à tout moment.",
+      "bullet1": "Les nouveautés qui valent le coup",
+      "bullet2": "Des idées choisies pour vous",
+      "bullet3": "Les annonces importantes",
+      "previewApp": "LuminaFlix · maintenant",
+      "previewTitle": "🍿 Le choix de ce soir : Dune : Deuxième partie",
+      "previewBody": "Paul Atreides s'unit aux Fremen pour reprendre Arrakis…",
+      "allow": "Activer les notifications",
+      "later": "Plus tard",
+      "close": "Fermer",
+      "enabled": "Notifications activées 🎉",
+      "denied": "Les notifications sont bloquées. Autorisez-les dans les paramètres du site de votre navigateur.",
+      "failed": "Impossible d'activer les notifications. Réessayez plus tard."
+    },
+    "pref": {
+      "label": "Notifications",
+      "on": "Activées",
+      "off": "Désactivées",
+      "blocked": "Bloquées dans votre navigateur",
+      "disabled": "Notifications désactivées"
+    },
+    "message": {
+      "title": "🍿 Le choix de ce soir : {title}",
+      "titleSeries": "📺 La série du soir : {title}",
+      "watch": "▶ Regarder",
+      "trailer": "🎬 Bande-annonce",
+      "fallbackBody": "Touchez pour lancer la lecture sur LuminaFlix."
+    }
   }
 }

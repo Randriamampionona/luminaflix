@@ -13,6 +13,7 @@ import PostAuthRedirect from "@/components/auth/post-auth-redirect";
 import ThemeProvider from "@/components/providers/theme-provider";
 import { MediaDetailsProvider } from "@/components/media/media-details-provider";
 import Toaster from "@/components/providers/toaster";
+import FcmPermissionModal from "@/components/fcm-permission-modal";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
@@ -46,6 +47,9 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: "Tooj Rtn" }],
     creator: "Tooj Rtn",
     publisher: "LuminaFlix",
+    // Installable on iPhone / iPad (also required there for push notifications).
+    appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
+    icons: { apple: "/icons/icon-192.png" },
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
@@ -98,6 +102,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </MediaDetailsProvider>
               <PostAuthRedirect />
               <Toaster />
+              <FcmPermissionModal />
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>

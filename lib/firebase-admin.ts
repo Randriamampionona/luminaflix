@@ -156,6 +156,11 @@ export function getDb(): admin.firestore.Firestore {
   return firestore;
 }
 
+/** Firebase Cloud Messaging (push notifications), same app/credentials as Firestore. */
+export function getMessaging(): admin.messaging.Messaging {
+  return getApp().messaging();
+}
+
 /** Log once per error message instead of on every request. */
 const logged = new Set<string>();
 export function logFirebaseError(scope: string, error: unknown) {
