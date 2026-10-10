@@ -63,8 +63,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "fr",
       providers: [
-        { name: "Lumina frembed.surf TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `https://frembed.surf/embed/movie/${t.mediaId}` },
-        { name: "Lumina frembed.surf IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `https://frembed.surf/embed/movie/${t.imdbId}` },
+        { name: "Lumina frembed.bar TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `https://frembed.bar/embed/movie/${t.mediaId}` },
+        { name: "Lumina frembed.bar IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `https://frembed.bar/embed/movie/${t.imdbId}` },
       ],
     },
     {
@@ -101,7 +101,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.surf/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
       ],
     },
   ],
@@ -110,7 +110,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
       key: "vf",
       providers: [
         { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.surf/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
       ],
     },
     {
