@@ -114,6 +114,7 @@ export async function POST(request: Request) {
             browser: browserFromUa(ua ?? ""),
             referrer: cleanReferrer(event.type === "start" ? event.referrer : null, request.headers.get("host")),
             sessionDuration: 0,
+            currentPage: path,
             visitedPages: [path],
             pageViews: 1,
             visitFrequency: visitCount,
@@ -128,6 +129,7 @@ export async function POST(request: Request) {
         const pages: string[] = Array.isArray(data.visitedPages) ? data.visitedPages : [];
         tx.update(sessionRef, {
           lastActive: now,
+          currentPage: path,
           pageViews: FieldValue.increment(1),
           ...(pages.length < MAX_PAGES && !pages.includes(path) && { visitedPages: FieldValue.arrayUnion(path) }),
           // Signed in during the session → it becomes an authenticated session.

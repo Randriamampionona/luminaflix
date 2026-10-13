@@ -22,6 +22,8 @@ export interface AnalyticsSession {
   referrer: string | null;
   /** Active time on the site, in seconds (time the tab was visible). */
   sessionDuration: number;
+  /** Route the visitor is on right now (last page view). */
+  currentPage: string;
   /** Routes visited in this session, in first-visit order (max 50). */
   visitedPages: string[];
   pageViews: number;

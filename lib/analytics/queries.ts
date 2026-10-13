@@ -106,11 +106,35 @@ export interface VisitorRow {
   lastActive: string;
 }
 
+export interface LiveSession {
+  sessionId: string;
+  visitorType: "anonymous" | "authenticated";
+  userId: string | null;
+  name: string | null;
+  email: string | null;
+  imageUrl: string | null;
+  ipAddress: string;
+  country: string;
+  city: string | null;
+  device: string;
+  browser: string;
+  referrer: string | null;
+  currentPage: string;
+  pages: string[];
+  pageViews: number;
+  sessionDuration: number;
+  visitFrequency: number;
+  startedAt: string;
+  lastActive: string;
+}
+
 export interface AnalyticsData {
   range: { key: RangeKey; fromDay: string; toDay: string };
   generatedAt: string;
   truncated: boolean;
   liveNow: number;
+  /** Sessions active in the last 5 minutes, most recent first. */
+  live: LiveSession[];
   kpis: {
     uniqueVisitors: number;
     sessions: number;
@@ -169,7 +193,7 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
   const Timestamp = admin.firestore.Timestamp;
 
   let docs: SessionDoc[] = [];
-  let liveNow = 0;
+  let liveDocs: SessionDoc[] = [];
   try {
     const [snapshot, live] = await Promise.all([
       col
@@ -180,11 +204,12 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
         .get(),
       col
         .where("lastActive", ">=", Timestamp.fromMillis(Date.now() - LIVE_WINDOW_MS))
-        .count()
+        .orderBy("lastActive", "desc")
+        .limit(100)
         .get(),
     ]);
     docs = snapshot.docs.map((d) => d.data() as SessionDoc);
-    liveNow = live.data().count;
+    liveDocs = live.docs.map((d) => d.data() as SessionDoc);
   } catch (error) {
     logFirebaseError("analytics:query", error);
   }
@@ -279,7 +304,9 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
   }));
 
   const authRows = finalRows.filter((r) => !r.anonymous).map((r) => r.row);
-  const profiles = await clerkProfiles(authRows.map((r) => r.label));
+  const profiles = await clerkProfiles([
+    ...new Set([...authRows.map((r) => r.label), ...liveDocs.flatMap((s) => (s.userId ? [s.userId] : []))]),
+  ]);
   for (const row of authRows) {
     const p = profiles.get(row.label);
     if (p) Object.assign(row, p);
@@ -290,7 +317,32 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
     range: { key: range.key, fromDay: range.fromDay, toDay: range.toDay },
     generatedAt: new Date().toISOString(),
     truncated: docs.length >= MAX_SESSIONS,
-    liveNow,
+    liveNow: liveDocs.length,
+    live: liveDocs.map((s) => {
+      const profile = s.userId ? profiles.get(s.userId) : undefined;
+      const pages = s.visitedPages ?? [];
+      return {
+        sessionId: s.sessionId,
+        visitorType: s.userId ? "authenticated" : "anonymous",
+        userId: s.userId ?? null,
+        name: profile?.name ?? null,
+        email: profile?.email ?? null,
+        imageUrl: profile?.imageUrl ?? null,
+        ipAddress: s.ipAddress,
+        country: s.country || "XX",
+        city: s.city ?? null,
+        device: s.device || "desktop",
+        browser: s.browser || "Other",
+        referrer: s.referrer ?? null,
+        currentPage: s.currentPage || pages[pages.length - 1] || "/",
+        pages,
+        pageViews: s.pageViews || pages.length || 1,
+        sessionDuration: s.sessionDuration || 0,
+        visitFrequency: s.visitFrequency || 1,
+        startedAt: s.startedAt.toDate().toISOString(),
+        lastActive: s.lastActive.toDate().toISOString(),
+      };
+    }),
     kpis: {
       uniqueVisitors: visitors.size,
       sessions,
