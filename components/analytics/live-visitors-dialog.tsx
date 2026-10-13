@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChevronDown,
   Clock,
   ExternalLink,
   Eye,
@@ -15,7 +16,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { LiveSession } from "@/lib/analytics/queries";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,18 @@ function Meta({ icon: Icon, label, children }: { icon: typeof Clock; label: stri
   );
 }
 
-function VisitorCard({ session, now }: { session: LiveSession; now: number }) {
+function VisitorCard({
+  session,
+  now,
+  expanded,
+  onToggle,
+}: {
+  session: LiveSession;
+  now: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const detailsId = useId();
   const DeviceIcon = DEVICE_ICON[session.device as keyof typeof DEVICE_ICON] ?? Monitor;
   const signedIn = session.visitorType === "authenticated";
   const idle = now - Date.parse(session.lastActive) > 90_000;
@@ -89,14 +101,36 @@ function VisitorCard({ session, now }: { session: LiveSession; now: number }) {
               {signedIn ? "Signed in" : "Anonymous"}
             </span>
           </div>
-          {signedIn && session.email && session.name && (
-            <p className="truncate text-xs text-fg-subtle">{session.email}</p>
-          )}
+          <p className="mt-0.5 truncate text-xs text-fg-subtle">
+            {signedIn && session.email && session.name ? `${session.email} · ` : ""}
+            {countryName(session.country)} · <span className="capitalize">{session.device}</span> · {session.browser} ·{" "}
+            {formatDuration(session.sessionDuration)}
+          </p>
         </div>
 
-        <span className="shrink-0 text-[11px] text-fg-subtle" title={new Date(session.lastActive).toLocaleString()}>
-          {secondsAgo(session.lastActive, now)}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className="text-[11px] text-fg-subtle" title={new Date(session.lastActive).toLocaleString()}>
+            {secondsAgo(session.lastActive, now)}
+          </span>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={expanded}
+            aria-controls={detailsId}
+            className={cn(
+              "flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
+              expanded
+                ? "border-cyan-500/40 bg-cyan-500/10 text-brand"
+                : "border-line-strong bg-tint text-fg-muted hover:text-foreground",
+            )}
+          >
+            Details
+            <ChevronDown
+              className={cn("h-3 w-3 transition-transform duration-200", expanded && "rotate-180")}
+              aria-hidden
+            />
+          </button>
+        </div>
       </div>
 
       {/* Current page */}
@@ -117,48 +151,62 @@ function VisitorCard({ session, now }: { session: LiveSession; now: number }) {
         <ExternalLink className="h-3.5 w-3.5 shrink-0 text-fg-faint group-hover:text-brand" aria-hidden />
       </a>
 
-      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-3 sm:grid-cols-4">
-        <Meta icon={MapPin} label="Location">
-          {countryName(session.country)}
-          {session.city ? ` · ${session.city}` : ""}
-        </Meta>
-        <Meta icon={DeviceIcon} label="Device">
-          <span className="capitalize">{session.device}</span> · {session.browser}
-        </Meta>
-        <Meta icon={Globe2} label="IP (masked)">
-          <span className="font-mono">{session.ipAddress}</span>
-        </Meta>
-        <Meta icon={Clock} label="Session">
-          {formatDuration(session.sessionDuration)} ·{" "}
-          {new Date(session.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </Meta>
-        <Meta icon={Repeat} label="Total visits">
-          {formatNumber(session.visitFrequency)}
-        </Meta>
-        <Meta icon={Eye} label="Page views">
-          {formatNumber(session.pageViews)}
-        </Meta>
-        <Meta icon={Link2} label="Came from">
-          {session.referrer ?? "Direct"}
-        </Meta>
-        {signedIn && session.userId && (
-          <Meta icon={UserCheck} label="User id">
-            <span className="font-mono">{session.userId}</span>
-          </Meta>
+      {/* Details: collapsed by default (animated height via grid rows) */}
+      <div
+        id={detailsId}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
-      </div>
+        inert={!expanded}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-3 sm:grid-cols-4">
+            <Meta icon={MapPin} label="Location">
+              {countryName(session.country)}
+              {session.city ? ` · ${session.city}` : ""}
+            </Meta>
+            <Meta icon={DeviceIcon} label="Device">
+              <span className="capitalize">{session.device}</span> · {session.browser}
+            </Meta>
+            <Meta icon={Globe2} label="IP (masked)">
+              <span className="font-mono">{session.ipAddress}</span>
+            </Meta>
+            <Meta icon={Clock} label="Session">
+              {formatDuration(session.sessionDuration)} ·{" "}
+              {new Date(session.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </Meta>
+            <Meta icon={Repeat} label="Total visits">
+              {formatNumber(session.visitFrequency)}
+            </Meta>
+            <Meta icon={Eye} label="Page views">
+              {formatNumber(session.pageViews)}
+            </Meta>
+            <Meta icon={Link2} label="Came from">
+              {session.referrer ?? "Direct"}
+            </Meta>
+            {signedIn && session.userId && (
+              <Meta icon={UserCheck} label="User id">
+                <span className="font-mono">{session.userId}</span>
+              </Meta>
+            )}
+          </div>
 
-      {session.pages.length > 1 && (
-        <div className="mt-3 flex flex-wrap items-center gap-1">
-          <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-fg-faint">Path</span>
-          {session.pages.map((page, i) => (
-            <span key={page} className="flex items-center gap-1">
-              {i > 0 && <span className="text-fg-faint">→</span>}
-              <span className="rounded-md bg-tint-strong px-1.5 py-0.5 font-mono text-[10px] text-fg-soft">{page}</span>
-            </span>
-          ))}
+          {session.pages.length > 1 && (
+            <div className="mt-3 flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-fg-faint">Path</span>
+              {session.pages.map((page, i) => (
+                <span key={page} className="flex items-center gap-1">
+                  {i > 0 && <span className="text-fg-faint">→</span>}
+                  <span className="rounded-md bg-tint-strong px-1.5 py-0.5 font-mono text-[10px] text-fg-soft">
+                    {page}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </li>
   );
 }
@@ -171,6 +219,14 @@ function VisitorCard({ session, now }: { session: LiveSession; now: number }) {
 export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession[] }) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   const [now, setNow] = useState(() => Date.now());
 
   // Keep "12s ago" labels ticking while the popup is open.
@@ -182,6 +238,7 @@ export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession
 
   const signedIn = sessions.filter((s) => s.visitorType === "authenticated").length;
   const visible = filter === "all" ? sessions : sessions.filter((s) => s.visitorType === filter);
+  const allExpanded = visible.length > 0 && visible.every((s) => expanded.has(s.sessionId));
   const filters: { key: Filter; label: string; count: number }[] = [
     { key: "all", label: "All", count: sessions.length },
     { key: "authenticated", label: "Signed in", count: signedIn },
@@ -240,21 +297,36 @@ export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession
               </DialogClose>
             </div>
 
-            <div className="relative mt-4 flex w-fit rounded-xl border border-line-strong bg-tint p-1">
-              {filters.map((f) => (
+            <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex w-fit rounded-xl border border-line-strong bg-tint p-1">
+                {filters.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() => setFilter(f.key)}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
+                      filter === f.key ? "bg-surface text-foreground shadow" : "text-fg-muted hover:text-foreground",
+                    )}
+                  >
+                    {f.label}
+                    <span className="rounded-md bg-tint-strong px-1.5 text-[10px]">{f.count}</span>
+                  </button>
+                ))}
+              </div>
+              {visible.length > 0 && (
                 <button
-                  key={f.key}
                   type="button"
-                  onClick={() => setFilter(f.key)}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
-                    filter === f.key ? "bg-surface text-foreground shadow" : "text-fg-muted hover:text-foreground",
-                  )}
+                  onClick={() => setExpanded(allExpanded ? new Set() : new Set(visible.map((v) => v.sessionId)))}
+                  className="flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-bold text-fg-muted transition-colors hover:text-foreground"
                 >
-                  {f.label}
-                  <span className="rounded-md bg-tint-strong px-1.5 text-[10px]">{f.count}</span>
+                  <ChevronDown
+                    className={cn("h-3.5 w-3.5 transition-transform", allExpanded && "rotate-180")}
+                    aria-hidden
+                  />
+                  {allExpanded ? "Collapse all" : "Expand all"}
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
@@ -270,7 +342,13 @@ export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession
             ) : (
               <ul className="space-y-3">
                 {visible.map((session) => (
-                  <VisitorCard key={session.sessionId} session={session} now={now} />
+                  <VisitorCard
+                    key={session.sessionId}
+                    session={session}
+                    now={now}
+                    expanded={expanded.has(session.sessionId)}
+                    onToggle={() => toggle(session.sessionId)}
+                  />
                 ))}
               </ul>
             )}
