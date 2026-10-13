@@ -14,6 +14,7 @@ import ThemeProvider from "@/components/providers/theme-provider";
 import { MediaDetailsProvider } from "@/components/media/media-details-provider";
 import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
+import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
@@ -103,6 +104,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <PostAuthRedirect />
               <Toaster />
               <FcmPermissionModal />
+              {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
+              <AnalyticsTracker />
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>

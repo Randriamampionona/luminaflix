@@ -10,7 +10,10 @@ import { useEffect, useRef } from "react";
  * - Session duration = time the tab was actually visible (not idle background tabs).
  * - Heartbeat every 60 s while visible; final duration sent with sendBeacon
  *   when the tab is hidden or closed.
- * - Respects Do Not Track / Global Privacy Control, skips /analytics itself.
+ * - Skips /analytics itself. Set NEXT_PUBLIC_ANALYTICS_RESPECT_DNT=1 to also
+ *   skip browsers sending Do Not Track / Global Privacy Control (Brave and
+ *   Firefox private windows send GPC by default).
+ * - In development, every event is logged to the browser console.
  */
 const ENDPOINT = "/api/analytics/track";
 const SESSION_KEY = "lf_analytics_session";
@@ -38,6 +41,7 @@ function writeSession(session: StoredSession) {
 
 function send(body: object, beacon = false) {
   const payload = JSON.stringify(body);
+  if (process.env.NODE_ENV === "development") console.info("[analytics] →", body);
   if (beacon && navigator.sendBeacon) {
     navigator.sendBeacon(ENDPOINT, new Blob([payload], { type: "text/plain" }));
     return;
@@ -47,12 +51,17 @@ function send(body: object, beacon = false) {
     body: payload,
     keepalive: true,
     headers: { "Content-Type": "application/json" },
-  }).catch(() => {});
+  })
+    .then((res) => {
+      if (!res.ok) console.warn(`[analytics] ${ENDPOINT} answered ${res.status}`);
+    })
+    .catch(() => {});
 }
 
 const optedOut = () =>
-  navigator.doNotTrack === "1" ||
-  (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true;
+  process.env.NEXT_PUBLIC_ANALYTICS_RESPECT_DNT === "1" &&
+  (navigator.doNotTrack === "1" ||
+    (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true);
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();

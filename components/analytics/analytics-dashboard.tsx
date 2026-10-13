@@ -156,6 +156,16 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
         </div>
       </div>
 
+      {kpis.sessions === 0 && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-200">
+          <Activity className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <p>
+            No visits recorded for this period yet. Open the site in another browser or private window, browse a few
+            pages, then refresh this page (visits to /analytics itself are not counted).
+          </p>
+        </div>
+      )}
+
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi
