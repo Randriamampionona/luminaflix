@@ -17,7 +17,8 @@ import type { Movie, TMDBResponse } from "@/typing";
  *
  * - Picks one trending title (movie or series) with artwork, never the same
  *   as the previous push.
- * - Localised per user (USERS/{id}.locale, French by default).
+ * - Sent to every subscribed browser (NOTIFICATION, by IP — signed in or not),
+ *   localised with the language saved with the subscription (French by default).
  * - Data-only FCM messages: the service worker (public/firebase-messaging-sw.js)
  *   renders the notification itself, with image and action buttons.
  * - Tokens that FCM reports as dead are removed from Firestore.
@@ -38,7 +39,8 @@ const DEAD_TOKEN_CODES = new Set([
 ]);
 
 interface Recipient {
-  userId: string;
+  /** Firestore document holding the tokens, e.g. "NOTIFICATION/ab12…" or "USERS/user_…". */
+  path: string;
   tokens: string[];
   locale: Locale;
 }
@@ -128,6 +130,14 @@ function buildPayload(item: Movie, locale: Locale): Record<string, string> {
   };
 }
 
+/**
+ * Every subscribed browser:
+ * - NOTIFICATION/{ipHash}: all visitors, signed in or not (current storage);
+ * - USERS/{id}.fcmTokens: older subscriptions from signed-in users (still sent
+ *   until those browsers re-save their token under NOTIFICATION).
+ * Test mode keeps only PUSH_TEST_USER_IDS (USERS id, or NOTIFICATION docs
+ * whose last signed-in account is one of them).
+ */
 async function getRecipients(testOnly: boolean): Promise<Recipient[]> {
   const testIds = new Set(
     (process.env.PUSH_TEST_USER_IDS ?? "")
@@ -137,21 +147,39 @@ async function getRecipients(testOnly: boolean): Promise<Recipient[]> {
   );
   if (testOnly && testIds.size === 0) return [];
 
-  const snapshot = await getDb().collection("USERS").select("fcmTokens", "locale", "pushEnabled").get();
-  return snapshot.docs
-    .filter((doc) => !testOnly || testIds.has(doc.id))
-    .map((doc) => {
-      const data = doc.data() as { fcmTokens?: unknown; locale?: string; pushEnabled?: boolean };
-      const tokens = Array.isArray(data.fcmTokens)
-        ? data.fcmTokens.filter((t): t is string => typeof t === "string")
-        : [];
-      return {
-        userId: doc.id,
-        tokens: data.pushEnabled === false ? [] : tokens,
-        locale: isLocale(data.locale) ? data.locale : DEFAULT_LOCALE,
-      };
-    })
-    .filter((r) => r.tokens.length > 0);
+  const db = getDb();
+  const [ipDocs, userDocs] = await Promise.all([
+    db.collection("NOTIFICATION").select("fcmTokens", "tokenLocales", "locale", "pushEnabled", "userId").get(),
+    db.collection("USERS").select("fcmTokens", "locale", "pushEnabled").get(),
+  ]);
+
+  type TokenDoc = {
+    fcmTokens?: unknown;
+    locale?: string;
+    pushEnabled?: boolean;
+    tokenLocales?: Record<string, string>;
+  };
+  // One recipient per (document, language): each browser keeps its own language.
+  const toRecipients = (path: string, data: TokenDoc): Recipient[] => {
+    if (data.pushEnabled === false || !Array.isArray(data.fcmTokens)) return [];
+    const fallback = isLocale(data.locale) ? data.locale : DEFAULT_LOCALE;
+    const byLang = new Map<Locale, string[]>();
+    for (const token of data.fcmTokens.filter((t): t is string => typeof t === "string")) {
+      const own = data.tokenLocales?.[token];
+      const lang = isLocale(own) ? own : fallback;
+      byLang.set(lang, [...(byLang.get(lang) ?? []), token]);
+    }
+    return [...byLang].map(([locale, tokens]) => ({ path, tokens, locale }));
+  };
+
+  return [
+    ...ipDocs.docs
+      .filter((doc) => !testOnly || testIds.has(String(doc.data().userId ?? "")))
+      .flatMap((doc) => toRecipients(`NOTIFICATION/${doc.id}`, doc.data())),
+    ...userDocs.docs
+      .filter((doc) => !testOnly || testIds.has(doc.id))
+      .flatMap((doc) => toRecipients(`USERS/${doc.id}`, doc.data())),
+  ];
 }
 
 export async function triggerDailyPush({ test = false }: { test?: boolean } = {}) {
@@ -169,13 +197,15 @@ export async function triggerDailyPush({ test = false }: { test?: boolean } = {}
       return { success: true, title: item.title || item.name, devices: 0, sent: 0, failed: 0, removed: 0, testOnly };
     }
 
-    // Token → owner, to clean up dead tokens afterwards.
-    const owner = new Map<string, string>();
+    // Token → documents holding it (to clean up dead tokens). A browser can
+    // appear in both collections: it is notified once (NOTIFICATION's language wins).
+    const owners = new Map<string, string[]>();
     const byLocale = new Map<Locale, string[]>();
     for (const r of recipients) {
       for (const token of r.tokens) {
-        owner.set(token, r.userId);
-        byLocale.set(r.locale, [...(byLocale.get(r.locale) ?? []), token]);
+        const known = owners.get(token);
+        owners.set(token, [...(known ?? []), r.path]);
+        if (!known) byLocale.set(r.locale, [...(byLocale.get(r.locale) ?? []), token]);
       }
     }
 
@@ -202,20 +232,22 @@ export async function triggerDailyPush({ test = false }: { test?: boolean } = {}
       }
     }
 
-    // Remove dead tokens (grouped per user).
-    const deadByUser = new Map<string, string[]>();
+    // Remove dead tokens from every document holding them.
+    const deadByDoc = new Map<string, string[]>();
     for (const token of dead) {
-      const userId = owner.get(token);
-      if (userId) deadByUser.set(userId, [...(deadByUser.get(userId) ?? []), token]);
+      for (const path of owners.get(token) ?? []) deadByDoc.set(path, [...(deadByDoc.get(path) ?? []), token]);
     }
     await Promise.all(
-      [...deadByUser].map(([userId, tokens]) =>
-        db
-          .collection("USERS")
-          .doc(userId)
-          .update({ fcmTokens: admin.firestore.FieldValue.arrayRemove(...tokens) })
-          .catch((error) => logFirebaseError("daily-push:cleanup", error)),
-      ),
+      [...deadByDoc].map(([path, tokens]) => {
+        const FieldValue = admin.firestore.FieldValue;
+        const languageFields = path.startsWith("NOTIFICATION/")
+          ? tokens.flatMap((t) => [new admin.firestore.FieldPath("tokenLocales", t), FieldValue.delete()])
+          : [];
+        return db
+          .doc(path)
+          .update("fcmTokens", FieldValue.arrayRemove(...tokens), ...languageFields)
+          .catch((error) => logFirebaseError("daily-push:cleanup", error));
+      }),
     );
 
     if (!testOnly) {
@@ -228,7 +260,7 @@ export async function triggerDailyPush({ test = false }: { test?: boolean } = {}
     return {
       success: true,
       title: item.title || item.name,
-      devices: owner.size,
+      devices: owners.size,
       sent,
       failed,
       removed: dead.length,

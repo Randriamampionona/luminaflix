@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { savePushToken } from "@/action/push-tokens.action";
@@ -37,12 +36,11 @@ function explain(error: unknown) {
 }
 
 /**
- * Push notification state for the signed-in user on this browser:
+ * Push notification state for this browser (every visitor, signed in or not):
  * support detection, permission, enable, and silent token refresh
  * (FCM tokens rotate; the newest one is re-saved on every visit).
  */
 export function usePushNotifications() {
-  const { isSignedIn } = useAuth();
   const locale = useLocale();
   const [supported, setSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -64,7 +62,7 @@ export function usePushNotifications() {
 
   // Keep the stored token fresh (and in the right language) on each visit.
   useEffect(() => {
-    if (!supported || !isSignedIn || permission !== "granted") return;
+    if (!supported || permission !== "granted") return;
     let active = true;
     void getPushToken()
       .then(async (token) => {
@@ -75,7 +73,7 @@ export function usePushNotifications() {
     return () => {
       active = false;
     };
-  }, [supported, isSignedIn, permission, locale]);
+  }, [supported, permission, locale]);
 
   const enable = useCallback(
     async ({ onWaitingForBrowser }: { onWaitingForBrowser?: () => void } = {}): Promise<PushResult> => {
@@ -112,5 +110,5 @@ export function usePushNotifications() {
     [supported, locale],
   );
 
-  return { supported, permission, busy, enable, isSignedIn: !!isSignedIn };
+  return { supported, permission, busy, enable };
 }

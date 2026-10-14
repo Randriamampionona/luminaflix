@@ -12,7 +12,8 @@ Daily "Tonight's pick" push, separate from the daily email.
 ## 2. Environment
 ```
 NEXT_PUBLIC_FIREBASE_VAPID_KEY=...     # required
-PUSH_TEST_USER_IDS=user_abc,user_def   # optional: Clerk ids that receive ?test=1 pushes (and all pushes outside production)
+PUSH_TEST_USER_IDS=user_abc,user_def   # optional: Clerk ids for ?test=1 pushes — matches USERS ids and NOTIFICATION docs
+                                       # whose last signed-in account is one of them (subscribe once while signed in)
 ```
 
 ## 3. cron-job.org (second job, its own time)
@@ -25,9 +26,11 @@ Test first with `https://<your-domain>/api/cron/push?test=1` (only `PUSH_TEST_US
 The response is JSON: `{ success, title, devices, sent, failed, removed, testOnly }`.
 
 ## How it works
-- Signed-in users see a "Turn on notifications" card 8 s after arriving. "Not now" hides it for 24 h.
-  To stop notifications, users block them in their browser's site settings.
-- Tokens are stored on `USERS/{clerkId}.fcmTokens` (max 10 devices), with `locale` and `pushEnabled`.
+- **Every visitor** (signed in or not) sees the "Turn on notifications" card 8 s after arriving. "Not now" hides it for 24 h.
+- Tokens are stored per IP address in `NOTIFICATION/{ipHash}`: `fcmTokens` (every browser on that IP, max 20),
+  `tokenLocales` (language of each browser), masked `ipAddress`, `country`, `userId` when signed in.
+  A browser that changes IP (Wi-Fi ↔ 4G) has its token moved to the new IP document.
+  Older tokens in `USERS/{id}.fcmTokens` are still notified (each browser once).
 - `public/firebase-messaging-sw.js` shows the notification (image, icon, "Watch now" / "Trailer" buttons) and opens the page on click.
 - Dead tokens are removed automatically after each send. The last pushed title is kept in `META/push` so the same title isn't sent twice in a row.
 - iPhone / iPad: web push only works once the site is added to the Home Screen (iOS 16.4+); the app manifest makes that possible.

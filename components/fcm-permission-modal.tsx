@@ -31,7 +31,7 @@ const remember = (key: string) => {
 };
 
 /**
- * Soft permission prompt for push notifications (signed-in users only),
+ * Soft permission prompt for push notifications, for every visitor (signed in or not),
  * shown as a centered dialog.
  * The real browser prompt only opens when the user clicks "Turn on", which
  * keeps the "Block" rate low. "Not now" hides it for 24 hours.
@@ -39,13 +39,12 @@ const remember = (key: string) => {
 export default function FcmPermissionModal() {
   const t = useTranslations("push.modal");
   const pathname = usePathname();
-  const { supported, permission, isSignedIn, busy, enable } = usePushNotifications();
+  const { supported, permission, busy, enable } = usePushNotifications();
   const [open, setOpen] = useState(false);
   const [waitingForBrowser, setWaitingForBrowser] = useState(false);
   const allowRef = useRef<HTMLButtonElement>(null);
 
-  const eligible =
-    supported && isSignedIn && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
+  const eligible = supported && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
   useEffect(() => {
     if (!eligible) return;
