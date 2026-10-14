@@ -7,7 +7,8 @@ import type { AnalyticsSession } from "./types";
 /** Day boundaries and chart buckets use this zone (override with ANALYTICS_TIME_ZONE). */
 const ANALYTICS_TIME_ZONE = process.env.ANALYTICS_TIME_ZONE || "Europe/Paris";
 const MAX_SESSIONS = 10_000;
-const LIVE_WINDOW_MS = 5 * 60 * 1000;
+/** A visitor is live when online and seen within this window (heartbeat: 20 s). */
+const LIVE_WINDOW_MS = 45 * 1000;
 
 export type RangeKey = "today" | "7d" | "30d" | "custom";
 
@@ -202,14 +203,10 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
         .orderBy("startedAt", "desc")
         .limit(MAX_SESSIONS)
         .get(),
-      col
-        .where("lastActive", ">=", Timestamp.fromMillis(Date.now() - LIVE_WINDOW_MS))
-        .orderBy("lastActive", "desc")
-        .limit(100)
-        .get(),
+      queryLiveDocs(),
     ]);
     docs = snapshot.docs.map((d) => d.data() as SessionDoc);
-    liveDocs = live.docs.map((d) => d.data() as SessionDoc);
+    liveDocs = live;
   } catch (error) {
     logFirebaseError("analytics:query", error);
   }
@@ -318,31 +315,7 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
     generatedAt: new Date().toISOString(),
     truncated: docs.length >= MAX_SESSIONS,
     liveNow: liveDocs.length,
-    live: liveDocs.map((s) => {
-      const profile = s.userId ? profiles.get(s.userId) : undefined;
-      const pages = s.visitedPages ?? [];
-      return {
-        sessionId: s.sessionId,
-        visitorType: s.userId ? "authenticated" : "anonymous",
-        userId: s.userId ?? null,
-        name: profile?.name ?? null,
-        email: profile?.email ?? null,
-        imageUrl: profile?.imageUrl ?? null,
-        ipAddress: s.ipAddress,
-        country: s.country || "XX",
-        city: s.city ?? null,
-        device: s.device || "desktop",
-        browser: s.browser || "Other",
-        referrer: s.referrer ?? null,
-        currentPage: s.currentPage || pages[pages.length - 1] || "/",
-        pages,
-        pageViews: s.pageViews || pages.length || 1,
-        sessionDuration: s.sessionDuration || 0,
-        visitFrequency: s.visitFrequency || 1,
-        startedAt: s.startedAt.toDate().toISOString(),
-        lastActive: s.lastActive.toDate().toISOString(),
-      };
-    }),
+    live: liveDocs.map((s) => toLiveSession(s, profiles)),
     kpis: {
       uniqueVisitors: visitors.size,
       sessions,
@@ -371,4 +344,58 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
       .slice(0, 500),
     authenticated: authRows.slice(0, 500),
   };
+}
+
+// ------------------------------------------------------------- live -----
+
+type Profiles = Awaited<ReturnType<typeof clerkProfiles>>;
+
+/** Sessions seen in the last 45 s and not marked offline (tab hidden / closed). */
+async function queryLiveDocs(): Promise<SessionDoc[]> {
+  const snapshot = await getDb()
+    .collection("ANALYTICS")
+    .where("lastActive", ">=", admin.firestore.Timestamp.fromMillis(Date.now() - LIVE_WINDOW_MS))
+    .orderBy("lastActive", "desc")
+    .limit(200)
+    .get();
+  // Filtered here rather than in the query: no composite index needed.
+  return snapshot.docs.map((d) => d.data() as SessionDoc).filter((s) => s.online !== false);
+}
+
+function toLiveSession(s: SessionDoc, profiles: Profiles): LiveSession {
+  const profile = s.userId ? profiles.get(s.userId) : undefined;
+  const pages = s.visitedPages ?? [];
+  return {
+    sessionId: s.sessionId,
+    visitorType: s.userId ? "authenticated" : "anonymous",
+    userId: s.userId ?? null,
+    name: profile?.name ?? null,
+    email: profile?.email ?? null,
+    imageUrl: profile?.imageUrl ?? null,
+    ipAddress: s.ipAddress,
+    country: s.country || "XX",
+    city: s.city ?? null,
+    device: s.device || "desktop",
+    browser: s.browser || "Other",
+    referrer: s.referrer ?? null,
+    currentPage: s.currentPage || pages[pages.length - 1] || "/",
+    pages,
+    pageViews: s.pageViews || pages.length || 1,
+    sessionDuration: s.sessionDuration || 0,
+    visitFrequency: s.visitFrequency || 1,
+    startedAt: s.startedAt.toDate().toISOString(),
+    lastActive: s.lastActive.toDate().toISOString(),
+  };
+}
+
+/** Who is on the site right now (polled by the live visitors popup). */
+export async function getLiveSessions(): Promise<{ live: LiveSession[]; generatedAt: string }> {
+  let docs: SessionDoc[] = [];
+  try {
+    docs = await queryLiveDocs();
+  } catch (error) {
+    logFirebaseError("analytics:live", error);
+  }
+  const profiles = await clerkProfiles([...new Set(docs.flatMap((s) => (s.userId ? [s.userId] : [])))]);
+  return { live: docs.map((s) => toLiveSession(s, profiles)), generatedAt: new Date().toISOString() };
 }

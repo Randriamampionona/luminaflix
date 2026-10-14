@@ -29,6 +29,10 @@ export interface AnalyticsSession {
   pageViews: number;
   /** Total number of sessions for this user (signed in) or IP (anonymous), including this one. */
   visitFrequency: number;
+  /** True while the tab is open and visible; false once it is hidden or closed. */
+  online: boolean;
+  /** When the visitor last left (tab hidden / closed), null while online. */
+  leftAt: Date | null;
   /** Date of the session start, "YYYY-MM-DD" (UTC). */
   day: string;
   startedAt: Date;

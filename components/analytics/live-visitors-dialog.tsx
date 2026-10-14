@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { countryName, flag, formatDuration, formatNumber } from "./format";
 
 const DEVICE_ICON = { desktop: Monitor, mobile: Smartphone, tablet: Tablet } as const;
+/** How often the live list is re-fetched (the tracker's heartbeat is 20 s). */
+const POLL_MS = 10_000;
 type Filter = "all" | "authenticated" | "anonymous";
 
 function secondsAgo(iso: string, now: number) {
@@ -58,7 +60,8 @@ function VisitorCard({
   const detailsId = useId();
   const DeviceIcon = DEVICE_ICON[session.device as keyof typeof DEVICE_ICON] ?? Monitor;
   const signedIn = session.visitorType === "authenticated";
-  const idle = now - Date.parse(session.lastActive) > 90_000;
+  // Heartbeats arrive every 20 s while the tab is visible: older than 30 s = probably leaving.
+  const idle = now - Date.parse(session.lastActive) > 30_000;
   const title = signedIn ? (session.name ?? session.email ?? session.userId) : session.ipAddress;
 
   return (
@@ -216,7 +219,38 @@ function VisitorCard({
  * last 5 minutes: who (user or masked IP), where, device, current page,
  * session length and path. Data comes from the dashboard's 30 s refresh.
  */
-export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession[] }) {
+export default function LiveVisitorsDialog({
+  sessions: initialSessions,
+  generatedAt,
+}: {
+  sessions: LiveSession[];
+  /** When the server rendered `sessions` (the dashboard also refreshes every 30 s). */
+  generatedAt: string;
+}) {
+  // Newest data wins: the 10 s poll below, or a fresher dashboard refresh.
+  const [polled, setPolled] = useState<{ at: number; live: LiveSession[] } | null>(null);
+  const sessions = polled && polled.at > Date.parse(generatedAt) ? polled.live : initialSessions;
+
+  useEffect(() => {
+    let active = true;
+    const poll = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const res = await fetch("/api/analytics/live", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { live: LiveSession[]; generatedAt: string };
+        if (active) setPolled({ at: Date.parse(data.generatedAt), live: data.live });
+      } catch {
+        // offline / server error: keep the last list
+      }
+    };
+    const timer = setInterval(poll, POLL_MS);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, []);
+
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -286,7 +320,7 @@ export default function LiveVisitorsDialog({ sessions }: { sessions: LiveSession
                   </span>
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-fg-subtle">
-                  Active in the last 5 minutes · updates every 30 s
+                  On the site right now · updates every 10 s
                 </DialogDescription>
               </div>
               <DialogClose

@@ -8,8 +8,9 @@ import { useEffect, useRef } from "react";
  *
  * - One session per tab; a new session starts after 30 min of inactivity.
  * - Session duration = time the tab was actually visible (not idle background tabs).
- * - Heartbeat every 60 s while visible; final duration sent with sendBeacon
- *   when the tab is hidden or closed.
+ * - Heartbeat every 20 s while visible; "end" (sendBeacon) as soon as the tab is
+ *   hidden or closed, so the live view knows the visitor left; "ping" again when
+ *   the tab becomes visible.
  * - Skips /analytics itself. Set NEXT_PUBLIC_ANALYTICS_RESPECT_DNT=1 to also
  *   skip browsers sending Do Not Track / Global Privacy Control (Brave and
  *   Firefox private windows send GPC by default).
@@ -18,7 +19,8 @@ import { useEffect, useRef } from "react";
 const ENDPOINT = "/api/analytics/track";
 const SESSION_KEY = "lf_analytics_session";
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-const HEARTBEAT_MS = 60 * 1000;
+/** Presence heartbeat: the live view drops a visitor ~45 s after the last one. */
+const HEARTBEAT_MS = 20 * 1000;
 
 type StoredSession = { id: string; lastSeen: number; activeMs: number };
 
@@ -122,6 +124,8 @@ export default function AnalyticsTracker() {
         visibleSince.current = null;
       } else {
         visibleSince.current = Date.now();
+        // Back on the tab: mark the visitor online again right away.
+        if (session.current) send({ type: "ping", sessionId: session.current.id, activeSeconds: activeSeconds() });
       }
     };
     const heartbeat = setInterval(() => {

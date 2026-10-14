@@ -127,7 +127,7 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
             Traffic overview<span className="text-brand">.</span>
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-fg-subtle">
-            <LiveVisitorsDialog sessions={data.live} />
+            <LiveVisitorsDialog sessions={data.live} generatedAt={data.generatedAt} />
             <span>Updated {timeAgo(data.generatedAt)}</span>
             {data.truncated && <span className="text-amber-600">Showing the latest 10,000 sessions</span>}
           </div>

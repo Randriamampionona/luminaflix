@@ -121,6 +121,8 @@ export async function POST(request: Request) {
             day: now.toDate().toISOString().slice(0, 10),
             startedAt: now,
             lastActive: now,
+            online: true,
+            leftAt: null,
           });
           return;
         }
@@ -129,6 +131,8 @@ export async function POST(request: Request) {
         const pages: string[] = Array.isArray(data.visitedPages) ? data.visitedPages : [];
         tx.update(sessionRef, {
           lastActive: now,
+          online: true,
+          leftAt: null,
           currentPage: path,
           pageViews: FieldValue.increment(1),
           ...(pages.length < MAX_PAGES && !pages.includes(path) && { visitedPages: FieldValue.arrayUnion(path) }),
@@ -141,7 +145,9 @@ export async function POST(request: Request) {
 
     if (event.type === "ping" || event.type === "end") {
       const seconds = Math.max(0, Math.min(Math.round(Number(event.activeSeconds) || 0), MAX_SESSION_SECONDS));
-      await sessionRef.update({ sessionDuration: seconds, lastActive: now }).catch(() => {}); // unknown session: ignore
+      // ping = still here (visible tab) · end = tab hidden or closed → offline right away.
+      const presence = event.type === "end" ? { online: false, leftAt: now } : { online: true, leftAt: null };
+      await sessionRef.update({ sessionDuration: seconds, lastActive: now, ...presence }).catch(() => {}); // unknown session: ignore
       return noContent();
     }
 
