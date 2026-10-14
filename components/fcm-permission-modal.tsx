@@ -46,12 +46,34 @@ export default function FcmPermissionModal() {
 
   const eligible = supported && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
+  // Add ?debug-push to any URL to see in the console why the popup is (not) shown.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("debug-push")) return;
+    const dismissedAt = readNumber(DISMISSED_KEY);
+    const reason = !supported
+      ? "push isn't supported here (private window, no service worker, or missing NEXT_PUBLIC_FIREBASE_* / VAPID env)"
+      : permission === "granted"
+        ? "notifications are already ALLOWED in this browser (token is saved silently on each visit)"
+        : permission === "denied"
+          ? "notifications are BLOCKED for this site in the browser settings"
+          : HIDDEN_ON.some((path) => pathname.startsWith(path))
+            ? "hidden on this page"
+            : dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS
+              ? `"Not now" was clicked — hidden until ${new Date(dismissedAt + RETRY_AFTER_MS).toLocaleString()}`
+              : `will open ${SHOW_DELAY_MS / 1000}s after arrival`;
+    // Wait for the async support check to settle before reporting.
+    const timer = setTimeout(() => console.info(`[push] popup: ${reason}`, { supported, permission }), 1500);
+    return () => clearTimeout(timer);
+  }, [supported, permission, pathname]);
+
   useEffect(() => {
     if (!eligible) return;
+    // ?push-prompt → open right away, ignoring "Not now" (handy to test on your own device).
+    const forced = new URLSearchParams(window.location.search).has("push-prompt");
     const dismissedAt = readNumber(DISMISSED_KEY);
-    if (dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS) return;
+    if (!forced && dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS) return;
     // Waits if the "install the app" popup is open (one popup at a time).
-    return schedulePrompt("push", SHOW_DELAY_MS, () => setOpen(true));
+    return schedulePrompt("push", forced ? 500 : SHOW_DELAY_MS, () => setOpen(true));
   }, [eligible]);
 
   useEffect(() => {

@@ -60,16 +60,19 @@ export function usePushNotifications() {
     };
   }, []);
 
-  // Keep the stored token fresh (and in the right language) on each visit.
+  // Browsers that already allowed notifications never see the popup again:
+  // their token is (re)saved silently on every visit — this is also how older
+  // subscriptions move into the NOTIFICATION collection.
   useEffect(() => {
     if (!supported || permission !== "granted") return;
     let active = true;
     void getPushToken()
       .then(async (token) => {
         if (!active || !token) return;
-        await savePushToken(token, locale);
+        const res = await savePushToken(token, locale);
+        if (!res.ok) console.warn("[push] the server could not save this browser's token (see server logs)");
       })
-      .catch(() => {});
+      .catch((error) => console.warn("[push] token refresh failed", error));
     return () => {
       active = false;
     };
