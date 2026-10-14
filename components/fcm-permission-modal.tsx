@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { schedulePrompt, setPromptOpen } from "@/lib/prompt-lock";
 
 /** Timestamp of the last "Not now" (or refusal). The card comes back 24 h later. */
 const DISMISSED_KEY = "fcm_prompt_dismissed_at";
@@ -50,9 +51,14 @@ export default function FcmPermissionModal() {
     if (!eligible) return;
     const dismissedAt = readNumber(DISMISSED_KEY);
     if (dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS) return;
-    const timer = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
-    return () => clearTimeout(timer);
+    // Waits if the "install the app" popup is open (one popup at a time).
+    return schedulePrompt("push", SHOW_DELAY_MS, () => setOpen(true));
   }, [eligible]);
+
+  useEffect(() => {
+    setPromptOpen("push", open && eligible);
+    return () => setPromptOpen("push", false);
+  }, [open, eligible]);
 
   const dismiss = useCallback(() => {
     remember(DISMISSED_KEY);

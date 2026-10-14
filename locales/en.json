@@ -577,7 +577,7 @@
     "description": "Answers to the most common questions about accounts, playback and languages.",
     "faqTitle": "Frequently asked questions",
     "devicesTitle": "Ways to watch",
-    "devicesBody": "LuminaFlix runs in any modern browser — no app to install.",
+    "devicesBody": "LuminaFlix runs in any modern browser — and you can install it like an app from the browser menu.",
     "devices": [
       {
         "title": "Computer",
@@ -807,5 +807,28 @@
       "trailer": "🎬 Trailer",
       "fallbackBody": "Tap to start watching on LuminaFlix."
     }
+  },
+  "pwa": {
+    "eyebrow": "Install the app",
+    "title": "LuminaFlix on your home screen",
+    "body": "Add LuminaFlix to your phone or computer and open it in one tap, like a real app.",
+    "perk1": "Opens in one tap",
+    "perk2": "Full-screen player",
+    "perk3": "Nightly picks by notification",
+    "perk4": "No store, almost no space",
+    "install": "Install app",
+    "later": "Maybe later",
+    "gotIt": "Got it",
+    "close": "Close",
+    "installed": "LuminaFlix is being installed 🎉",
+    "iosStep1": "Tap the Share button in Safari's toolbar",
+    "iosStep2": "Scroll down and choose “Add to Home Screen”",
+    "iosStep3": "Tap “Add” — done!"
+  },
+  "offline": {
+    "title": "You're offline",
+    "body": "This page isn't available without a connection. Check your internet and try again.",
+    "retry": "Try again",
+    "home": "Home"
   }
 }

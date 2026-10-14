@@ -15,6 +15,9 @@ import { MediaDetailsProvider } from "@/components/media/media-details-provider"
 import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
+import PWAInstallModal from "@/components/pwa/pwa-install-modal";
+import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
+import { PWA_CAPTURE_SCRIPT } from "@/hooks/use-pwa-install";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
@@ -50,7 +53,9 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: "LuminaFlix",
     // Installable on iPhone / iPad (also required there for push notifications).
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
-    icons: { apple: "/icons/icon-192.png" },
+    icons: { apple: [{ url: "/icons/icon-192.png", sizes: "192x192" }] },
+    // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
+    other: { "apple-mobile-web-app-capable": "yes" },
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
@@ -83,6 +88,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       {/* No hard-coded "dark": next-themes sets the class before first paint. */}
       <html lang={locale} suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
+          {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
+          <script dangerouslySetInnerHTML={{ __html: PWA_CAPTURE_SCRIPT }} />
           <ThemeProvider>
             <NextIntlClientProvider>
               <NextTopLoader
@@ -106,6 +113,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <FcmPermissionModal />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
+              <ServiceWorkerRegistrar />
+              <PWAInstallModal />
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>

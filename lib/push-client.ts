@@ -6,6 +6,8 @@
  * _STORAGE_BUCKET, _MESSAGING_SENDER_ID, _APP_ID and _VAPID_KEY
  * (Firebase Console → Project settings → Cloud Messaging → Web Push certificates).
  */
+import { registerServiceWorker } from "@/lib/service-worker";
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,7 +18,6 @@ const firebaseConfig = {
 };
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
-const SW_URL = "/firebase-messaging-sw.js";
 
 /** Push needs: browser APIs + Firebase config + VAPID key. (iPhone: only from the Home Screen app.) */
 export async function isPushSupported(): Promise<boolean> {
@@ -61,7 +62,7 @@ async function messagingInstance() {
 
 async function registerWorker() {
   const registration = await withTimeout(
-    navigator.serviceWorker.register(SW_URL, { scope: "/" }),
+    registerServiceWorker(),
     15_000,
     "service worker registration",
   );

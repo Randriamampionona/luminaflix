@@ -577,7 +577,7 @@
     "description": "Les réponses aux questions les plus fréquentes sur les comptes, la lecture et les langues.",
     "faqTitle": "Questions fréquentes",
     "devicesTitle": "Où regarder",
-    "devicesBody": "LuminaFlix fonctionne dans tout navigateur récent, sans application à installer.",
+    "devicesBody": "LuminaFlix fonctionne dans tout navigateur récent — et peut s'installer comme une application depuis le menu du navigateur.",
     "devices": [
       {
         "title": "Ordinateur",
@@ -807,5 +807,28 @@
       "trailer": "🎬 Bande-annonce",
       "fallbackBody": "Touchez pour lancer la lecture sur LuminaFlix."
     }
+  },
+  "pwa": {
+    "eyebrow": "Installer l'application",
+    "title": "LuminaFlix sur votre écran d'accueil",
+    "body": "Ajoutez LuminaFlix à votre téléphone ou ordinateur et ouvrez-le d'un geste, comme une vraie application.",
+    "perk1": "S'ouvre en un geste",
+    "perk2": "Lecteur plein écran",
+    "perk3": "Le choix du soir par notification",
+    "perk4": "Sans store, presque sans espace",
+    "install": "Installer l'app",
+    "later": "Plus tard",
+    "gotIt": "Compris",
+    "close": "Fermer",
+    "installed": "Installation de LuminaFlix en cours 🎉",
+    "iosStep1": "Touchez le bouton Partager dans la barre de Safari",
+    "iosStep2": "Faites défiler et choisissez « Sur l'écran d'accueil »",
+    "iosStep3": "Touchez « Ajouter » — c'est fait !"
+  },
+  "offline": {
+    "title": "Vous êtes hors ligne",
+    "body": "Cette page n'est pas disponible sans connexion. Vérifiez votre connexion internet et réessayez.",
+    "retry": "Réessayer",
+    "home": "Accueil"
   }
 }
