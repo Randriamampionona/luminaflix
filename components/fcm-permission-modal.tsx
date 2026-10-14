@@ -8,11 +8,11 @@ import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { schedulePrompt, setPromptOpen } from "@/lib/prompt-lock";
 
-/** Timestamp of the last "Not now" (or refusal). The card comes back 24 h later. */
+/** Timestamp of the last "Not now" / close. The card comes back 15 minutes later. */
 const DISMISSED_KEY = "fcm_prompt_dismissed_at";
-const RETRY_AFTER_MS = 86_400_000; // 24 h
-/** Let people look around before asking. */
-const SHOW_DELAY_MS = 8_000;
+const RETRY_AFTER_MS = 15 * 60 * 1000;
+/** Shown 3 s after arrival. */
+const SHOW_DELAY_MS = 3_000;
 const HIDDEN_ON = ["/sign-in", "/sign-up"];
 
 const readNumber = (key: string) => {
@@ -34,47 +34,31 @@ const remember = (key: string) => {
  * Soft permission prompt for push notifications, for every visitor (signed in or not),
  * shown as a centered dialog.
  * The real browser prompt only opens when the user clicks "Turn on", which
- * keeps the "Block" rate low. "Not now" hides it for 24 hours.
+ * keeps the "Block" rate low. "Not now" hides it for 15 minutes.
  */
 export default function FcmPermissionModal() {
   const t = useTranslations("push.modal");
   const pathname = usePathname();
   const { supported, permission, busy, enable } = usePushNotifications();
   const [open, setOpen] = useState(false);
+  /** Bumped on every dismissal to schedule the next reminder. */
+  const [cycle, setCycle] = useState(0);
   const [waitingForBrowser, setWaitingForBrowser] = useState(false);
   const allowRef = useRef<HTMLButtonElement>(null);
 
   const eligible = supported && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
-  // Add ?debug-push to any URL to see in the console why the popup is (not) shown.
-  useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has("debug-push")) return;
-    const dismissedAt = readNumber(DISMISSED_KEY);
-    const reason = !supported
-      ? "push isn't supported here (private window, no service worker, or missing NEXT_PUBLIC_FIREBASE_* / VAPID env)"
-      : permission === "granted"
-        ? "notifications are already ALLOWED in this browser (token is saved silently on each visit)"
-        : permission === "denied"
-          ? "notifications are BLOCKED for this site in the browser settings"
-          : HIDDEN_ON.some((path) => pathname.startsWith(path))
-            ? "hidden on this page"
-            : dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS
-              ? `"Not now" was clicked — hidden until ${new Date(dismissedAt + RETRY_AFTER_MS).toLocaleString()}`
-              : `will open ${SHOW_DELAY_MS / 1000}s after arrival`;
-    // Wait for the async support check to settle before reporting.
-    const timer = setTimeout(() => console.info(`[push] popup: ${reason}`, { supported, permission }), 1500);
-    return () => clearTimeout(timer);
-  }, [supported, permission, pathname]);
-
   useEffect(() => {
     if (!eligible) return;
-    // ?push-prompt → open right away, ignoring "Not now" (handy to test on your own device).
-    const forced = new URLSearchParams(window.location.search).has("push-prompt");
+    // After "Not now": ask again once 15 min have passed — on a later visit, or
+    // during this one if the visitor is still here.
     const dismissedAt = readNumber(DISMISSED_KEY);
-    if (!forced && dismissedAt && Date.now() - dismissedAt < RETRY_AFTER_MS) return;
+    // Counted from the moment the page started loading, not from this check.
+    const sinceArrival = Math.max(300, SHOW_DELAY_MS - performance.now());
+    const delay = dismissedAt ? Math.max(sinceArrival, dismissedAt + RETRY_AFTER_MS - Date.now()) : sinceArrival;
     // Waits if the "install the app" popup is open (one popup at a time).
-    return schedulePrompt("push", forced ? 500 : SHOW_DELAY_MS, () => setOpen(true));
-  }, [eligible]);
+    return schedulePrompt("push", delay, () => setOpen(true), 2_000);
+  }, [eligible, cycle]);
 
   useEffect(() => {
     setPromptOpen("push", open && eligible);
@@ -84,6 +68,7 @@ export default function FcmPermissionModal() {
   const dismiss = useCallback(() => {
     remember(DISMISSED_KEY);
     setOpen(false);
+    setCycle((n) => n + 1);
   }, []);
 
   // Centered dialog: Escape closes it, focus starts on "Turn on", the page doesn't scroll behind.
@@ -113,6 +98,7 @@ export default function FcmPermissionModal() {
     }
     remember(DISMISSED_KEY);
     setOpen(false);
+    setCycle((n) => n + 1);
     toast.error(result === "denied" ? t("denied") : t("failed"));
   };
 

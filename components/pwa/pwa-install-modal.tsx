@@ -1,17 +1,31 @@
 "use client";
 
-import { BellRing, Check, Download, HardDrive, MonitorPlay, Share, SquarePlus, X, Zap } from "lucide-react";
+import {
+  AppWindow,
+  BellRing,
+  Check,
+  Download,
+  EllipsisVertical,
+  HardDrive,
+  MonitorDown,
+  MonitorPlay,
+  Share,
+  SquarePlus,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { type InstallPlatform, usePWAInstall } from "@/hooks/use-pwa-install";
 import { schedulePrompt, setPromptOpen } from "@/lib/prompt-lock";
 
 /** Delay before the popup appears (override with NEXT_PUBLIC_PWA_PROMPT_DELAY_MS). */
 const SHOW_DELAY_MS = Number(process.env.NEXT_PUBLIC_PWA_PROMPT_DELAY_MS) || 10_000;
 /** "Maybe later" hides the popup for this long. */
-const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+const SNOOZE_MS = 30 * 60 * 1000;
 const DISMISSED_KEY = "lf_pwa_dismissed_at";
 const HIDDEN_ON = ["/sign-in", "/sign-up", "/analytics", "/offline"];
 
@@ -22,6 +36,30 @@ const readNumber = (key: string) => {
     return 0;
   }
 };
+/** Step-by-step install instructions when the browser has no one-tap install (yet). */
+const MANUAL_STEPS: Record<Exclude<InstallPlatform, "unsupported">, { key: string; icon: LucideIcon }[]> = {
+  ios: [
+    { key: "iosStep1", icon: Share },
+    { key: "iosStep2", icon: SquarePlus },
+    { key: "iosStep3", icon: Check },
+  ],
+  android: [
+    { key: "androidStep1", icon: EllipsisVertical },
+    { key: "androidStep2", icon: SquarePlus },
+    { key: "androidStep3", icon: Check },
+  ],
+  desktop: [
+    { key: "desktopStep1", icon: MonitorDown },
+    { key: "desktopStep2", icon: AppWindow },
+    { key: "desktopStep3", icon: Check },
+  ],
+  "mac-safari": [
+    { key: "macStep1", icon: Share },
+    { key: "macStep2", icon: SquarePlus },
+    { key: "macStep3", icon: Check },
+  ],
+};
+
 const snooze = () => {
   try {
     localStorage.setItem(DISMISSED_KEY, String(Date.now()));
@@ -31,28 +69,40 @@ const snooze = () => {
 };
 
 /**
- * "Install LuminaFlix" popup, shown once per week at most, 10 s after arrival.
- * - Chrome / Edge / Android: "Install app" opens the browser's install dialog.
- * - iPhone / iPad: step-by-step "Share → Add to Home Screen" instructions.
+ * "Install LuminaFlix" popup, 10 s after arrival; "Maybe later" brings it back 30 min later.
+ * - One-tap "Install app" when the browser offers it (Chrome / Edge / Android,
+ *   usually after the visitor has interacted with the page a little).
+ * - Otherwise the steps for this browser: iPhone/iPad, Android menu, desktop
+ *   address-bar icon, or Safari "Add to Dock". Desktop Firefox can't install: no popup.
  * - Never shown in the installed app, after an install, or while another
  *   popup (push notifications) is open.
  */
 export default function PWAInstallModal() {
   const t = useTranslations("pwa");
   const pathname = usePathname();
-  const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
+  const { canInstall, isInstalled, platform, promptInstall } = usePWAInstall();
   const [open, setOpen] = useState(false);
+  /** Bumped on every dismissal to schedule the next reminder. */
+  const [cycle, setCycle] = useState(0);
   const [busy, setBusy] = useState(false);
   const primaryRef = useRef<HTMLButtonElement>(null);
 
-  const eligible = !isInstalled && (canInstall || isIOS) && !HIDDEN_ON.some((path) => pathname.startsWith(path));
+  // Shown in every browser that can install web apps — with a one-tap button when
+  // the browser offers it, otherwise with the steps for that browser.
+  const eligible =
+    !isInstalled && (canInstall || platform !== "unsupported") && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
   useEffect(() => {
     if (!eligible) return;
+    // After "Maybe later": ask again once 30 min have passed — on a later visit,
+    // or during this one if the visitor is still here.
     const dismissedAt = readNumber(DISMISSED_KEY);
-    if (dismissedAt && Date.now() - dismissedAt < SNOOZE_MS) return;
-    return schedulePrompt("install", SHOW_DELAY_MS, () => setOpen(true));
-  }, [eligible]);
+    // Counted from the moment the page started loading, not from this check.
+    const sinceArrival = Math.max(300, SHOW_DELAY_MS - performance.now());
+    const delay = dismissedAt ? Math.max(sinceArrival, dismissedAt + SNOOZE_MS - Date.now()) : sinceArrival;
+    // If the notification popup is open at that moment, wait until it's closed (+2 s).
+    return schedulePrompt("install", delay, () => setOpen(true), 2_000);
+  }, [eligible, cycle]);
 
   useEffect(() => {
     setPromptOpen("install", open && eligible);
@@ -62,6 +112,7 @@ export default function PWAInstallModal() {
   const later = useCallback(() => {
     snooze();
     setOpen(false);
+    setCycle((n) => n + 1);
   }, []);
 
   // Dialog behaviour: Escape closes, focus on the main button, no page scroll behind.
@@ -101,7 +152,8 @@ export default function PWAInstallModal() {
     { icon: BellRing, text: t("perk3") },
     { icon: HardDrive, text: t("perk4") },
   ];
-  const iosOnly = isIOS && !canInstall;
+  // No one-tap install: show this browser's steps instead.
+  const manualSteps = !canInstall && platform !== "unsupported" ? MANUAL_STEPS[platform] : null;
 
   return (
     <div
@@ -161,25 +213,23 @@ export default function PWAInstallModal() {
             </p>
           </div>
 
-          {iosOnly ? (
-            // iPhone / iPad: there is no install button, explain the 3 taps.
+          {manualSteps ? (
+            // No install button in this browser (yet): explain the steps.
             <ol className="space-y-2 text-left">
-              {[
-                { icon: Share, text: t("iosStep1") },
-                { icon: SquarePlus, text: t("iosStep2") },
-                { icon: Check, text: t("iosStep3") },
-              ].map(({ icon: Icon, text }, index) => (
-                <li
-                  key={text}
-                  className="flex items-center gap-3 rounded-2xl border border-line bg-tint-soft px-4 py-3 text-xs font-semibold text-fg-soft"
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-[11px] font-black text-black">
-                    {index + 1}
-                  </span>
-                  <span className="flex-1">{text}</span>
-                  <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
-                </li>
-              ))}
+              {manualSteps
+                .map(({ key, icon: Icon }) => ({ icon: Icon, text: t(key as "iosStep1") }))
+                .map(({ icon: Icon, text }, index) => (
+                  <li
+                    key={text}
+                    className="flex items-center gap-3 rounded-2xl border border-line bg-tint-soft px-4 py-3 text-xs font-semibold text-fg-soft"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-[11px] font-black text-black">
+                      {index + 1}
+                    </span>
+                    <span className="flex-1">{text}</span>
+                    <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                  </li>
+                ))}
             </ol>
           ) : (
             <ul className="grid grid-cols-2 gap-2 text-left">
@@ -198,7 +248,7 @@ export default function PWAInstallModal() {
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            {iosOnly ? (
+            {manualSteps ? (
               <button
                 ref={primaryRef}
                 type="button"

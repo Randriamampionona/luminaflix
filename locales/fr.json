@@ -823,7 +823,16 @@
     "installed": "Installation de LuminaFlix en cours 🎉",
     "iosStep1": "Touchez le bouton Partager dans la barre de Safari",
     "iosStep2": "Faites défiler et choisissez « Sur l'écran d'accueil »",
-    "iosStep3": "Touchez « Ajouter » — c'est fait !"
+    "iosStep3": "Touchez « Ajouter » — c'est fait !",
+    "androidStep1": "Ouvrez le menu du navigateur (⋮ en haut à droite)",
+    "androidStep2": "Touchez « Installer l'application » ou « Ajouter à l'écran d'accueil »",
+    "androidStep3": "Confirmez — LuminaFlix apparaît sur votre écran d'accueil",
+    "desktopStep1": "Cliquez sur l'icône d'installation à droite de la barre d'adresse",
+    "desktopStep2": "Ou ouvrez le menu du navigateur (⋮ / …) → « Installer LuminaFlix »",
+    "desktopStep3": "Cliquez sur « Installer » — c'est fait !",
+    "macStep1": "Dans la barre de menus de Safari, ouvrez « Fichier » (ou le bouton Partager)",
+    "macStep2": "Choisissez « Ajouter au Dock »",
+    "macStep3": "Cliquez sur « Ajouter » — c'est fait !"
   },
   "offline": {
     "title": "Vous êtes hors ligne",

@@ -823,7 +823,16 @@
     "installed": "LuminaFlix is being installed 🎉",
     "iosStep1": "Tap the Share button in Safari's toolbar",
     "iosStep2": "Scroll down and choose “Add to Home Screen”",
-    "iosStep3": "Tap “Add” — done!"
+    "iosStep3": "Tap “Add” — done!",
+    "androidStep1": "Open your browser's menu (⋮ at the top right)",
+    "androidStep2": "Tap “Install app” or “Add to Home screen”",
+    "androidStep3": "Confirm — LuminaFlix appears on your home screen",
+    "desktopStep1": "Click the install icon at the right of the address bar",
+    "desktopStep2": "Or open the browser menu (⋮ / …) → “Install LuminaFlix”",
+    "desktopStep3": "Click “Install” — done!",
+    "macStep1": "In Safari's menu bar, open “File” (or the Share button)",
+    "macStep2": "Choose “Add to Dock”",
+    "macStep3": "Click “Add” — done!"
   },
   "offline": {
     "title": "You're offline",

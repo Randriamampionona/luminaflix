@@ -10,8 +10,10 @@ import { useCallback, useSyncExternalStore } from "react";
  * (PWA_CAPTURE_SCRIPT) catches it early, stores it on `window.__lfInstallPrompt`
  * and dispatches "lf:pwa". This hook just reads that store.
  *
- * iPhone / iPad never fire the event: there, installing is "Share → Add to
- * Home Screen", so `isIOS` lets the UI show instructions instead.
+ * The event never fires on iPhone / iPad / Safari, and Chrome only fires it
+ * after the visitor has interacted with the page for a while (engagement
+ * heuristic), so `platform` lets the UI show step-by-step instructions until
+ * the one-tap install becomes available.
  */
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -62,16 +64,32 @@ const getInstalledFlag = () => {
     return false;
   }
 };
-const getIsIOS = () =>
-  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+/**
+ * How this browser installs web apps when there is no one-tap install event yet:
+ * - "ios": Share → Add to Home Screen (all iPhone / iPad browsers)
+ * - "android": browser menu → Install app / Add to Home screen
+ * - "desktop": Chrome / Edge / Opera / Brave install icon in the address bar
+ * - "mac-safari": File → Add to Dock (Safari 17+)
+ * - "unsupported": desktop Firefox and others (no way to install)
+ */
+export type InstallPlatform = "ios" | "android" | "desktop" | "mac-safari" | "unsupported";
+
+function detectPlatform(): InstallPlatform {
+  const ua = navigator.userAgent;
   // iPadOS reports itself as a Mac with touch.
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  if (/firefox|fxios/i.test(ua)) return "unsupported";
+  if (/edg\/|chrome|crios|opr\//i.test(ua)) return "desktop";
+  if (/macintosh/i.test(ua) && /safari/i.test(ua)) return "mac-safari";
+  return "unsupported";
+}
 
 export function usePWAInstall() {
   const deferredPrompt = useSyncExternalStore(subscribe, getPrompt, () => null);
   const isStandalone = useSyncExternalStore(subscribe, getStandalone, () => false);
   const installedFlag = useSyncExternalStore(subscribe, getInstalledFlag, () => false);
-  const isIOS = useSyncExternalStore(subscribe, getIsIOS, () => false);
+  const platform = useSyncExternalStore(subscribe, detectPlatform, () => "unsupported" as InstallPlatform);
 
   /** Opens the browser's install dialog. Resolves with the user's choice. */
   const promptInstall = useCallback(async (): Promise<"accepted" | "dismissed" | "unavailable"> => {
@@ -99,8 +117,8 @@ export function usePWAInstall() {
     isStandalone,
     /** Installed (now or before) — never ask again. */
     isInstalled: isStandalone || installedFlag,
-    /** iPhone / iPad: manual "Add to Home Screen". */
-    isIOS,
+    /** How to install by hand when `canInstall` is false. */
+    platform,
     promptInstall,
   };
 }
