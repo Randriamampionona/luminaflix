@@ -13,7 +13,7 @@ const DISMISSED_KEY = "fcm_prompt_dismissed_at";
 const RETRY_AFTER_MS = 15 * 60 * 1000;
 /** Shown 3 s after arrival. */
 const SHOW_DELAY_MS = 3_000;
-const HIDDEN_ON = ["/sign-in", "/sign-up"];
+const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch"];
 
 const readNumber = (key: string) => {
   try {
@@ -39,7 +39,7 @@ const remember = (key: string) => {
 export default function FcmPermissionModal() {
   const t = useTranslations("push.modal");
   const pathname = usePathname();
-  const { supported, permission, busy, enable } = usePushNotifications();
+  const { supported, permission, busy, requestPermission, subscribe } = usePushNotifications();
   const [open, setOpen] = useState(false);
   /** Bumped on every dismissal to schedule the next reminder. */
   const [cycle, setCycle] = useState(0);
@@ -71,9 +71,12 @@ export default function FcmPermissionModal() {
     setCycle((n) => n + 1);
   }, []);
 
+  // Only while actually on screen (it disappears as soon as permission is granted).
+  const visible = open && eligible;
+
   // Centered dialog: Escape closes it, focus starts on "Turn on", the page doesn't scroll behind.
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && dismiss();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -83,26 +86,26 @@ export default function FcmPermissionModal() {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, dismiss]);
+  }, [visible, dismiss]);
 
   const allow = async () => {
     setWaitingForBrowser(false);
-    const result = await enable({ onWaitingForBrowser: () => setWaitingForBrowser(true) }).catch(
-      () => "failed" as const,
+    const result = await requestPermission({ onWaitingForBrowser: () => setWaitingForBrowser(true) }).catch(
+      () => "default" as NotificationPermission,
     );
+    // Close right away: the app must stay usable while the subscription finishes.
     setWaitingForBrowser(false);
-    if (result === "enabled") {
-      toast.success(t("enabled"));
-      setOpen(false);
+    setOpen(false);
+    if (result !== "granted") {
+      remember(DISMISSED_KEY);
+      setCycle((n) => n + 1);
+      if (result === "denied") toast.error(t("denied"));
       return;
     }
-    remember(DISMISSED_KEY);
-    setOpen(false);
-    setCycle((n) => n + 1);
-    toast.error(result === "denied" ? t("denied") : t("failed"));
+    toast.promise(subscribe(), { loading: t("enabling"), success: t("enabled"), error: t("failed") });
   };
 
-  if (!open || !eligible) return null;
+  if (!visible) return null;
 
   const bullets = [
     { icon: Clapperboard, text: t("bullet1") },

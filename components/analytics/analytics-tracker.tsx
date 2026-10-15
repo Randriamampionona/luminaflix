@@ -91,7 +91,7 @@ export default function AnalyticsTracker() {
 
   // Page views (and session start on the first one).
   useEffect(() => {
-    if (optedOut() || pathname.startsWith("/analytics")) return;
+    if (optedOut() || pathname.startsWith("/analytics") || pathname === "/launch") return;
 
     if (!started.current) {
       started.current = true;

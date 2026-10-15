@@ -5,8 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { savePushToken } from "@/action/push-tokens.action";
 import { getPushToken, isPushSupported } from "@/lib/push-client";
 
-type PushResult = "enabled" | "denied" | "failed";
-
 /** If the browser hasn't answered after this long, it's probably showing a "quiet" prompt in the address bar. */
 const QUIET_PROMPT_AFTER_MS = 3_000;
 
@@ -78,40 +76,51 @@ export function usePushNotifications() {
     };
   }, [supported, permission, locale]);
 
-  const enable = useCallback(
-    async ({ onWaitingForBrowser }: { onWaitingForBrowser?: () => void } = {}): Promise<PushResult> => {
-      if (!supported) return "failed";
-      if (Notification.permission === "denied") {
-        setPermission("denied");
-        return "denied";
+  /**
+   * Step 1 — must run inside the click (user gesture): opens the browser's
+   * Allow / Block prompt. Some browsers (Edge, Chrome) show a "quiet" prompt as
+   * an icon in the address bar instead; the promise then waits until the user
+   * clicks it, so `onWaitingForBrowser` lets the UI say where to look.
+   */
+  const requestPermission = useCallback(
+    async ({ onWaitingForBrowser }: { onWaitingForBrowser?: () => void } = {}): Promise<NotificationPermission> => {
+      if (!supported) return "default";
+      if (Notification.permission !== "default") {
+        setPermission(Notification.permission);
+        return Notification.permission;
       }
       setBusy(true);
+      const waitingTimer = setTimeout(() => onWaitingForBrowser?.(), QUIET_PROMPT_AFTER_MS);
       try {
-        // Must run inside the click handler (user gesture) for the browser prompt.
-        // Some browsers (Edge, Chrome) show a "quiet" prompt as an icon in the
-        // address bar instead of a popup: the promise then stays pending until
-        // the user clicks that icon, so we tell them where to look.
-        const waitingTimer = setTimeout(() => onWaitingForBrowser?.(), QUIET_PROMPT_AFTER_MS);
-        const result = await Notification.requestPermission().finally(() => clearTimeout(waitingTimer));
+        const result = await Notification.requestPermission();
         setPermission(result);
-        if (result !== "granted") return "denied";
-
-        const token = await getPushToken();
-        if (!token) return "failed";
-        const res = await savePushToken(token, locale);
-        if (!res.ok) return "failed";
-        return "enabled";
-      } catch (error) {
-        console.error("[push] enable failed", error);
-        const hint = explain(error);
-        if (hint) console.error(`[push] ${hint}`);
-        return "failed";
+        return result;
       } finally {
+        clearTimeout(waitingTimer);
         setBusy(false);
       }
     },
-    [supported, locale],
+    [supported],
   );
 
-  return { supported, permission, busy, enable };
+  /**
+   * Step 2 — after permission is granted: registers this browser with FCM and
+   * saves the token. Can take a few seconds on mobile networks, so it runs in
+   * the background (the UI is never blocked). Rejects on failure.
+   */
+  const subscribe = useCallback(async () => {
+    try {
+      const token = await getPushToken();
+      if (!token) throw new Error("No FCM token");
+      const res = await savePushToken(token, locale);
+      if (!res.ok) throw new Error("The server could not save the token");
+    } catch (error) {
+      console.error("[push] subscribe failed", error);
+      const hint = explain(error);
+      if (hint) console.error(`[push] ${hint}`);
+      throw error;
+    }
+  }, [locale]);
+
+  return { supported, permission, busy, requestPermission, subscribe };
 }

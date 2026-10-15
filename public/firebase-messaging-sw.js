@@ -4,6 +4,8 @@
  * it does both jobs. It is registered from lib/service-worker.ts.
  *
  * Caching strategies
+ * - /launch (the installed app's start page): served from the cache instantly,
+ *   refreshed in the background — so the animated logo appears right away.
  * - Page navigations: network first, cached copy if the network fails or takes
  *   longer than 6 s, then the /offline page.
  * - Next.js build files (/_next/static, hashed, immutable) and app icons: cache first.
@@ -15,11 +17,12 @@
  * this worker builds the notification itself (image, icon, badge, buttons).
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `lf-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `lf-pages-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
-const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
+const LAUNCH_URL = "/launch";
+const PRECACHE = [OFFLINE_URL, LAUNCH_URL, "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
 const MAX_CACHED_PAGES = 40;
 const NETWORK_TIMEOUT_MS = 6000;
 // Personal or private pages are never stored.
@@ -95,6 +98,24 @@ async function networkFirstPage(event) {
   }
 }
 
+async function launchPage(event) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(LAUNCH_URL);
+  const refresh = fetch(LAUNCH_URL, { cache: "no-store" })
+    .then((response) => {
+      if (response.ok) return cache.put(LAUNCH_URL, response.clone()).then(() => response);
+      return response;
+    })
+    .catch(() => null);
+  // Navigation preload is on for all pages: settle it so the browser doesn't warn.
+  if (event.preloadResponse) event.waitUntil(event.preloadResponse.catch(() => null));
+  if (cached) {
+    event.waitUntil(refresh);
+    return cached;
+  }
+  return (await refresh) || networkFirstPage(event);
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(STATIC_CACHE);
   const cached = await cache.match(request);
@@ -117,6 +138,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (request.mode === "navigate" && url.pathname === LAUNCH_URL) {
+    event.respondWith(launchPage(event));
+    return;
+  }
   if (request.mode === "navigate") {
     event.respondWith(networkFirstPage(event));
     return;

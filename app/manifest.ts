@@ -11,7 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "LuminaFlix",
     short_name: "LuminaFlix",
     description: "Movies, series, anime and K-dramas in one place.",
-    start_url: "/?source=pwa",
+    // Splash page served from the service worker cache: the animated logo shows instantly.
+    start_url: "/launch?source=pwa",
     scope: "/",
     display: "standalone",
     display_override: ["standalone", "minimal-ui"],

@@ -11,6 +11,7 @@ import AnimatedLogo from "./animated-logo";
 const BOOT_SCRIPT = `(function () {
   var el = document.getElementById("lf-boot");
   if (!el) return;
+  if (location.pathname === "/launch") { el.remove(); return; }
   try {
     if (sessionStorage.getItem("lf_booted")) { el.remove(); return; }
     sessionStorage.setItem("lf_booted", "1");

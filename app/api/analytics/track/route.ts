@@ -18,7 +18,7 @@ import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 const SESSION_ID_RE = /^[a-z0-9-]{16,64}$/i;
 const MAX_PAGES = 50;
 const MAX_SESSION_SECONDS = 4 * 60 * 60;
-const IGNORED_PATHS = /^\/(analytics|api|_next|sign-in|sign-up)(\/|$)/;
+const IGNORED_PATHS = /^\/(analytics|api|_next|sign-in|sign-up|launch)(\/|$)/;
 
 // Basic abuse protection: 300 events per IP per 10 minutes (per server instance).
 const hits = new Map<string, number[]>();

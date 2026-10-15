@@ -27,7 +27,7 @@ const SHOW_DELAY_MS = Number(process.env.NEXT_PUBLIC_PWA_PROMPT_DELAY_MS) || 10_
 /** "Maybe later" hides the popup for this long. */
 const SNOOZE_MS = 30 * 60 * 1000;
 const DISMISSED_KEY = "lf_pwa_dismissed_at";
-const HIDDEN_ON = ["/sign-in", "/sign-up", "/analytics", "/offline"];
+const HIDDEN_ON = ["/sign-in", "/sign-up", "/analytics", "/offline", "/launch"];
 
 const readNumber = (key: string) => {
   try {
@@ -84,7 +84,6 @@ export default function PWAInstallModal() {
   const [open, setOpen] = useState(false);
   /** Bumped on every dismissal to schedule the next reminder. */
   const [cycle, setCycle] = useState(0);
-  const [busy, setBusy] = useState(false);
   const primaryRef = useRef<HTMLButtonElement>(null);
 
   // Shown in every browser that can install web apps — with a one-tap button when
@@ -115,9 +114,12 @@ export default function PWAInstallModal() {
     setCycle((n) => n + 1);
   }, []);
 
+  // Only while actually on screen (it disappears as soon as the app is installed).
+  const visible = open && eligible;
+
   // Dialog behaviour: Escape closes, focus on the main button, no page scroll behind.
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && later();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -127,24 +129,18 @@ export default function PWAInstallModal() {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, later]);
+  }, [visible, later]);
 
   const install = async () => {
-    setBusy(true);
-    try {
-      const outcome = await promptInstall();
-      if (outcome === "accepted") {
-        toast.success(t("installed"));
-        setOpen(false);
-      } else {
-        later(); // dismissed in the browser dialog: same as "Maybe later"
-      }
-    } finally {
-      setBusy(false);
-    }
+    // prompt() runs inside this click; our popup closes immediately so the app
+    // stays usable while the browser's dialog and the installation run.
+    const outcome = promptInstall();
+    setOpen(false);
+    if ((await outcome) === "accepted") toast.success(t("installed"));
+    else later(); // dismissed in the browser dialog: same as "Maybe later"
   };
 
-  if (!open || !eligible) return null;
+  if (!visible) return null;
 
   const perks = [
     { icon: Zap, text: t("perk1") },
@@ -264,10 +260,9 @@ export default function PWAInstallModal() {
                   ref={primaryRef}
                   type="button"
                   onClick={install}
-                  disabled={busy}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-cyan-500 py-3.5 text-[11px] font-black uppercase tracking-widest text-black transition-colors hover:bg-cyan-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/40 disabled:cursor-wait disabled:opacity-60"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-cyan-500 py-3.5 text-[11px] font-black uppercase tracking-widest text-black transition-colors hover:bg-cyan-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/40"
                 >
-                  <Download className={busy ? "h-4 w-4 animate-bounce" : "h-4 w-4"} aria-hidden />
+                  <Download className="h-4 w-4" aria-hidden />
                   {t("install")}
                 </button>
                 <button
