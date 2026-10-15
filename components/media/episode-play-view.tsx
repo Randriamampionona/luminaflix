@@ -102,6 +102,10 @@ export default async function EpisodePlayView({
         posterPath={series.poster_path}
         backdropPath={current?.still_path || series.backdrop_path}
         title={series.name}
+        overview={current?.overview || series.overview}
+        releaseYear={series.first_air_date?.slice(0, 4) || null}
+        rating={series.vote_average || null}
+        episodeName={current?.name}
         interaction={interaction}
       />
 

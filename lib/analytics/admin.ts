@@ -25,3 +25,17 @@ export async function checkAnalyticsAdmin(): Promise<AdminCheck> {
     : { status: "forbidden" };
 }
 
+/**
+ * Quick check from the session only (no Clerk API call) — used to hide the
+ * admin from the visitor stats and to show the admin links in the menu.
+ * The admin pages themselves still run the full check above.
+ */
+export function isAdminUserId(userId: string | null | undefined) {
+  return !!userId && userId === ADMIN_USER_ID;
+}
+
+/**
+ * Cookie set on the admin's browsers: visits stay out of the stats even when
+ * the admin is signed out on that device.
+ */
+export const ADMIN_NO_TRACK_COOKIE = "lf_no_track";

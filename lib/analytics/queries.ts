@@ -2,6 +2,7 @@ import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
 import admin from "firebase-admin";
 import { getDb, logFirebaseError } from "@/lib/firebase-admin";
+import { isAdminUserId } from "./admin";
 import type { AnalyticsSession } from "./types";
 
 /** Day boundaries and chart buckets use this zone (override with ANALYTICS_TIME_ZONE). */
@@ -205,7 +206,8 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
         .get(),
       queryLiveDocs(),
     ]);
-    docs = snapshot.docs.map((d) => d.data() as SessionDoc);
+    // The admin's own sessions never count (also those recorded before this rule).
+    docs = snapshot.docs.map((d) => d.data() as SessionDoc).filter((s) => !isAdminUserId(s.userId));
     liveDocs = live;
   } catch (error) {
     logFirebaseError("analytics:query", error);
@@ -359,7 +361,9 @@ async function queryLiveDocs(): Promise<SessionDoc[]> {
     .limit(200)
     .get();
   // Filtered here rather than in the query: no composite index needed.
-  return snapshot.docs.map((d) => d.data() as SessionDoc).filter((s) => s.online !== false);
+  return snapshot.docs
+    .map((d) => d.data() as SessionDoc)
+    .filter((s) => s.online !== false && !isAdminUserId(s.userId));
 }
 
 function toLiveSession(s: SessionDoc, profiles: Profiles): LiveSession {

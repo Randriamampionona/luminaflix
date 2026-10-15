@@ -57,7 +57,10 @@
     "account": "Compte",
     "menuTitle": "Menu",
     "downloadApp": "Télécharger l'application",
-    "downloadAppShort": "App"
+    "downloadAppShort": "App",
+    "analytics": "Analytics",
+    "mediaInfos": "Infos médias",
+    "admin": "Admin"
   },
   "auth": {
     "signIn": "Connexion",
@@ -924,5 +927,31 @@
     },
     "finalTitle": "Prêt pour la soirée film ?",
     "finalBody": "Installez LuminaFlix maintenant et ouvrez votre prochain coup de cœur en un geste."
+  },
+  "share": {
+    "eyebrow": "Partager",
+    "title": "Partagez-le avec vos amis",
+    "body": "Envoyez ce titre à vos proches : le lien, le titre, un court résumé et l'affiche sont copiés en un geste — prêts à coller dans WhatsApp, Messenger ou ailleurs.",
+    "copy": "Copier le lien",
+    "copied": "Copié !",
+    "share": "Partager…",
+    "toastTitle": "Lien copié 🔗",
+    "toastBody": "« {title} » est prêt à être collé — titre, résumé et affiche inclus.",
+    "failed": "Impossible de copier le lien. Appuyez longuement dessus pour le copier.",
+    "lines": {
+      "title": "Titre",
+      "type": "Type",
+      "episode": "Épisode",
+      "rating": "Note",
+      "description": "Résumé",
+      "link": "Lien",
+      "poster": "Affiche",
+      "footer": "À regarder sur LuminaFlix !"
+    },
+    "kinds": {
+      "movie": "Film",
+      "anime": "Anime",
+      "drama": "K-Drama"
+    }
   }
 }

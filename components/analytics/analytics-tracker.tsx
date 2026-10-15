@@ -11,7 +11,7 @@ import { useEffect, useRef } from "react";
  * - Heartbeat every 20 s while visible; "end" (sendBeacon) as soon as the tab is
  *   hidden or closed, so the live view knows the visitor left; "ping" again when
  *   the tab becomes visible.
- * - Skips /analytics itself. Set NEXT_PUBLIC_ANALYTICS_RESPECT_DNT=1 to also
+ * - Skips /analytics, /media-infos and /launch. Set NEXT_PUBLIC_ANALYTICS_RESPECT_DNT=1 to also
  *   skip browsers sending Do Not Track / Global Privacy Control (Brave and
  *   Firefox private windows send GPC by default).
  * - In development, every event is logged to the browser console.
@@ -91,7 +91,8 @@ export default function AnalyticsTracker() {
 
   // Page views (and session start on the first one).
   useEffect(() => {
-    if (optedOut() || pathname.startsWith("/analytics") || pathname === "/launch") return;
+    // Admin pages and the launch screen are never tracked.
+    if (optedOut() || pathname.startsWith("/analytics") || pathname.startsWith("/media-infos") || pathname === "/launch") return;
 
     if (!started.current) {
       started.current = true;

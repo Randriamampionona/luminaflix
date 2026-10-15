@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Activity, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
 import DirectLuminaLinker from "@/components/direct-lumina-linker";
+import ShareCard from "@/components/share/share-card";
 import GuardProtocol from "@/components/guard-protocol";
 import SignalMonitor from "@/components/signal-monitor";
 import { tmdbImage } from "@/lib/media";
@@ -22,6 +23,11 @@ interface StreamPlayerProps {
   backdropPath?: string | null;
   posterPath?: string | null;
   title?: string;
+  /** For the share card: short description, release year, TMDB rating, episode name. */
+  overview?: string | null;
+  releaseYear?: string | null;
+  rating?: number | null;
+  episodeName?: string | null;
   /** Like/dislike/favorite state, started on the server (not awaited). */
   interaction: Promise<MediaInteraction>;
 }
@@ -51,6 +57,10 @@ export default function StreamPlayer({
   backdropPath,
   posterPath,
   title,
+  overview,
+  releaseYear,
+  rating,
+  episodeName,
   interaction,
 }: StreamPlayerProps) {
   const t = useTranslations("player");
@@ -278,6 +288,25 @@ export default function StreamPlayer({
         </div>
 
         <DirectLuminaLinker embedUrl={embedUrl} title={title || `Lumina_${kind}_${mediaId}`} />
+
+        {/* Share the title currently playing */}
+        <ShareCard
+          info={{
+            title: title || "LuminaFlix",
+            kind,
+            path:
+              kind === "movie"
+                ? `/movies/${mediaId}`
+                : `/${kind === "anime" ? "anime" : "k-drama"}/play/${mediaId}?s=${season ?? 1}&e=${episode ?? 1}`,
+            posterPath,
+            overview,
+            year: releaseYear,
+            rating,
+            episodeLabel: isEpisode
+              ? `S${season ?? 1} · E${episode ?? 1}${episodeName ? ` — ${episodeName}` : ""}`
+              : null,
+          }}
+        />
 
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-4xl border border-line bg-surface px-6 py-5 shadow-2xl sm:px-8">
           <div className="flex items-center gap-3">

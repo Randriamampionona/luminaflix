@@ -63,3 +63,9 @@ Bots, `/analytics`, `/api`, `/sign-in`, `/sign-up` and browsers with Do Not Trac
 ## Privacy
 Collecting (masked) IPs and location is personal data under GDPR: mention it in the privacy policy
 (`legal.privacy` in `locales/*.json`) — what is collected, why (audience statistics), and for how long.
+
+## Admin
+- The admin's own visits are never counted: signed in (Clerk id) or on any browser where the admin has been
+  signed in once (cookie `lf_no_track`). Older admin sessions are also hidden from every view.
+- `/analytics` and `/media-infos` are never tracked, and appear in the menu only for the admin account.
+- `/media-infos`: look up any movie / anime / K-drama by TMDB id, IMDb id or link, and copy a share link.

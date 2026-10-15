@@ -1,7 +1,19 @@
 "use client";
 
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
-import { ArrowRight, ChevronDown, Download, Loader2, Menu, Search, X, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  ChevronDown,
+  Clapperboard,
+  Download,
+  Loader2,
+  Menu,
+  Search,
+  ShieldCheck,
+  X,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,6 +24,7 @@ import LanguageSwitcher from "@/components/i18n/language-switcher";
 import { Container } from "@/components/layout/container";
 import ThemeToggle from "@/components/theme-toggle";
 import VoiceSearchButton from "@/components/voice-search-button";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useSmartSearch } from "@/hooks/use-smart-search";
 import {
   DropdownMenu,
@@ -27,6 +40,11 @@ import NavbarActions from "./navbar-actions";
 
 const inlineItems = NAV_ITEMS.slice(0, NAV_INLINE_COUNT);
 const overflowItems = NAV_ITEMS.slice(NAV_INLINE_COUNT);
+/** Shown only to the admin account (see hooks/use-is-admin.ts). */
+const ADMIN_ITEMS = [
+  { key: "analytics", href: "/analytics", icon: BarChart3 },
+  { key: "mediaInfos", href: "/media-infos", icon: Clapperboard },
+] as const;
 
 export const Logo = memo(function Logo({ size = "md" }: { size?: "sm" | "md" }) {
   const t = useTranslations("common");
@@ -92,6 +110,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { searchHref } = useSmartSearch();
+  const isAdmin = useIsAdmin();
 
   // Keep the item highlighted on nested pages (e.g. /movies/123).
   const isActive = useCallback((href: string) => pathname === href || pathname.startsWith(`${href}/`), [pathname]);
@@ -171,6 +190,33 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   );
                 })}
+                {isAdmin && (
+                  <>
+                    <div role="separator" className="my-2 h-px bg-line" />
+                    <p className="flex items-center gap-1.5 px-4 pt-1 pb-1.5 text-[9px] font-black tracking-[0.25em] text-brand uppercase">
+                      <ShieldCheck className="h-3 w-3" aria-hidden />
+                      {t("nav.admin")}
+                    </p>
+                    {ADMIN_ITEMS.map(({ key, href, icon: Icon }) => {
+                      const active = isActive(href);
+                      return (
+                        <DropdownMenuItem key={key} asChild>
+                          <Link
+                            href={href}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                              "flex items-center justify-between rounded-md px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors focus:bg-cyan-500 focus:text-black",
+                              active ? "bg-tint text-brand" : "text-fg-muted",
+                            )}
+                          >
+                            {t(`nav.${key}`)}
+                            <Icon className="h-3.5 w-3.5 text-brand" aria-hidden />
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -305,6 +351,40 @@ export default function Navbar() {
                     })}
                   </div>
                 </section>
+
+                {/* Admin (only for the admin account) */}
+                {isAdmin && (
+                  <section className="space-y-3 rounded-3xl border border-cyan-500/30 bg-cyan-500/5 p-5">
+                    <SectionLabel>
+                      <span className="inline-flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5 text-brand" aria-hidden />
+                        {t("nav.admin")}
+                      </span>
+                    </SectionLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ADMIN_ITEMS.map(({ key, href, icon: Icon }) => {
+                        const active = isActive(href);
+                        return (
+                          <SheetClose key={key} asChild>
+                            <Link
+                              href={href}
+                              aria-current={active ? "page" : undefined}
+                              className={cn(
+                                "flex items-center gap-2 rounded-2xl border px-3 py-3 text-xs font-black tracking-wide uppercase transition-colors",
+                                active
+                                  ? "border-cyan-500/50 bg-cyan-500/15 text-brand"
+                                  : "border-line-strong bg-tint text-fg-soft hover:text-foreground",
+                              )}
+                            >
+                              <Icon className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                              <span className="truncate">{t(`nav.${key}`)}</span>
+                            </Link>
+                          </SheetClose>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
 
                 {/* Preferences */}
                 <section className="mt-auto space-y-4 rounded-3xl border border-line bg-tint-soft p-5">

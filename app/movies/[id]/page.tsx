@@ -134,6 +134,9 @@ export default async function WatchPage({ params, searchParams }: { params: Para
         posterPath={movie.poster_path}
         backdropPath={movie.backdrop_path}
         title={movie.title}
+        overview={movie.overview}
+        releaseYear={movie.release_date?.slice(0, 4) || null}
+        rating={movie.vote_average || null}
         // Not awaited: the player shows now, the action bar streams in.
         interaction={getMediaInteraction({ mediaId: String(movie.id), type: "MOVIE" })}
       />

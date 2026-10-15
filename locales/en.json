@@ -57,7 +57,10 @@
     "account": "Account",
     "menuTitle": "Menu",
     "downloadApp": "Get the app",
-    "downloadAppShort": "App"
+    "downloadAppShort": "App",
+    "analytics": "Analytics",
+    "mediaInfos": "Media infos",
+    "admin": "Admin"
   },
   "auth": {
     "signIn": "Sign in",
@@ -924,5 +927,31 @@
     },
     "finalTitle": "Ready for movie night?",
     "finalBody": "Install LuminaFlix now and open your next favorite in one tap."
+  },
+  "share": {
+    "eyebrow": "Share",
+    "title": "Share it with your friends",
+    "body": "Send this title to your friends: the link, title, a short description and the poster are copied in one tap — ready to paste in WhatsApp, Messenger or anywhere.",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "share": "Share…",
+    "toastTitle": "Link copied 🔗",
+    "toastBody": "“{title}” is ready to paste — title, description and poster included.",
+    "failed": "Couldn't copy the link. Long-press it to copy it by hand.",
+    "lines": {
+      "title": "Title",
+      "type": "Type",
+      "episode": "Episode",
+      "rating": "Rating",
+      "description": "Description",
+      "link": "Link",
+      "poster": "Poster",
+      "footer": "Watch it on LuminaFlix!"
+    },
+    "kinds": {
+      "movie": "Movie",
+      "anime": "Anime",
+      "drama": "K-Drama"
+    }
   }
 }

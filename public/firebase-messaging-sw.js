@@ -26,7 +26,7 @@ const PRECACHE = [OFFLINE_URL, LAUNCH_URL, "/icons/icon-192.png", "/icons/icon-5
 const MAX_CACHED_PAGES = 40;
 const NETWORK_TIMEOUT_MS = 6000;
 // Personal or private pages are never stored.
-const NO_CACHE_PAGES = /^\/(favorites|analytics|sign-in|sign-up|api)(\/|$)/;
+const NO_CACHE_PAGES = /^\/(favorites|analytics|media-infos|sign-in|sign-up|api)(\/|$)/;
 // `?dev=1` (added by `yarn dev`): no caching at all, push only.
 const CACHING = !new URL(self.location.href).searchParams.has("dev");
 

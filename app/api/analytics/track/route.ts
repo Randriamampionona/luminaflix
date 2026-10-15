@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import admin from "firebase-admin";
+import { ADMIN_NO_TRACK_COOKIE, isAdminUserId } from "@/lib/analytics/admin";
 import { lookupGeo } from "@/lib/analytics/geo";
 import { clientIpFromHeaders, hashIp, maskIp } from "@/lib/analytics/ip";
 import { browserFromUa, deviceFromUa, isBot } from "@/lib/analytics/user-agent";
@@ -18,7 +19,7 @@ import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 const SESSION_ID_RE = /^[a-z0-9-]{16,64}$/i;
 const MAX_PAGES = 50;
 const MAX_SESSION_SECONDS = 4 * 60 * 60;
-const IGNORED_PATHS = /^\/(analytics|api|_next|sign-in|sign-up|launch)(\/|$)/;
+const IGNORED_PATHS = /^\/(analytics|media-infos|api|_next|sign-in|sign-up|launch)(\/|$)/;
 
 // Basic abuse protection: 300 events per IP per 10 minutes (per server instance).
 const hits = new Map<string, number[]>();
@@ -32,6 +33,16 @@ function rateLimited(key: string) {
 }
 
 const noContent = () => new Response(null, { status: 204 });
+
+/** The admin's own visits are never counted (signed in, or on a browser the admin used). */
+function adminSkip() {
+  const res = noContent();
+  res.headers.append(
+    "Set-Cookie",
+    `${ADMIN_NO_TRACK_COOKIE}=1; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+  );
+  return res;
+}
 
 function cleanPath(value: unknown): string | null {
   if (typeof value !== "string" || !value.startsWith("/") || value.length > 300) return null;
@@ -52,6 +63,7 @@ function cleanReferrer(value: unknown, host: string | null): string | null {
 export async function POST(request: Request) {
   const ua = request.headers.get("user-agent");
   if (isBot(ua)) return noContent();
+  if (request.headers.get("cookie")?.includes(`${ADMIN_NO_TRACK_COOKIE}=1`)) return noContent();
 
   const ip = clientIpFromHeaders(request.headers);
   const ipHash = hashIp(ip);
@@ -75,6 +87,7 @@ export async function POST(request: Request) {
     const db = getDb();
     const sessionRef = db.collection("ANALYTICS").doc(event.sessionId);
     const { userId } = await auth();
+    if (isAdminUserId(userId)) return adminSkip();
 
     if (event.type === "start" || event.type === "page") {
       const path = cleanPath(event.path);

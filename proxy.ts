@@ -2,8 +2,8 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeFromLegacyParam } from "@/i18n/config";
 
-// Signed-in only. /analytics additionally checks the admin account on the page itself.
-const isProtectedRoute = createRouteMatcher(["/wishlist(.*)", "/favorites(.*)", "/admin(.*)", "/analytics(.*)"]);
+// Signed-in only. /analytics and /media-infos additionally check the admin account on the page itself.
+const isProtectedRoute = createRouteMatcher(["/wishlist(.*)", "/favorites(.*)", "/admin(.*)", "/analytics(.*)", "/media-infos(.*)"]);
 
 const LEGACY_LOCALE_PARAM = "display_lang";
 
