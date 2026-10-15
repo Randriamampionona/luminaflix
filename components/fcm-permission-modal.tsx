@@ -14,6 +14,12 @@ const RETRY_AFTER_MS = 15 * 60 * 1000;
 /** Shown 3 s after arrival. */
 const SHOW_DELAY_MS = 3_000;
 const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch"];
+/** Installed app: the phone's own Allow / Don't allow dialog was already shown in this app session. */
+const NATIVE_ASKED_KEY = "lf_native_push_asked";
+
+const isInstalledApp = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 const readNumber = (key: string) => {
   try {
@@ -45,6 +51,8 @@ export default function FcmPermissionModal() {
   const [cycle, setCycle] = useState(0);
   const [waitingForBrowser, setWaitingForBrowser] = useState(false);
   const allowRef = useRef<HTMLButtonElement>(null);
+  /** True while the phone's own permission dialog is on screen. */
+  const nativeAsking = useRef(false);
 
   const eligible = supported && permission === "default" && !HIDDEN_ON.some((path) => pathname.startsWith(path));
 
@@ -57,8 +65,41 @@ export default function FcmPermissionModal() {
     const sinceArrival = Math.max(300, SHOW_DELAY_MS - performance.now());
     const delay = dismissedAt ? Math.max(sinceArrival, dismissedAt + RETRY_AFTER_MS - Date.now()) : sinceArrival;
     // Waits if the "install the app" popup is open (one popup at a time).
-    return schedulePrompt("push", delay, () => setOpen(true), 2_000);
+    return schedulePrompt(
+      "push",
+      delay,
+      () => {
+        // The phone's own dialog is already asking: don't stack our card on top.
+        if (!nativeAsking.current) setOpen(true);
+      },
+      2_000,
+    );
   }, [eligible, cycle]);
+
+  // Installed app (home-screen icon): ask right away with the phone's own
+  // "Allow LuminaFlix to send you notifications?" dialog — once per app launch
+  // while the answer is still open. If the system doesn't show it (some
+  // browsers require a tap first), our card takes over as usual.
+  useEffect(() => {
+    if (!supported || permission !== "default" || !isInstalledApp()) return;
+    try {
+      if (sessionStorage.getItem(NATIVE_ASKED_KEY)) return;
+      sessionStorage.setItem(NATIVE_ASKED_KEY, "1");
+    } catch {
+      // storage blocked: ask anyway
+    }
+    nativeAsking.current = true;
+    void requestPermission()
+      .catch(() => "default" as NotificationPermission)
+      .then((result) => {
+        nativeAsking.current = false;
+        if (result === "granted") {
+          toast.promise(subscribe(), { loading: t("enabling"), success: t("enabled"), error: t("failed") });
+        } else if (result === "default") {
+          setCycle((n) => n + 1); // no answer from the system: show our card instead
+        }
+      });
+  }, [supported, permission, requestPermission, subscribe, t]);
 
   useEffect(() => {
     setPromptOpen("push", open && eligible);
