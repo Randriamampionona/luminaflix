@@ -17,7 +17,7 @@
  * this worker builds the notification itself (image, icon, badge, buttons).
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `lf-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `lf-pages-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";

@@ -33,7 +33,7 @@ the user's choice; an accepted install sets `localStorage.lf_pwa_installed = "1"
 - "Install app" → browser install dialog. iPhone/iPad (no install event) → "Share → Add to Home Screen" steps.
 - "Maybe later" / ✕ / Esc / clicking outside / refusing in the browser dialog → hidden for 7 days
   (`localStorage.lf_pwa_dismissed_at`).
-- Never shown when installed, running as the app, or on sign-in / sign-up / analytics / offline pages.
+- Never shown when the browser reports the app installed (`getInstalledRelatedApps`), running as the app, or on sign-in / sign-up / analytics / offline pages.
 - Never at the same time as the push-notification popup (`lib/prompt-lock.ts`): whichever comes second
   waits until the first is closed, plus 30 s.
 
@@ -46,8 +46,9 @@ Lighthouse → "PWA" category. On Android Chrome the popup's "Install app" opens
   (stroke drawing → fill → neon pulse, CSS keyframes in `app/globals.css`).
 - **App icons** — `public/icons/*.png` rendered from the vector logo (sharp), plus `public/icons/icon.svg`
   (manifest, `sizes: "any"`), `app/icon.svg` (SVG favicon) and `apple-touch-icon.png` (180×180).
-- **Boot splash** — `components/brand/boot-splash.tsx`: server-rendered, only in standalone mode, once per
-  app session, fades out ~1 s after load.
+- **Launch screen** — `app/launch/page.tsx` is the manifest `start_url` (and shortcuts via `?to=`). The service
+  worker serves it from its cache instantly; it draws the logo, then moves to the home page (or `?to=`).
+  Self-contained (inline CSS) with a plain-redirect safety net after 3.5 s.
 - **Offline lock** — `components/offline-guard.tsx` + `app/api/ping`: full-screen screen while offline,
   live status, "Try again", auto re-check every 10 s, data refresh when back.
 - **/download_app** — `app/download_app/page.tsx` with `components/download-app/*`; linked from the menu

@@ -7,8 +7,8 @@ import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { cn } from "@/lib/utils";
 
 /**
- * "Get the app" call-to-action linking to /download_app. Hidden once the app is
- * installed or when running as the app.
+ * "Get the app" call-to-action linking to /download_app. Always visible in the
+ * browser; hidden only inside the installed app.
  * - `nav`: compact pill for the navigation bar
  * - `hero`: large button for the home hero, next to Play / More info
  */
@@ -22,8 +22,9 @@ export default function GetAppLink({
   className?: string;
 }) {
   const t = useTranslations();
-  const { isInstalled } = usePWAInstall();
-  if (isInstalled) return null;
+  const { isStandalone } = usePWAInstall();
+  // Always shown in the browser (even if the app is installed too); hidden inside the app.
+  if (isStandalone) return null;
 
   if (variant === "nav") {
     return (

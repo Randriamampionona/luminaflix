@@ -10,12 +10,13 @@ import { cn } from "@/lib/utils";
 /**
  * Install button for /download_app:
  * - one tap install when the browser offers it (beforeinstallprompt);
- * - "Installed" when already installed / opened as the app;
+ * - "You're using the app" inside the installed app (in the browser the
+ *   install options always stay visible);
  * - otherwise scrolls to the step-by-step guide for this device.
  */
 export default function InstallCta({ size = "lg", className }: { size?: "lg" | "md"; className?: string }) {
   const t = useTranslations("downloadApp");
-  const { canInstall, isInstalled, isStandalone, platform, promptInstall } = usePWAInstall();
+  const { canInstall, isStandalone, platform, promptInstall } = usePWAInstall();
   const [busy, setBusy] = useState(false);
 
   const base = cn(
@@ -24,11 +25,11 @@ export default function InstallCta({ size = "lg", className }: { size?: "lg" | "
     className,
   );
 
-  if (isInstalled) {
+  if (isStandalone) {
     return (
       <span className={cn(base, "cursor-default border border-emerald-500/40 bg-emerald-500/10 text-emerald-500")}>
         <CheckCircle2 className="h-5 w-5" aria-hidden />
-        {isStandalone ? t("ctaUsingApp") : t("ctaInstalled")}
+        {t("ctaUsingApp")}
       </span>
     );
   }

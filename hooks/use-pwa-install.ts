@@ -23,15 +23,19 @@ interface BeforeInstallPromptEvent extends Event {
 declare global {
   interface Window {
     __lfInstallPrompt?: BeforeInstallPromptEvent | null;
+    /** Set by the "appinstalled" event: installed during this visit. */
+    __lfJustInstalled?: boolean;
   }
 }
 
-const INSTALLED_KEY = "lf_pwa_installed";
+/** Old "installed" flag (removed: it hid the download buttons after an uninstall). */
+const LEGACY_INSTALLED_KEY = "lf_pwa_installed";
 const EVENT = "lf:pwa";
 
 /** Inline script for <head>: capture the install prompt before hydration. */
 export const PWA_CAPTURE_SCRIPT = `
 window.__lfInstallPrompt = null;
+try { localStorage.removeItem("${LEGACY_INSTALLED_KEY}"); } catch (_) {}
 window.addEventListener("beforeinstallprompt", function (e) {
   e.preventDefault();
   window.__lfInstallPrompt = e;
@@ -39,11 +43,12 @@ window.addEventListener("beforeinstallprompt", function (e) {
 });
 window.addEventListener("appinstalled", function () {
   window.__lfInstallPrompt = null;
-  try { localStorage.setItem("${INSTALLED_KEY}", "1"); } catch (_) {}
+  window.__lfJustInstalled = true;
   window.dispatchEvent(new Event("${EVENT}"));
 });`;
 
 function subscribe(onChange: () => void) {
+  checkInstalledOnDevice();
   const media = window.matchMedia("(display-mode: standalone)");
   window.addEventListener(EVENT, onChange);
   media.addEventListener("change", onChange);
@@ -57,13 +62,27 @@ const getPrompt = () => window.__lfInstallPrompt ?? null;
 const getStandalone = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true;
-const getInstalledFlag = () => {
-  try {
-    return localStorage.getItem(INSTALLED_KEY) === "1";
-  } catch {
-    return false;
-  }
-};
+/**
+ * Is the app installed on this device? Asked to the browser itself
+ * (navigator.getInstalledRelatedApps — Chrome / Edge, needs `related_applications`
+ * in the manifest), so it is false again right after an uninstall. Nothing is
+ * stored on our side. Browsers without this API: false.
+ */
+let installedOnDevice = false;
+let installedChecked = false;
+function checkInstalledOnDevice() {
+  if (installedChecked) return;
+  installedChecked = true;
+  const nav = navigator as Navigator & { getInstalledRelatedApps?: () => Promise<unknown[]> };
+  nav
+    .getInstalledRelatedApps?.()
+    .then((apps) => {
+      installedOnDevice = apps.length > 0;
+      window.dispatchEvent(new Event(EVENT));
+    })
+    .catch(() => {});
+}
+const getInstalledOnDevice = () => installedOnDevice || window.__lfJustInstalled === true;
 /**
  * How this browser installs web apps when there is no one-tap install event yet:
  * - "ios": Share → Add to Home Screen (all iPhone / iPad browsers)
@@ -88,7 +107,7 @@ function detectPlatform(): InstallPlatform {
 export function usePWAInstall() {
   const deferredPrompt = useSyncExternalStore(subscribe, getPrompt, () => null);
   const isStandalone = useSyncExternalStore(subscribe, getStandalone, () => false);
-  const installedFlag = useSyncExternalStore(subscribe, getInstalledFlag, () => false);
+  const installedOnThisDevice = useSyncExternalStore(subscribe, getInstalledOnDevice, () => false);
   const platform = useSyncExternalStore(subscribe, detectPlatform, () => "unsupported" as InstallPlatform);
 
   /** Opens the browser's install dialog. Resolves with the user's choice. */
@@ -99,13 +118,7 @@ export function usePWAInstall() {
     const { outcome } = await event.userChoice;
     // A prompt event can only be used once.
     window.__lfInstallPrompt = null;
-    if (outcome === "accepted") {
-      try {
-        localStorage.setItem(INSTALLED_KEY, "1");
-      } catch {
-        // ignore
-      }
-    }
+    if (outcome === "accepted") window.__lfJustInstalled = true;
     window.dispatchEvent(new Event(EVENT));
     return outcome;
   }, []);
@@ -115,8 +128,11 @@ export function usePWAInstall() {
     canInstall: deferredPrompt !== null,
     /** Running as the installed app right now. */
     isStandalone,
-    /** Installed (now or before) — never ask again. */
-    isInstalled: isStandalone || installedFlag,
+    /**
+     * Installed on this device right now (or running as the app). Used to stop
+     * the install popup; the browser's download buttons stay visible anyway.
+     */
+    isInstalled: isStandalone || installedOnThisDevice,
     /** How to install by hand when `canInstall` is false. */
     platform,
     promptInstall,

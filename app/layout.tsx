@@ -15,7 +15,6 @@ import { MediaDetailsProvider } from "@/components/media/media-details-provider"
 import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
-import BootSplash from "@/components/brand/boot-splash";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
 import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
@@ -92,8 +91,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
           <script dangerouslySetInnerHTML={{ __html: PWA_CAPTURE_SCRIPT }} />
-          {/* Animated vector startup screen of the installed app (server HTML, no JS needed). */}
-          <BootSplash />
           <ThemeProvider>
             <NextIntlClientProvider>
               <NextTopLoader

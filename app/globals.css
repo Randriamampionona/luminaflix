@@ -459,22 +459,7 @@ body {
   }
 }
 
-/* PWA boot splash (components/brand/boot-splash.tsx): only when opened as the installed app */
-#lf-boot {
-  display: none;
-}
-@media (display-mode: standalone) {
-  #lf-boot {
-    display: flex;
-  }
-}
-#lf-boot.lf-boot-hide {
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.45s ease,
-    visibility 0s linear 0.45s;
-}
+/* Loading bar of the launch screen (app/launch/page.tsx) and /download_app mock-up */
 @keyframes lf-boot-bar {
   from {
     transform: translateX(-100%);

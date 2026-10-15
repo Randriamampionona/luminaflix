@@ -20,6 +20,12 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#020202",
     theme_color: "#020202",
     categories: ["entertainment", "video"],
+    // Lets the site ask the browser whether the app is installed (no local flag needed).
+    ...(process.env.NEXT_PUBLIC_DOMAIN && {
+      related_applications: [
+        { platform: "webapp", url: new URL("/manifest.webmanifest", process.env.NEXT_PUBLIC_DOMAIN).toString() },
+      ],
+    }),
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
@@ -32,25 +38,25 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: "Movies",
         short_name: "Movies",
-        url: "/movies?source=pwa",
+        url: "/launch?to=/movies",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
       {
         name: "K-Drama",
         short_name: "K-Drama",
-        url: "/k-drama?source=pwa",
+        url: "/launch?to=/k-drama",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
       {
         name: "Anime",
         short_name: "Anime",
-        url: "/anime?source=pwa",
+        url: "/launch?to=/anime",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
       {
         name: "My favorites",
         short_name: "Favorites",
-        url: "/favorites?source=pwa",
+        url: "/launch?to=/favorites",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
     ],
