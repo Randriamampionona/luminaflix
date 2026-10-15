@@ -109,8 +109,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
         { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
+        { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
       ],
     },
     {
