@@ -55,7 +55,9 @@
     "mainNavigation": "Main navigation",
     "preferences": "Preferences",
     "account": "Account",
-    "menuTitle": "Menu"
+    "menuTitle": "Menu",
+    "downloadApp": "Get the app",
+    "downloadAppShort": "App"
   },
   "auth": {
     "signIn": "Sign in",
@@ -186,7 +188,8 @@
       "title": "Welcome to our newest Luminas! ✨",
       "subtitle": "{count, plural, one {# new member joined us recently} other {# new members joined us recently}}",
       "label": "Newest members"
-    }
+    },
+    "installApp": "Install the app"
   },
   "media": {
     "movie": "Movie",
@@ -839,5 +842,87 @@
     "body": "This page isn't available without a connection. Check your internet and try again.",
     "retry": "Try again",
     "home": "Home"
+  },
+  "offlineGuard": {
+    "title": "You're offline",
+    "body": "You are currently offline. LuminaFlix requires an active internet connection to stream.",
+    "statusOffline": "No connection",
+    "statusChecking": "Checking…",
+    "statusBack": "Connected",
+    "retry": "Try again",
+    "checking": "Checking connection…",
+    "autoRetry": "We'll check again automatically every 10 seconds.",
+    "backTitle": "Back online",
+    "backBody": "Your connection is back. Reloading your page…"
+  },
+  "downloadApp": {
+    "metaTitle": "Get the app",
+    "metaDescription": "Install LuminaFlix on your phone, tablet or computer: one tap to open, full-screen player, nightly picks by notification.",
+    "eyebrow": "The LuminaFlix app",
+    "title": "LuminaFlix, as an app",
+    "subtitle": "Install LuminaFlix in seconds — no app store, almost no storage. It opens from your home screen like any app, full screen, and stays up to date by itself.",
+    "ctaInstall": "Install the app",
+    "ctaHowTo": "See how to install",
+    "ctaOtherBrowser": "Open in Chrome, Edge or Safari",
+    "ctaInstalled": "Installed on this device",
+    "ctaUsingApp": "You're using the app",
+    "installedToast": "LuminaFlix is being installed 🎉",
+    "badges": {
+      "free": "Free",
+      "noStore": "No app store",
+      "size": "Under 1 MB"
+    },
+    "mockApp": "LuminaFlix · now",
+    "mockTitle": "🍿 Tonight's pick is ready",
+    "featuresTitle": "Why the app",
+    "features": {
+      "fast": {
+        "title": "Opens in one tap",
+        "body": "Straight from your home screen or dock, no browser tabs, no typing the address."
+      },
+      "fullscreen": {
+        "title": "Full-screen player",
+        "body": "Movies and episodes take the whole screen, without the browser's bars."
+      },
+      "notifications": {
+        "title": "Nightly picks",
+        "body": "Turn on notifications and get one great title to watch every evening."
+      },
+      "light": {
+        "title": "Light as a feather",
+        "body": "Under 1 MB, no app store, no account needed to install."
+      },
+      "updates": {
+        "title": "Always up to date",
+        "body": "New features arrive automatically — nothing to update, ever."
+      },
+      "safe": {
+        "title": "Safe and private",
+        "body": "Same secure site as in your browser. Uninstall it anytime like any app."
+      }
+    },
+    "guideTitle": "Install in 3 steps",
+    "guideSubtitle": "Pick your device — we've selected yours.",
+    "yourDevice": "You",
+    "worksWith": "Works with",
+    "platforms": {
+      "android": "Android",
+      "ios": "iPhone & iPad",
+      "desktop": "Computer",
+      "mac-safari": "Mac (Safari)"
+    },
+    "faqTitle": "Questions",
+    "faq": {
+      "q1": "Is the app free?",
+      "a1": "Yes. The app is the same LuminaFlix you use in your browser, just installed — nothing to pay.",
+      "q2": "Does it take space on my phone?",
+      "a2": "Almost none: under 1 MB, because videos stream from the internet instead of being stored on your device.",
+      "q3": "Can I watch without internet?",
+      "a3": "No. Streaming needs a connection; when you're offline the app tells you and reconnects automatically.",
+      "q4": "How do I uninstall it?",
+      "a4": "Like any app: long-press its icon and choose Remove / Uninstall, or uninstall it from your browser's apps page."
+    },
+    "finalTitle": "Ready for movie night?",
+    "finalBody": "Install LuminaFlix now and open your next favorite in one tap."
   }
 }

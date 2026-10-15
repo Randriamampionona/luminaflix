@@ -415,3 +415,71 @@ body {
     transform: rotate(-14deg);
   }
 }
+
+/* Animated logo (components/brand/animated-logo.tsx) */
+.lf-logo-animated .lf-logo-piece {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  fill-opacity: 0;
+  animation:
+    lf-logo-draw 0.75s cubic-bezier(0.65, 0, 0.35, 1) var(--lf-delay, 0ms) forwards,
+    lf-logo-fill 0.45s ease-out calc(var(--lf-delay, 0ms) + 0.55s) forwards;
+}
+.lf-logo-animated .lf-logo-cyan {
+  animation:
+    lf-logo-draw 0.75s cubic-bezier(0.65, 0, 0.35, 1) var(--lf-delay, 0ms) forwards,
+    lf-logo-fill 0.45s ease-out calc(var(--lf-delay, 0ms) + 0.55s) forwards,
+    lf-logo-glow 2.4s ease-in-out 1.4s infinite;
+}
+@keyframes lf-logo-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes lf-logo-fill {
+  to {
+    fill-opacity: 1;
+  }
+}
+@keyframes lf-logo-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lf-logo-animated .lf-logo-piece,
+  .lf-logo-animated .lf-logo-cyan {
+    animation: none;
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
+
+/* PWA boot splash (components/brand/boot-splash.tsx): only when opened as the installed app */
+#lf-boot {
+  display: none;
+}
+@media (display-mode: standalone) {
+  #lf-boot {
+    display: flex;
+  }
+}
+#lf-boot.lf-boot-hide {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.45s ease,
+    visibility 0s linear 0.45s;
+}
+@keyframes lf-boot-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}

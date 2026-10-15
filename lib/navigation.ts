@@ -8,6 +8,7 @@ export const NAV_ITEMS = [
   { key: "anime", href: "/anime" },
   { key: "tvShows", href: "/tv-shows" },
   { key: "favorites", href: "/favorites" },
+  { key: "downloadApp", href: "/download_app" },
 ] as const;
 
 /** Number of items shown inline on desktop; the rest go under "More". */

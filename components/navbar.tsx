@@ -1,7 +1,7 @@
 "use client";
 
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
-import { ArrowRight, ChevronDown, Loader2, Menu, Search, X, Zap } from "lucide-react";
+import { ArrowRight, ChevronDown, Download, Loader2, Menu, Search, X, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -162,7 +162,11 @@ export default function Navbar() {
                         )}
                       >
                         {t(`nav.${item.key}`)}
-                        {active && <Zap className="h-3 w-3 fill-current" />}
+                        {item.key === "downloadApp" ? (
+                          <Download className="h-3.5 w-3.5 text-brand" aria-hidden />
+                        ) : (
+                          active && <Zap className="h-3 w-3 fill-current" />
+                        )}
                       </Link>
                     </DropdownMenuItem>
                   );
@@ -282,13 +286,19 @@ export default function Navbar() {
                               active ? "text-foreground" : "text-fg-subtle hover:text-foreground",
                             )}
                           >
-                            <span>{t(`nav.${item.key}`)}</span>
-                            <Zap
-                              className={cn(
-                                "h-5 w-5 text-brand",
-                                active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-                              )}
-                            />
+                            <span className={cn(item.key === "downloadApp" && !active && "text-brand")}>
+                              {t(`nav.${item.key}`)}
+                            </span>
+                            {item.key === "downloadApp" ? (
+                              <Download className="h-5 w-5 text-brand" aria-hidden />
+                            ) : (
+                              <Zap
+                                className={cn(
+                                  "h-5 w-5 text-brand",
+                                  active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                                )}
+                              />
+                            )}
                           </Link>
                         </SheetClose>
                       );

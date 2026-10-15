@@ -15,6 +15,8 @@ import { MediaDetailsProvider } from "@/components/media/media-details-provider"
 import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
+import BootSplash from "@/components/brand/boot-splash";
+import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
 import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
 import { PWA_CAPTURE_SCRIPT } from "@/hooks/use-pwa-install";
@@ -53,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: "LuminaFlix",
     // Installable on iPhone / iPad (also required there for push notifications).
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
-    icons: { apple: [{ url: "/icons/icon-192.png", sizes: "192x192" }] },
+    icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
     other: { "apple-mobile-web-app-capable": "yes" },
     openGraph: {
@@ -90,6 +92,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
           <script dangerouslySetInnerHTML={{ __html: PWA_CAPTURE_SCRIPT }} />
+          {/* Animated vector startup screen of the installed app (server HTML, no JS needed). */}
+          <BootSplash />
           <ThemeProvider>
             <NextIntlClientProvider>
               <NextTopLoader
@@ -115,6 +119,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />
               <PWAInstallModal />
+              <OfflineGuard />
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>

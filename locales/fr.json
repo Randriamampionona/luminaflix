@@ -55,7 +55,9 @@
     "mainNavigation": "Navigation principale",
     "preferences": "Préférences",
     "account": "Compte",
-    "menuTitle": "Menu"
+    "menuTitle": "Menu",
+    "downloadApp": "Télécharger l'application",
+    "downloadAppShort": "App"
   },
   "auth": {
     "signIn": "Connexion",
@@ -186,7 +188,8 @@
       "title": "Bienvenue à nos nouveaux Luminas ! ✨",
       "subtitle": "{count, plural, one {# nouveau membre nous a rejoints} other {# nouveaux membres nous ont rejoints}}",
       "label": "Nouveaux membres"
-    }
+    },
+    "installApp": "Installer l'App"
   },
   "media": {
     "movie": "Film",
@@ -839,5 +842,87 @@
     "body": "Cette page n'est pas disponible sans connexion. Vérifiez votre connexion internet et réessayez.",
     "retry": "Réessayer",
     "home": "Accueil"
+  },
+  "offlineGuard": {
+    "title": "Vous êtes hors ligne",
+    "body": "Vous êtes actuellement hors ligne. LuminaFlix a besoin d'une connexion internet active pour la lecture.",
+    "statusOffline": "Pas de connexion",
+    "statusChecking": "Vérification…",
+    "statusBack": "Connecté",
+    "retry": "Réessayer",
+    "checking": "Vérification de la connexion…",
+    "autoRetry": "Nous revérifions automatiquement toutes les 10 secondes.",
+    "backTitle": "De retour en ligne",
+    "backBody": "Votre connexion est rétablie. Rechargement de la page…"
+  },
+  "downloadApp": {
+    "metaTitle": "Télécharger l'application",
+    "metaDescription": "Installez LuminaFlix sur votre téléphone, tablette ou ordinateur : ouverture en un geste, lecteur plein écran, le choix du soir par notification.",
+    "eyebrow": "L'application LuminaFlix",
+    "title": "LuminaFlix, en application",
+    "subtitle": "Installez LuminaFlix en quelques secondes — sans store, presque sans espace. Elle s'ouvre depuis votre écran d'accueil comme n'importe quelle app, en plein écran, et se met à jour toute seule.",
+    "ctaInstall": "Installer l'application",
+    "ctaHowTo": "Voir comment installer",
+    "ctaOtherBrowser": "Ouvrir dans Chrome, Edge ou Safari",
+    "ctaInstalled": "Installée sur cet appareil",
+    "ctaUsingApp": "Vous utilisez l'application",
+    "installedToast": "Installation de LuminaFlix en cours 🎉",
+    "badges": {
+      "free": "Gratuit",
+      "noStore": "Sans store",
+      "size": "Moins de 1 Mo"
+    },
+    "mockApp": "LuminaFlix · maintenant",
+    "mockTitle": "🍿 Le choix du soir est prêt",
+    "featuresTitle": "Pourquoi l'application",
+    "features": {
+      "fast": {
+        "title": "S'ouvre en un geste",
+        "body": "Directement depuis l'écran d'accueil ou le Dock, sans onglet ni adresse à taper."
+      },
+      "fullscreen": {
+        "title": "Lecteur plein écran",
+        "body": "Films et épisodes prennent tout l'écran, sans les barres du navigateur."
+      },
+      "notifications": {
+        "title": "Le choix du soir",
+        "body": "Activez les notifications et recevez chaque soir un titre à ne pas manquer."
+      },
+      "light": {
+        "title": "Ultra légère",
+        "body": "Moins de 1 Mo, sans store, sans compte pour l'installer."
+      },
+      "updates": {
+        "title": "Toujours à jour",
+        "body": "Les nouveautés arrivent automatiquement — aucune mise à jour à faire."
+      },
+      "safe": {
+        "title": "Sûre et privée",
+        "body": "Le même site sécurisé que dans votre navigateur. Désinstallable à tout moment."
+      }
+    },
+    "guideTitle": "Installer en 3 étapes",
+    "guideSubtitle": "Choisissez votre appareil — le vôtre est déjà sélectionné.",
+    "yourDevice": "Vous",
+    "worksWith": "Compatible avec",
+    "platforms": {
+      "android": "Android",
+      "ios": "iPhone et iPad",
+      "desktop": "Ordinateur",
+      "mac-safari": "Mac (Safari)"
+    },
+    "faqTitle": "Questions",
+    "faq": {
+      "q1": "L'application est-elle gratuite ?",
+      "a1": "Oui. C'est le même LuminaFlix que dans votre navigateur, simplement installé — rien à payer.",
+      "q2": "Prend-elle de la place sur mon téléphone ?",
+      "a2": "Presque pas : moins de 1 Mo, car les vidéos sont diffusées depuis internet au lieu d'être stockées sur l'appareil.",
+      "q3": "Puis-je regarder sans internet ?",
+      "a3": "Non. La lecture nécessite une connexion ; hors ligne, l'application vous prévient et se reconnecte automatiquement.",
+      "q4": "Comment la désinstaller ?",
+      "a4": "Comme n'importe quelle app : appui long sur l'icône puis Supprimer / Désinstaller, ou depuis la page des applications du navigateur."
+    },
+    "finalTitle": "Prêt pour la soirée film ?",
+    "finalBody": "Installez LuminaFlix maintenant et ouvrez votre prochain coup de cœur en un geste."
   }
 }

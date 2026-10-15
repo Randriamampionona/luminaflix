@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import GetAppLink from "@/components/download-app/get-app-link";
 import { Container } from "@/components/layout/container";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getDisplayTitle, getWatchHref, tmdbImage } from "@/lib/media";
@@ -117,6 +118,7 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: Movie[]
                       {t("moreInfo")}
                     </button>
                   </MovieDetails>
+                  <GetAppLink variant="hero" tabIndex={isActive ? 0 : -1} />
                 </div>
               </div>
             </Container>

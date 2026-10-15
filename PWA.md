@@ -40,3 +40,15 @@ the user's choice; an accepted install sets `localStorage.lf_pwa_installed = "1"
 ## Test it
 `yarn build && yarn start`, open Chrome → DevTools → Application → Manifest / Service workers.
 Lighthouse → "PWA" category. On Android Chrome the popup's "Install app" opens the native dialog.
+
+## Visual polish & offline lock
+- **Vector logo** — `components/brand/logo-shapes.ts` (single source) + `components/brand/animated-logo.tsx`
+  (stroke drawing → fill → neon pulse, CSS keyframes in `app/globals.css`).
+- **App icons** — `public/icons/*.png` rendered from the vector logo (sharp), plus `public/icons/icon.svg`
+  (manifest, `sizes: "any"`), `app/icon.svg` (SVG favicon) and `apple-touch-icon.png` (180×180).
+- **Boot splash** — `components/brand/boot-splash.tsx`: server-rendered, only in standalone mode, once per
+  app session, fades out ~1 s after load.
+- **Offline lock** — `components/offline-guard.tsx` + `app/api/ping`: full-screen screen while offline,
+  live status, "Try again", auto re-check every 10 s, data refresh when back.
+- **/download_app** — `app/download_app/page.tsx` with `components/download-app/*`; linked from the menu
+  ("Get the app"), the "App" pill in the bar and the home hero.
