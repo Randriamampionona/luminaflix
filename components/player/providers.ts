@@ -44,6 +44,13 @@ export interface ProviderGroup {
 
 export type PlayerKind = "movie" | "anime" | "drama";
 
+/**
+ * Frembed's current domain (it changes when one gets blocked).
+ * NEXT_PUBLIC_ so it also reaches the browser, where the player runs;
+ * fixed at build time, so redeploy after changing it.
+ */
+const FREMBED = (process.env.NEXT_PUBLIC_FREMBED_BASE_URL || "https://frembed.bar").replace(/\/+$/, "");
+
 const s = (t: StreamTarget) => t.season ?? 1;
 const e = (t: StreamTarget) => t.episode ?? 1;
 
@@ -69,8 +76,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "fr",
       providers: [
-        { name: "Lumina frembed.bar TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `https://frembed.bar/embed/movie/${t.mediaId}` },
-        { name: "Lumina frembed.bar IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `https://frembed.bar/embed/movie/${t.imdbId}` },
+        { name: "Lumina frembed.bar TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `${FREMBED}/embed/movie/${t.mediaId}` },
+        { name: "Lumina frembed.bar IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
       ],
     },
     {
@@ -91,7 +98,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
       ],
     },
     {
@@ -115,7 +122,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
         { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
       ],
     },
