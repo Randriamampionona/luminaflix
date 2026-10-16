@@ -145,11 +145,11 @@ export default function StreamPlayer({
     <GuardProtocol>
       <div className="w-full space-y-6 animate-in fade-in duration-700 sm:space-y-8">
         {groups.length > 1 && (
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center justify-between gap-4 sm:gap-6">
             <div
               role="tablist"
               aria-label={t("servers")}
-              className="flex max-w-full items-center gap-1.5 rounded-2xl border border-line bg-elevated/40 p-1.5 backdrop-blur-md"
+              className="flex w-full items-center gap-1 rounded-2xl border border-line bg-elevated/40 p-1 backdrop-blur-md sm:w-auto sm:gap-1.5 sm:p-1.5"
             >
               {groups.map((group, index) => {
                 const selected = group.key === activeGroup.key;
@@ -161,7 +161,7 @@ export default function StreamPlayer({
                     aria-selected={selected}
                     onClick={() => selectGroup(group.key)}
                     className={cn(
-                      "cursor-pointer whitespace-nowrap rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-500 sm:px-8 sm:text-[11px] sm:tracking-widest",
+                      "flex-1 cursor-pointer whitespace-nowrap rounded-xl px-3 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-500 sm:flex-none sm:px-8 sm:text-[11px] sm:tracking-widest",
                       selected
                         ? index === 0
                           ? "bg-inverse text-inverse-fg"
@@ -189,7 +189,7 @@ export default function StreamPlayer({
               "dark overflow-hidden border border-line-strong bg-background text-foreground shadow-2xl ring-1 ring-line transition-all duration-500",
               isFullscreen
                 ? "fixed inset-0 z-9999 m-0 h-screen w-screen p-0 portrait:top-1/2 portrait:left-1/2 portrait:h-[100vw] portrait:w-[100vh] portrait:origin-center portrait:-translate-x-1/2 portrait:-translate-y-1/2 portrait:rotate-90"
-                : "relative aspect-video max-h-[73vh] w-full md:max-h-[77vh]",
+                : "relative aspect-video max-h-[73vh] w-full rounded-2xl sm:rounded-3xl md:max-h-[77vh]",
             )}
           >
             {isPlaying ? (
@@ -218,23 +218,23 @@ export default function StreamPlayer({
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/60" />
 
-                <div className="relative z-10 flex flex-col items-center space-y-5 px-4 text-center sm:space-y-6">
+                <div className="relative z-10 flex flex-col items-center space-y-3 px-4 text-center sm:space-y-6">
                   {title && (
-                    <h2 className="max-w-xl text-xl font-black tracking-tight text-foreground drop-shadow-md md:text-3xl">
+                    <h2 className="line-clamp-2 max-w-xl text-lg font-black tracking-tight text-foreground drop-shadow-md sm:text-xl md:text-3xl">
                       {title}
                     </h2>
                   )}
                   {isEpisode && season != null && episode != null && (
-                    <span className="rounded-full border border-cyan-500/30 bg-cyan-950/80 px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-brand-bright">
+                    <span className="rounded-full border border-cyan-500/30 bg-cyan-950/80 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-brand-bright sm:px-4 sm:py-1.5">
                       {t("episodeTag", { season, episode })}
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={() => setIsPlaying(true)}
-                    className="group/btn relative flex cursor-pointer items-center gap-4 rounded-2xl bg-cyan-500 px-8 py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95"
+                    className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/10 sm:h-8 sm:w-8">
                       <Play className="h-4 w-4 fill-black text-black transition-transform duration-300 group-hover/btn:scale-110" />
                     </span>
                     {isEpisode ? t("playEpisode") : t("play")}
@@ -257,16 +257,18 @@ export default function StreamPlayer({
               onClick={() => setIsFullscreen((v) => !v)}
               aria-pressed={isFullscreen}
               aria-label={isFullscreen ? t("exitFullscreen") : t("fullscreen")}
-              className="group absolute top-2 right-2 z-150 flex cursor-pointer items-center gap-3 rounded-2xl border border-line-strong bg-surface/80 px-4 py-3 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-cyan-500/50 hover:bg-elevated/80 hover:shadow-[0_0_40px_rgba(6,182,212,0.25)] active:scale-95 md:gap-0 md:bg-surface/60 md:px-3 md:hover:gap-3 md:hover:pr-5"
+              title={isFullscreen ? t("exitFullscreen") : t("fullscreen")}
+              className="group absolute top-2 right-2 z-30 flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-line-strong bg-surface/70 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-cyan-500/50 hover:bg-elevated/80 hover:shadow-[0_0_40px_rgba(6,182,212,0.25)] active:scale-95 sm:top-3 sm:right-3 md:h-auto md:w-auto md:justify-start md:gap-0 md:rounded-2xl md:bg-surface/60 md:px-3 md:py-3 md:hover:gap-3 md:hover:pr-5"
             >
-              <span className="relative flex h-6 w-6 items-center justify-center">
+              <span className="relative flex h-5 w-5 items-center justify-center md:h-6 md:w-6">
                 {isFullscreen ? (
                   <Minimize className="h-5 w-5 text-fg-muted transition-all duration-300 group-hover:text-foreground" />
                 ) : (
                   <Maximize className="h-5 w-5 text-fg-muted transition-all duration-300 group-hover:text-brand-bright md:group-hover:rotate-90" />
                 )}
               </span>
-              <span className="max-w-50 overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] text-brand-bright transition-all duration-500 ease-in-out md:max-w-0 md:text-fg-muted md:group-hover:max-w-37.5 md:group-hover:text-brand-bright">
+              {/* Label only on desktop (on hover); icon only on phones. */}
+              <span className="hidden max-w-0 overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] text-fg-muted transition-all duration-500 ease-in-out md:inline-block md:group-hover:max-w-37.5 md:group-hover:text-brand-bright">
                 {isFullscreen ? t("exitFullscreen") : t("fullscreen")}
               </span>
             </button>
@@ -279,7 +281,11 @@ export default function StreamPlayer({
           />
         </div>
 
-        <div role="radiogroup" aria-label={t("servers")} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          role="radiogroup"
+          aria-label={t("servers")}
+          className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2 sm:gap-4 lg:grid-cols-3"
+        >
           {activeGroup.providers.map((provider) => {
             const Icon = provider.icon;
             const isActive = activeSource.id === provider.id;
@@ -291,17 +297,22 @@ export default function StreamPlayer({
                 aria-checked={isActive}
                 onClick={() => selectSource(provider.id)}
                 className={cn(
-                  "relative flex cursor-pointer items-center gap-4 rounded-3xl border px-6 py-5 transition-all duration-500",
+                  "relative flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition-all duration-500 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-5",
                   isActive ? "border-inverse bg-inverse" : "border-line bg-elevated/40 hover:border-line-stronger",
                 )}
               >
-                <span className={cn("rounded-xl p-3", isActive ? "bg-inverse-fg text-brand" : "bg-tint text-fg-subtle")}>
-                  <Icon className="h-5 w-5" />
+                <span
+                  className={cn(
+                    "shrink-0 rounded-xl p-2.5 sm:p-3",
+                    isActive ? "bg-inverse-fg text-brand" : "bg-tint text-fg-subtle",
+                  )}
+                >
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
-                <span className="flex flex-col items-start text-left">
+                <span className="flex min-w-0 flex-col items-start text-left">
                   <span
                     className={cn(
-                      "text-[11px] font-black uppercase tracking-widest",
+                      "w-full truncate text-[10px] font-black uppercase tracking-wider sm:text-[11px] sm:tracking-widest",
                       isActive ? "text-inverse-fg" : "text-foreground",
                     )}
                   >

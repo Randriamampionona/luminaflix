@@ -403,7 +403,8 @@
       },
       "hint": "Please check back later or switch to an English provider.",
       "switch": "Switch to EN provider",
-      "stay": "Stay on FR"
+      "stay": "Stay on FR",
+      "switchShort": "Watch in EN"
     }
   },
   "actions": {

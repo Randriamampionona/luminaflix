@@ -403,7 +403,8 @@
       },
       "hint": "Revenez plus tard ou passez sur un lecteur en anglais.",
       "switch": "Passer au lecteur EN",
-      "stay": "Rester en FR"
+      "stay": "Rester en FR",
+      "switchShort": "Passer en EN"
     }
   },
   "actions": {
