@@ -394,7 +394,17 @@
     },
     "episodeTag": "S{season} E{episode}",
     "sourceId": "Source ID: {id}",
-    "iframeTitle": "{title} player"
+    "iframeTitle": "{title} player",
+    "availability": {
+      "unavailable": {
+        "movie": "This movie is currently unavailable in VF/VOSTFR.",
+        "drama": "This K-drama episode is currently unavailable in VF/VOSTFR.",
+        "anime": "This anime episode is currently unavailable in VF/VOSTFR."
+      },
+      "hint": "Please check back later or switch to an English provider.",
+      "switch": "Switch to EN provider",
+      "stay": "Stay on FR"
+    }
   },
   "actions": {
     "addFavorite": "Add to favorites",

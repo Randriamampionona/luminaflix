@@ -394,7 +394,17 @@
     },
     "episodeTag": "S{season} É{episode}",
     "sourceId": "ID de la source : {id}",
-    "iframeTitle": "Lecteur : {title}"
+    "iframeTitle": "Lecteur : {title}",
+    "availability": {
+      "unavailable": {
+        "movie": "Ce film n'est pas encore disponible en VF/VOSTFR.",
+        "drama": "Cet épisode de K-drama n'est pas encore disponible en VF/VOSTFR.",
+        "anime": "Cet épisode d'anime n'est pas encore disponible en VF/VOSTFR."
+      },
+      "hint": "Revenez plus tard ou passez sur un lecteur en anglais.",
+      "switch": "Passer au lecteur EN",
+      "stay": "Rester en FR"
+    }
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",

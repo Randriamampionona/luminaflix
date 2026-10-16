@@ -15,7 +15,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-/** Stream sources for the unified player (components/player/stream-player.tsx). */
+/**
+ * Stream sources for the unified player (components/player/stream-player.tsx).
+ * The FIRST group and its FIRST provider are what a player opens on: Frembed (FR)
+ * everywhere. Its availability is checked in the background
+ * (app/api/player/availability) and the player offers an English server if
+ * the title isn't on Frembed.
+ */
 export interface StreamTarget {
   mediaId: string;
   imdbId?: string;
@@ -83,6 +89,12 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
   ],
   anime: [
     {
+      key: "vf",
+      providers: [
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
+      ],
+    },
+    {
       key: "vo",
       providers: [
         { name: "VidFast (Speed)", id: "vidfast", icon: ICONS.vidfast, url: (t) => `https://vidfast.vc/tv/${t.mediaId}/${s(t)}/${e(t)}?autoPlay=true` },
@@ -98,18 +110,12 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
         { name: "MultiEmbed", id: "multiembed", icon: ICONS.multiembed, url: (t) => `https://multiembed.mov/?video_id=${t.mediaId}&tmdb=1&s=${s(t)}&e=${e(t)}` },
       ],
     },
-    {
-      key: "vf",
-      providers: [
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
-      ],
-    },
   ],
   drama: [
     {
       key: "vf",
       providers: [
-        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/api/serie.php?id=${t.mediaId}&sa=${s(t)}&epi=${e(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `https://frembed.bar/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
         { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
       ],
     },

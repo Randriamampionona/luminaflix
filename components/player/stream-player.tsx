@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useFrembedAvailability } from "@/hooks/use-frembed-availability";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Activity, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
@@ -11,6 +12,7 @@ import SignalMonitor from "@/components/signal-monitor";
 import { tmdbImage } from "@/lib/media";
 import type { MediaInteraction } from "@/lib/media-interactions";
 import PlayerActions from "./actions/player-actions";
+import FrUnavailableBanner from "./fr-unavailable-banner";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
 
@@ -119,6 +121,24 @@ export default function StreamPlayer({
     [groups, selectSource],
   );
 
+  // Frembed (FR) is the default server: check silently that it has this
+  // title / episode, otherwise offer (then switch to) an English server.
+  const onFrembed = activeSource.id.startsWith("frembed");
+  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: onFrembed });
+  const [dismissedFor, setDismissedFor] = useState<string | null>(null);
+  const englishGroup = groups.find((g) => g.key === "en" || g.key === "vo");
+  const contentKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
+  const showFrUnavailable =
+    onFrembed && availability === "unavailable" && !!englishGroup && dismissedFor !== contentKey;
+
+  const switchToEnglish = useCallback(() => {
+    if (!englishGroup) return;
+    const wasPlaying = isPlaying;
+    selectGroup(englishGroup.key);
+    // Already pressed play on the empty FR player: start the English one right away.
+    if (wasPlaying) setIsPlaying(true);
+  }, [englishGroup, isPlaying, selectGroup]);
+
   const languageLabel = t(`languages.${activeGroup.key}`);
 
   return (
@@ -221,6 +241,15 @@ export default function StreamPlayer({
                   </button>
                 </div>
               </div>
+            )}
+
+            {showFrUnavailable && (
+              <FrUnavailableBanner
+                key={contentKey}
+                kind={kind}
+                onSwitch={switchToEnglish}
+                onDismiss={() => setDismissedFor(contentKey)}
+              />
             )}
 
             <button
