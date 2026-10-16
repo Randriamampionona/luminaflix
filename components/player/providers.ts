@@ -77,7 +77,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
         { name: "MoviesAPI", id: "moviesapi", icon: ICONS.moviesapi, url: (t) => `https://moviesapi.to/movie/${t.mediaId}` },
         { name: "EmbedMaster", id: "embedmaster", icon: ICONS.embedmaster, url: (t) => `https://embedmaster.link/movie/${t.mediaId}` },
         { name: "2Embed", id: "2embed", icon: ICONS.twoEmbed, url: (t) => `https://www.2embed.online/embed/movie/${t.imdbId}` },
-        { name: "MultiEmbed", id: "multiembed", icon: ICONS.multiembed, url: (t) => `https://multiembed.mov/?video_id=${t.imdbId}` },
+        { name: "MultiEmbed", id: "multiembed", icon: ICONS.multiembed, url: (t) => `https://multiembed.mov/?video_id=${t.imdbId}` },  // https://www.superembed.stream/?c=embed
       ],
     },
   ],

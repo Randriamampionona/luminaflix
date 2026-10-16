@@ -10,34 +10,27 @@ import {
   TopFilmsRow,
   TopTvRow,
 } from "@/components/home/home-sections";
-import {
-  BannerSkeleton,
-  GenreTilesSkeleton,
-  HeroSkeleton,
-  RowSkeleton,
-} from "@/components/skeletons/home-skeletons";
-import NewUsersBanner, {
-  isWelcomeWindow,
-  NewUsersBannerSkeleton,
-} from "@/components/new-users-banner";
+import { BannerSkeleton, GenreTilesSkeleton, HeroSkeleton, RowSkeleton } from "@/components/skeletons/home-skeletons";
+import NewUsersBanner from "@/components/new-users-banner";
+import { getWelcomeBanner } from "@/action/get-newest-users.action";
 
 /**
  * Streams section by section: each block has a skeleton that matches its
  * final layout, so the page fills in without jumps.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  // Cached (refreshed on every sign-up), so this is instant: decided before
+  // rendering, the banner never flashes a skeleton when it's hidden.
+  const welcome = await getWelcomeBanner();
+
   return (
     <main className="relative min-h-screen bg-background">
       <Suspense fallback={<HeroSkeleton />}>
         <HeroSection />
       </Suspense>
 
-      {/* First week of every month: welcome the 11 newest members. */}
-      {isWelcomeWindow() && (
-        <Suspense fallback={<NewUsersBannerSkeleton />}>
-          <NewUsersBanner />
-        </Suspense>
-      )}
+      {/* Shown for 7 days after the latest sign-up: welcome the newest members. */}
+      {welcome && <NewUsersBanner users={welcome.users} />}
 
       <div className="relative">
         <Suspense fallback={<RowSkeleton />}>

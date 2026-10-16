@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import { after } from "next/server";
+import { revalidateTag } from "next/cache";
+import { NEWEST_USERS_TAG } from "@/action/get-newest-users.action";
 import { sendRegistrationEmails } from "@/lib/emails/registration-emails";
 import admin from "firebase-admin";
 
@@ -110,6 +112,12 @@ export async function POST(req: Request) {
 
     if (eventType === "user.deleted") {
       await getDb().collection("USERS").doc(id!).delete();
+    }
+
+    // After the USERS write: refresh the "newest members" banner right away
+    // (a sign-up restarts its 7-day window; deletions and name/photo changes show too).
+    if (eventType === "user.created" || eventType === "user.deleted" || eventType === "user.updated") {
+      revalidateTag(NEWEST_USERS_TAG, { expire: 0 });
     }
   } catch (error) {
     logFirebaseError("clerk-webhook", error);
