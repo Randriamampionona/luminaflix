@@ -334,6 +334,8 @@ export default function StreamPlayer({
             episodeLabel: isEpisode
               ? `S${season ?? 1} · E${episode ?? 1}${episodeName ? ` — ${episodeName}` : ""}`
               : null,
+            // Episodes: also give the series page (all seasons & episodes).
+            seriesPath: isEpisode ? `/${kind === "anime" ? "anime" : "k-drama"}/${mediaId}` : null,
           }}
         />
 

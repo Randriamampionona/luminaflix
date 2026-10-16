@@ -956,13 +956,16 @@
       "description": "Résumé",
       "link": "Lien",
       "poster": "Affiche",
-      "footer": "À regarder sur LuminaFlix !"
+      "footer": "À regarder sur LuminaFlix !",
+      "seasons": "Saisons",
+      "allEpisodes": "Tous les épisodes"
     },
     "kinds": {
       "movie": "Film",
       "anime": "Anime",
       "drama": "K-Drama"
-    }
+    },
+    "seasonsValue": "{seasons, plural, one {# saison} other {# saisons}} · {episodes, plural, =0 {épisodes à venir} one {# épisode} other {# épisodes}}"
   },
   "authPrompt": {
     "eyebrow": "Compte gratuit",

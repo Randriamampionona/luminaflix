@@ -956,13 +956,16 @@
       "description": "Description",
       "link": "Link",
       "poster": "Poster",
-      "footer": "Watch it on LuminaFlix!"
+      "footer": "Watch it on LuminaFlix!",
+      "seasons": "Seasons",
+      "allEpisodes": "All episodes"
     },
     "kinds": {
       "movie": "Movie",
       "anime": "Anime",
       "drama": "K-Drama"
-    }
+    },
+    "seasonsValue": "{seasons, plural, one {# season} other {# seasons}} · {episodes, plural, =0 {episodes soon} one {# episode} other {# episodes}}"
   },
   "authPrompt": {
     "eyebrow": "Free account",

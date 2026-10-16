@@ -15,6 +15,11 @@ export interface ShareInfo {
   rating?: number | null;
   /** e.g. "S1 · E3 — The Beginning" */
   episodeLabel?: string | null;
+  /** Series: number of seasons / episodes (shown as "📚 Seasons: 2 seasons · 16 episodes"). */
+  seasons?: number | null;
+  episodes?: number | null;
+  /** Sharing an episode: path of the series page (all seasons and episodes). */
+  seriesPath?: string | null;
 }
 
 export interface ShareLabels {
@@ -27,10 +32,13 @@ export interface ShareLabels {
   poster: string;
   footer: string;
   kind: string;
+  seasons: string;
+  /** Formatted "2 seasons · 16 episodes", or null. */
+  seasonsValue: string | null;
+  allEpisodes: string;
 }
 
-const posterUrl = (posterPath?: string | null) =>
-  posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
+const posterUrl = (posterPath?: string | null) => (posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null);
 
 const truncate = (text: string, max: number) => {
   const clean = text.replace(/\s+/g, " ").trim();
@@ -40,16 +48,18 @@ const truncate = (text: string, max: number) => {
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]!);
 
-export function buildShareText(info: ShareInfo, url: string, l: ShareLabels) {
+export function buildShareText(info: ShareInfo, url: string, l: ShareLabels, origin = "") {
   const title = info.year ? `${info.title} (${info.year})` : info.title;
   const poster = posterUrl(info.posterPath);
   return [
     `🎬 ${l.title}: ${title}`,
     `🎞️ ${l.type}: ${l.kind}`,
     info.episodeLabel ? `📺 ${l.episode}: ${info.episodeLabel}` : null,
+    l.seasonsValue ? `📚 ${l.seasons}: ${l.seasonsValue}` : null,
     info.rating ? `⭐ ${l.rating}: ${info.rating.toFixed(1)}/10` : null,
     info.overview ? `📝 ${l.description}: ${truncate(info.overview, 220)}` : null,
     `🔗 ${l.link}: ${url}`,
+    info.seriesPath ? `📂 ${l.allEpisodes}: ${origin}${info.seriesPath}` : null,
     poster ? `🖼️ ${l.poster}: ${poster}` : null,
     "",
     `🍿 ${l.footer}`,
@@ -58,10 +68,10 @@ export function buildShareText(info: ShareInfo, url: string, l: ShareLabels) {
     .join("\n");
 }
 
-export function buildShareHtml(info: ShareInfo, url: string, l: ShareLabels) {
+export function buildShareHtml(info: ShareInfo, url: string, l: ShareLabels, origin = "") {
   const title = escapeHtml(info.year ? `${info.title} (${info.year})` : info.title);
   const poster = posterUrl(info.posterPath);
-  const meta = [l.kind, info.episodeLabel, info.rating ? `⭐ ${info.rating.toFixed(1)}/10` : null]
+  const meta = [l.kind, info.episodeLabel, l.seasonsValue, info.rating ? `⭐ ${info.rating.toFixed(1)}/10` : null]
     .filter(Boolean)
     .map((part) => escapeHtml(String(part)))
     .join(" · ");
@@ -71,7 +81,11 @@ export function buildShareHtml(info: ShareInfo, url: string, l: ShareLabels) {
       : ""
   }<td style="vertical-align:top"><p style="margin:0;font-size:17px;font-weight:bold">🎬 ${title}</p><p style="margin:4px 0;color:#555;font-size:13px">${meta}</p>${
     info.overview ? `<p style="margin:6px 0;font-size:13px">📝 ${escapeHtml(truncate(info.overview, 220))}</p>` : ""
-  }<p style="margin:6px 0;font-size:13px">🔗 <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p><p style="margin:6px 0 0;font-size:13px">🍿 ${escapeHtml(l.footer)}</p></td></tr></table>`;
+  }<p style="margin:6px 0;font-size:13px">🔗 <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>${
+    info.seriesPath
+      ? `<p style="margin:6px 0;font-size:13px">📂 ${escapeHtml(l.allEpisodes)}: <a href="${escapeHtml(origin + info.seriesPath)}">${escapeHtml(origin + info.seriesPath)}</a></p>`
+      : ""
+  }<p style="margin:6px 0 0;font-size:13px">🍿 ${escapeHtml(l.footer)}</p></td></tr></table>`;
 }
 
 /** Copies the rich version when the browser allows it, plain text otherwise. */

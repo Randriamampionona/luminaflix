@@ -42,12 +42,15 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     poster: t("lines.poster"),
     footer: t("lines.footer"),
     kind: t(`kinds.${info.kind}`),
+    seasons: t("lines.seasons"),
+    seasonsValue: info.seasons ? t("seasonsValue", { seasons: info.seasons, episodes: info.episodes ?? 0 }) : null,
+    allEpisodes: t("lines.allEpisodes"),
   };
-  const text = buildShareText(info, url, labels);
+  const text = buildShareText(info, url, labels, origin);
   const poster = tmdbImage(info.posterPath);
 
   const copy = async () => {
-    const ok = await copyShare(text, buildShareHtml(info, url, labels));
+    const ok = await copyShare(text, buildShareHtml(info, url, labels, origin));
     if (ok) {
       setCopied(true);
       toast.success(t("toastTitle"), { description: t("toastBody", { title: info.title }) });

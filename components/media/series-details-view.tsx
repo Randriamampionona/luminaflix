@@ -8,6 +8,7 @@ import EpisodeExplorer from "@/components/episode-explorer";
 import { Container } from "@/components/layout/container";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageShell } from "@/components/layout/page-shell";
+import ShareCard from "@/components/share/share-card";
 import { tmdbImage } from "@/lib/media";
 import { spacing, type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,9 @@ export default async function SeriesDetailsView({
         ? t("kdramaBadge")
         : t("seriesBadge");
   const showOriginal = series.original_name && series.original_name !== series.name;
+  // Real seasons only (TMDB's "season 0" holds specials).
+  const realSeasons = (series.seasons ?? []).filter((season) => season.season_number > 0);
+  const episodeCount = realSeasons.reduce((sum, season) => sum + (season.episode_count || 0), 0);
 
   return (
     <main className={cn("min-h-screen bg-background text-foreground", spacing.pageBottom)}>
@@ -84,6 +88,23 @@ export default async function SeriesDetailsView({
           </div>
         </Container>
       </section>
+
+      {/* Share the whole series (all seasons & episodes) */}
+      <Container className="pt-6">
+        <ShareCard
+          info={{
+            title: series.name,
+            kind: path === "anime" ? "anime" : "drama",
+            path: `/${path}/${series.id}`,
+            posterPath: series.poster_path,
+            overview: series.overview,
+            year: series.first_air_date?.slice(0, 4) || null,
+            rating: series.vote_average || null,
+            seasons: realSeasons.length || series.number_of_seasons || null,
+            episodes: episodeCount || null,
+          }}
+        />
+      </Container>
 
       <Container className={spacing.section}>
         <EpisodeExplorer

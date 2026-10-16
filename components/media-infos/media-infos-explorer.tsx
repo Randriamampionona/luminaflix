@@ -385,6 +385,8 @@ export default function MediaInfosExplorer({ initialKind, initialId }: { initial
               overview: info.overview,
               year: info.year,
               rating: info.rating,
+              seasons: info.seasons,
+              episodes: info.episodes,
             }}
           />
 
