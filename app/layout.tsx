@@ -14,6 +14,7 @@ import ThemeProvider from "@/components/providers/theme-provider";
 import { MediaDetailsProvider } from "@/components/media/media-details-provider";
 import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
+import AuthPromptModal from "@/components/auth-prompt-modal";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -112,6 +113,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <PostAuthRedirect />
               <Toaster />
               <FcmPermissionModal />
+              {/* Signed-out visitors only: sign-in invitation 10 min into the visit, then +5 min per "Maybe later". */}
+              <AuthPromptModal />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />

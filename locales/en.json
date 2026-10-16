@@ -953,5 +953,33 @@
       "anime": "Anime",
       "drama": "K-Drama"
     }
+  },
+  "authPrompt": {
+    "eyebrow": "Free account",
+    "title": "Make LuminaFlix yours",
+    "body": "Create a free account in seconds and get the most out of every movie night.",
+    "close": "Close",
+    "benefits": {
+      "watchlist": {
+        "title": "Your watchlist",
+        "body": "Save movies and episodes to find them in one tap."
+      },
+      "sync": {
+        "title": "On all your devices",
+        "body": "Favorites synced on phone, tablet and computer."
+      },
+      "picks": {
+        "title": "Picks for you",
+        "body": "A great title to watch, every evening."
+      },
+      "downloads": {
+        "title": "Downloads",
+        "body": "Download titles to watch them offline."
+      }
+    },
+    "signUp": "Create a free account",
+    "signIn": "I already have an account",
+    "later": "Maybe later",
+    "free": "Free, no credit card — it takes 30 seconds."
   }
 }
