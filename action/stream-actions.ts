@@ -1,8 +1,10 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
+import { revalidateTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { getDb, logFirebaseError } from "@/lib/firebase-admin";
+import { favoritesTag, reactionsTag, readFavorites, readReactions } from "@/lib/firestore-cache";
 import {
   MEDIA_TYPES,
   reactionDocId,
@@ -99,17 +101,16 @@ export async function getMediaInteraction(input: MediaRef): Promise<MediaInterac
   // failure must resolve to a usable (empty) state instead of an error page.
   try {
     const { userId } = await auth();
-    const db = getDb();
-    const [reactionSnap, favoriteSnap] = await withTimeout(
+    // Cached reads (lib/firestore-cache.ts): expired by the actions below on every change.
+    const [reactions, favorites] = await withTimeout(
       Promise.all([
-        db.collection(ref.type).doc(reactionDocId(ref)).get(),
-        userId ? db.collection("FAVORITE").doc(userId).get() : Promise.resolve(null),
+        readReactions(ref.type, reactionDocId(ref)),
+        userId ? readFavorites<StoredFavorite>(userId) : Promise.resolve([] as StoredFavorite[]),
       ]),
       READ_TIMEOUT_MS,
     );
-    const favorites: StoredFavorite[] = favoriteSnap?.data()?.favorites ?? [];
     return toInteraction(
-      reactionSnap.data(),
+      reactions,
       userId,
       favorites.some((fav) => isSameFavorite(fav, ref)),
     );
@@ -152,6 +153,7 @@ export async function handleMediaReaction(input: MediaRef & { action: "like" | "
       tx.set(docRef, { likes, dislikes }, { merge: true });
       return { likes, dislikes };
     });
+    revalidateTag(reactionsTag(ref.type, reactionDocId(ref)), { expire: 0 });
 
     const { likes, dislikes, reaction } = toInteraction(next, userId, false);
     return { success: true, interaction: { likes, dislikes, reaction } };
@@ -193,6 +195,7 @@ export async function toggleFavorite(input: MediaRef): Promise<FavoriteResult> {
       tx.set(docRef, { favorites: next }, { merge: true });
       return !exists;
     });
+    revalidateTag(favoritesTag(userId), { expire: 0 });
     return { success: true, added };
   } catch (error) {
     logFirebaseError("favorites", error);

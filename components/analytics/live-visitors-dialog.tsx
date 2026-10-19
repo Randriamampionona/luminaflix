@@ -23,8 +23,12 @@ import { cn } from "@/lib/utils";
 import { countryName, flag, formatDuration, formatNumber } from "./format";
 
 const DEVICE_ICON = { desktop: Monitor, mobile: Smartphone, tablet: Tablet } as const;
-/** How often the live list is re-fetched (the tracker's heartbeat is 20 s). */
-const POLL_MS = 10_000;
+/**
+ * Live list refresh (each poll reads only the visitors active right now):
+ * every 15 s while the popup is open, every 60 s for the badge otherwise.
+ */
+const POLL_OPEN_MS = 15_000;
+const POLL_CLOSED_MS = 60_000;
 type Filter = "all" | "authenticated" | "anonymous";
 
 function secondsAgo(iso: string, now: number) {
@@ -60,8 +64,8 @@ function VisitorCard({
   const detailsId = useId();
   const DeviceIcon = DEVICE_ICON[session.device as keyof typeof DEVICE_ICON] ?? Monitor;
   const signedIn = session.visitorType === "authenticated";
-  // Heartbeats arrive every 20 s while the tab is visible: older than 30 s = probably leaving.
-  const idle = now - Date.parse(session.lastActive) > 30_000;
+  // Heartbeats arrive every 60 s while the tab is visible: older than 90 s = probably leaving.
+  const idle = now - Date.parse(session.lastActive) > 90_000;
   const title = signedIn ? (session.name ?? session.email ?? session.userId) : session.ipAddress;
 
   return (
@@ -224,12 +228,13 @@ export default function LiveVisitorsDialog({
   generatedAt,
 }: {
   sessions: LiveSession[];
-  /** When the server rendered `sessions` (the dashboard also refreshes every 30 s). */
+  /** When the server rendered `sessions`. */
   generatedAt: string;
 }) {
-  // Newest data wins: the 10 s poll below, or a fresher dashboard refresh.
+  // Newest data wins: the poll below, or a fresher dashboard refresh.
   const [polled, setPolled] = useState<{ at: number; live: LiveSession[] } | null>(null);
   const sessions = polled && polled.at > Date.parse(generatedAt) ? polled.live : initialSessions;
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -244,14 +249,15 @@ export default function LiveVisitorsDialog({
         // offline / server error: keep the last list
       }
     };
-    const timer = setInterval(poll, POLL_MS);
+    // Opening the popup refreshes right away.
+    if (open) void poll();
+    const timer = setInterval(poll, open ? POLL_OPEN_MS : POLL_CLOSED_MS);
     return () => {
       active = false;
       clearInterval(timer);
     };
-  }, []);
+  }, [open]);
 
-  const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const toggle = (id: string) =>
@@ -320,7 +326,7 @@ export default function LiveVisitorsDialog({
                   </span>
                 </DialogTitle>
                 <DialogDescription className="mt-1 text-xs text-fg-subtle">
-                  On the site right now · updates every 10 s
+                  On the site right now · updates every 15 s
                 </DialogDescription>
               </div>
               <DialogClose

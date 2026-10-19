@@ -69,3 +69,7 @@ Collecting (masked) IPs and location is personal data under GDPR: mention it in 
   signed in once (cookie `lf_no_track`). Older admin sessions are also hidden from every view.
 - `/analytics` and `/media-infos` are never tracked, and appear in the menu only for the admin account.
 - `/media-infos`: look up any movie / anime / K-drama by TMDB id, IMDb id or link, and copy a share link.
+
+## Firestore budget
+See `FIRESTORE_USAGE.md`: page views cost 1 write (no read), heartbeats every 60 s, dashboard days are
+cached, and `ANALYTICS_MODE=light|off` reduces or stops analytics writes.

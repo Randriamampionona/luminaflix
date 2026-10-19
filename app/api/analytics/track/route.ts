@@ -11,8 +11,12 @@ import { getDb, logFirebaseError } from "@/lib/firebase-admin";
  * Collects analytics events from components/analytics/analytics-tracker.tsx.
  *
  * start → creates ANALYTICS/{sessionId} and bumps ANALYTICS_VISITORS/{key}.visitCount
- * page  → adds the route to visitedPages (+ upgrades the session if the user signed in)
+ * page  → one write, no read: page count, current page, new route added to visitedPages
  * ping / end → updates sessionDuration (active seconds) and lastActive
+ *
+ * Firestore budget: ANALYTICS_MODE = "full" (default) | "light" (no 60 s heartbeats:
+ * live visitors rely on page views only) | "off" (nothing is recorded). Server env,
+ * takes effect on the next deploy/restart, no rebuild of the client needed.
  *
  * Raw IPs are never stored: only a masked IP and a salted hash.
  */
@@ -33,6 +37,7 @@ function rateLimited(key: string) {
 }
 
 const noContent = () => new Response(null, { status: 204 });
+const ANALYTICS_MODE = process.env.ANALYTICS_MODE === "off" || process.env.ANALYTICS_MODE === "light" ? process.env.ANALYTICS_MODE : "full";
 
 /** The admin's own visits are never counted (signed in, or on a browser the admin used). */
 function adminSkip() {
@@ -61,6 +66,7 @@ function cleanReferrer(value: unknown, host: string | null): string | null {
 }
 
 export async function POST(request: Request) {
+  if (ANALYTICS_MODE === "off") return noContent();
   const ua = request.headers.get("user-agent");
   if (isBot(ua)) return noContent();
   if (request.headers.get("cookie")?.includes(`${ADMIN_NO_TRACK_COOKIE}=1`)) return noContent();
@@ -89,7 +95,27 @@ export async function POST(request: Request) {
     const { userId } = await auth();
     if (isAdminUserId(userId)) return adminSkip();
 
-    if (event.type === "start" || event.type === "page") {
+    // Page view in a known session: a single write, no read (the browser tells
+    // us whether the route is new, so visitedPages stays de-duplicated and capped).
+    if (event.type === "page") {
+      const path = cleanPath(event.path);
+      if (!path) return noContent();
+      await sessionRef
+        .update({
+          lastActive: now,
+          online: true,
+          leftAt: null,
+          currentPage: path,
+          pageViews: FieldValue.increment(1),
+          ...(event.newPage === true && { visitedPages: FieldValue.arrayUnion(path) }),
+          // Signed in during the session → it becomes an authenticated session.
+          ...(userId && { userId, visitorType: "authenticated" }),
+        })
+        .catch(() => {}); // unknown / expired session: ignore
+      return noContent();
+    }
+
+    if (event.type === "start") {
       const path = cleanPath(event.path);
       if (!path) return noContent();
 
@@ -155,6 +181,8 @@ export async function POST(request: Request) {
       });
       return noContent();
     }
+
+    if (event.type === "ping" && ANALYTICS_MODE === "light") return noContent();
 
     if (event.type === "ping" || event.type === "end") {
       const seconds = Math.max(0, Math.min(Math.round(Number(event.activeSeconds) || 0), MAX_SESSION_SECONDS));

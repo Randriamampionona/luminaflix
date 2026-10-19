@@ -33,6 +33,32 @@ function explain(error: unknown) {
   return "";
 }
 
+/** Last token saved on the server for this browser (skips useless writes). */
+const SAVED_KEY = "lf_push_token_saved";
+/** Re-save at least this often (keeps the IP / language of the subscription up to date). */
+const RESAVE_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
+function needsSave(token: string, locale: string) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SAVED_KEY) ?? "null") as {
+      token?: string;
+      locale?: string;
+      at?: number;
+    } | null;
+    return !saved || saved.token !== token || saved.locale !== locale || Date.now() - (saved.at ?? 0) > RESAVE_AFTER_MS;
+  } catch {
+    return true;
+  }
+}
+
+function rememberSaved(token: string, locale: string) {
+  try {
+    localStorage.setItem(SAVED_KEY, JSON.stringify({ token, locale, at: Date.now() }));
+  } catch {
+    // storage blocked: we'll simply save again next visit
+  }
+}
+
 /**
  * Push notification state for this browser (every visitor, signed in or not):
  * support detection, permission, enable, and silent token refresh
@@ -59,16 +85,18 @@ export function usePushNotifications() {
   }, []);
 
   // Browsers that already allowed notifications never see the popup again:
-  // their token is (re)saved silently on every visit — this is also how older
-  // subscriptions move into the NOTIFICATION collection.
+  // their token is re-saved silently — but only when it changed, the language
+  // changed, or once a week (Firestore budget: no write on ordinary visits).
+  // This is also how older subscriptions move into the NOTIFICATION collection.
   useEffect(() => {
     if (!supported || permission !== "granted") return;
     let active = true;
     void getPushToken()
       .then(async (token) => {
-        if (!active || !token) return;
+        if (!active || !token || !needsSave(token, locale)) return;
         const res = await savePushToken(token, locale);
-        if (!res.ok) console.warn("[push] the server could not save this browser's token (see server logs)");
+        if (res.ok) rememberSaved(token, locale);
+        else console.warn("[push] the server could not save this browser's token (see server logs)");
       })
       .catch((error) => console.warn("[push] token refresh failed", error));
     return () => {
@@ -114,6 +142,7 @@ export function usePushNotifications() {
       if (!token) throw new Error("No FCM token");
       const res = await savePushToken(token, locale);
       if (!res.ok) throw new Error("The server could not save the token");
+      rememberSaved(token, locale);
     } catch (error) {
       console.error("[push] subscribe failed", error);
       const hint = explain(error);

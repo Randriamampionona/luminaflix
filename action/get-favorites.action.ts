@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { getDb, logFirebaseError } from "@/lib/firebase-admin";
+import { logFirebaseError } from "@/lib/firebase-admin";
+import { readFavorites } from "@/lib/firestore-cache";
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 
 export type FavoriteType = "MOVIE" | "K_DRAMA" | "ANIME";
@@ -52,8 +53,8 @@ export async function getUserFavorites(): Promise<FavoritesResult> {
   if (!userId) return { results: [], total_results: 0, error: false };
 
   try {
-    const snapshot = await getDb().collection("FAVORITE").doc(userId).get();
-    const favorites = (snapshot.data()?.favorites ?? []) as StoredFavorite[];
+    // Cached read, expired by toggleFavorite (action/stream-actions.ts) on every change.
+    const favorites = await readFavorites<StoredFavorite>(userId);
 
     const hydrated = await Promise.all(
       favorites.map(async (fav): Promise<FavoriteItem | null> => {

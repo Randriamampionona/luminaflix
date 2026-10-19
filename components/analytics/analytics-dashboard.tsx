@@ -23,7 +23,8 @@ import LiveVisitorsDialog from "./live-visitors-dialog";
 import RangePicker from "./range-picker";
 import VisitorsTable from "./visitors-table";
 
-const REFRESH_MS = 30_000;
+/** Optional auto-refresh (off by default: every refresh costs Firestore reads). */
+const REFRESH_MS = 2 * 60_000;
 
 function Card({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
@@ -98,10 +99,10 @@ function RankList({
 export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
   const router = useRouter();
   const [tab, setTab] = useState<"anonymous" | "authenticated">("anonymous");
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshing, startRefresh] = useTransition();
 
-  // "Real-time": re-fetch the server data every 30 s while the tab is visible.
+  // Auto-refresh (when switched on): every 2 min while the tab is visible.
   useEffect(() => {
     if (!autoRefresh) return;
     const timer = setInterval(() => {
@@ -129,7 +130,7 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-fg-subtle">
             <LiveVisitorsDialog sessions={data.live} generatedAt={data.generatedAt} />
             <span>Updated {timeAgo(data.generatedAt)}</span>
-            {data.truncated && <span className="text-amber-600">Showing the latest 10,000 sessions</span>}
+            {data.truncated && <span className="text-amber-600">Some days are capped at 5,000 sessions</span>}
           </div>
         </div>
 
@@ -137,16 +138,29 @@ export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
           <RangePicker range={data.range} />
           <button
             type="button"
+            onClick={() => startRefresh(() => router.refresh())}
+            disabled={refreshing}
+            title="Refresh now"
+            className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-line-strong bg-tint px-3 py-2 text-xs font-bold text-fg-muted transition-colors hover:text-foreground disabled:cursor-wait"
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} aria-hidden />
+            Refresh
+          </button>
+          <button
+            type="button"
             onClick={() => setAutoRefresh((v) => !v)}
             aria-pressed={autoRefresh}
-            title="Refresh every 30 seconds"
+            title="Refresh every 2 minutes"
             className={cn(
               "flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-colors",
               autoRefresh ? "border-cyan-500/40 bg-cyan-500/10 text-brand" : "border-line-strong bg-tint text-fg-muted",
             )}
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} aria-hidden />
-            Live
+            <span
+              aria-hidden
+              className={cn("h-2 w-2 rounded-full", autoRefresh ? "animate-pulse bg-cyan-400" : "bg-fg-faint")}
+            />
+            Auto
           </button>
         </div>
       </div>

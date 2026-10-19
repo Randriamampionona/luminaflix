@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
  *
  * - One session per tab; a new session starts after 30 min of inactivity.
  * - Session duration = time the tab was actually visible (not idle background tabs).
- * - Heartbeat every 20 s while visible; "end" (sendBeacon) as soon as the tab is
+ * - Heartbeat every 60 s while visible; "end" (sendBeacon) as soon as the tab is
  *   hidden or closed, so the live view knows the visitor left; "ping" again when
  *   the tab becomes visible.
  * - Skips /analytics, /media-infos and /launch. Set NEXT_PUBLIC_ANALYTICS_RESPECT_DNT=1 to also
@@ -19,10 +19,29 @@ import { useEffect, useRef } from "react";
 const ENDPOINT = "/api/analytics/track";
 const SESSION_KEY = "lf_analytics_session";
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-/** Presence heartbeat: the live view drops a visitor ~45 s after the last one. */
-const HEARTBEAT_MS = 20 * 1000;
+/**
+ * Presence heartbeat (1 Firestore write each): the live view drops a visitor
+ * ~2.5 min after the last one (lib/analytics/queries.ts LIVE_WINDOW_MS).
+ */
+const HEARTBEAT_MS = 60 * 1000;
+/** Routes remembered per session (same cap as the server). */
+const MAX_PAGES = 50;
 
-type StoredSession = { id: string; lastSeen: number; activeMs: number };
+type StoredSession = {
+  id: string;
+  lastSeen: number;
+  activeMs: number;
+  /** Routes already recorded in this session: lets the server skip a read per page view. */
+  pages?: string[];
+};
+
+/** Records `path` in the session; true if it's the first visit of this route. */
+function markPage(s: StoredSession, path: string) {
+  const pages = s.pages ?? [];
+  if (pages.includes(path) || pages.length >= MAX_PAGES) return false;
+  s.pages = [...pages, path];
+  return true;
+}
 
 function readSession(): StoredSession | null {
   try {
@@ -99,14 +118,16 @@ export default function AnalyticsTracker() {
       const existing = readSession();
       const fresh = !existing || Date.now() - existing.lastSeen > SESSION_TIMEOUT_MS;
       session.current = fresh ? { id: crypto.randomUUID(), lastSeen: Date.now(), activeMs: 0 } : existing;
+      markPage(session.current, pathname);
       visibleSince.current = document.visibilityState === "visible" ? Date.now() : null;
       writeSession(session.current);
       send({ type: "start", sessionId: session.current.id, path: pathname, referrer: document.referrer || null });
       return;
     }
     if (!session.current) return;
+    const newPage = markPage(session.current, pathname);
     persist();
-    send({ type: "page", sessionId: session.current.id, path: pathname });
+    send({ type: "page", sessionId: session.current.id, path: pathname, newPage });
   }, [pathname]);
 
   // Active time: heartbeat while visible, final beacon when hidden / closed.

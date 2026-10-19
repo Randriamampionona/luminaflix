@@ -1,5 +1,6 @@
 import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
+import { unstable_cache } from "next/cache";
 import admin from "firebase-admin";
 import { getDb, logFirebaseError } from "@/lib/firebase-admin";
 import { isAdminUserId } from "./admin";
@@ -7,9 +8,19 @@ import type { AnalyticsSession } from "./types";
 
 /** Day boundaries and chart buckets use this zone (override with ANALYTICS_TIME_ZONE). */
 const ANALYTICS_TIME_ZONE = process.env.ANALYTICS_TIME_ZONE || "Europe/Paris";
-const MAX_SESSIONS = 10_000;
-/** A visitor is live when online and seen within this window (heartbeat: 20 s). */
-const LIVE_WINDOW_MS = 45 * 1000;
+/** Max sessions read per day (one Firestore read each). */
+const MAX_SESSIONS_PER_DAY = 5_000;
+/**
+ * Firestore budget: each day of sessions is read once and cached —
+ * past days for 24 h (they no longer change), yesterday for 1 h (sessions
+ * running past midnight), today for 2 min. Re-opening or refreshing the
+ * dashboard therefore costs almost no reads.
+ */
+const DAY_CACHE_SECONDS = { past: 24 * 3600, yesterday: 3600, today: 120 };
+/** Days read from Firestore in parallel on a cold cache. */
+const DAY_CONCURRENCY = 8;
+/** A visitor is live when online and seen within this window (heartbeat: 60 s). */
+const LIVE_WINDOW_MS = 150 * 1000;
 
 export type RangeKey = "today" | "7d" | "30d" | "custom";
 
@@ -154,10 +165,78 @@ export interface AnalyticsData {
   authenticated: VisitorRow[];
 }
 
-type SessionDoc = Omit<AnalyticsSession, "startedAt" | "lastActive"> & {
-  startedAt: admin.firestore.Timestamp;
-  lastActive: admin.firestore.Timestamp;
+/** Firestore Timestamp (live reads) or epoch ms (cached day reads). */
+type TimeValue = admin.firestore.Timestamp | number;
+const asDate = (value: TimeValue) => (typeof value === "number" ? new Date(value) : value.toDate());
+
+type SessionDoc = Omit<AnalyticsSession, "startedAt" | "lastActive" | "leftAt"> & {
+  startedAt: TimeValue;
+  lastActive: TimeValue;
 };
+
+/** One local day of sessions, straight from Firestore (not cached here). */
+async function fetchDaySessions(day: string): Promise<{ docs: SessionDoc[]; truncated: boolean }> {
+  const Timestamp = admin.firestore.Timestamp;
+  const snapshot = await getDb()
+    .collection("ANALYTICS")
+    .where("startedAt", ">=", Timestamp.fromDate(startOfLocalDay(day)))
+    .where("startedAt", "<", Timestamp.fromDate(startOfLocalDay(addDays(day, 1))))
+    .orderBy("startedAt", "desc")
+    .limit(MAX_SESSIONS_PER_DAY)
+    .get();
+  const docs = snapshot.docs.map((d) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- leftAt isn't used by the dashboard
+    const { startedAt, lastActive, leftAt, ...rest } = d.data();
+    // Plain, cache-serialisable values (no Timestamp objects).
+    return {
+      ...rest,
+      startedAt: (startedAt as admin.firestore.Timestamp).toMillis(),
+      lastActive: (lastActive as admin.firestore.Timestamp).toMillis(),
+    } as SessionDoc;
+  });
+  return { docs, truncated: docs.length >= MAX_SESSIONS_PER_DAY };
+}
+
+/** Cached per day (see DAY_CACHE_SECONDS). A failed read is never cached. */
+function getDaySessions(day: string, today: string) {
+  const ttl =
+    day >= today
+      ? DAY_CACHE_SECONDS.today
+      : day === addDays(today, -1)
+        ? DAY_CACHE_SECONDS.yesterday
+        : DAY_CACHE_SECONDS.past;
+  return unstable_cache(() => fetchDaySessions(day), ["analytics-day-v1", day, String(ttl)], {
+    revalidate: ttl,
+    tags: ["analytics"],
+  })();
+}
+
+/** Sessions of every day in the range, a few days at a time. */
+async function getRangeSessions(range: ResolvedRange) {
+  const today = localDay(new Date());
+  const days: string[] = [];
+  for (let day = range.fromDay; day <= range.toDay; day = addDays(day, 1)) days.push(day);
+
+  const docs: SessionDoc[] = [];
+  let truncated = false;
+  for (let i = 0; i < days.length; i += DAY_CONCURRENCY) {
+    const results = await Promise.all(
+      days.slice(i, i + DAY_CONCURRENCY).map((day) =>
+        getDaySessions(day, today).catch((error) => {
+          logFirebaseError("analytics:day", error);
+          return { docs: [] as SessionDoc[], truncated: false };
+        }),
+      ),
+    );
+    for (const result of results) {
+      docs.push(...result.docs);
+      truncated ||= result.truncated;
+    }
+  }
+  // Newest first, like the single query this replaces.
+  docs.sort((a, b) => asDate(b.startedAt).getTime() - asDate(a.startedAt).getTime());
+  return { docs, truncated };
+}
 
 const top = <T>(map: Map<string, T>, score: (v: T) => number, n: number) =>
   [...map.entries()].sort((a, b) => score(b[1]) - score(a[1])).slice(0, n);
@@ -190,24 +269,14 @@ async function clerkProfiles(userIds: string[]) {
 // --------------------------------------------------------- aggregate ---
 
 export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsData> {
-  const db = getDb();
-  const col = db.collection("ANALYTICS");
-  const Timestamp = admin.firestore.Timestamp;
-
   let docs: SessionDoc[] = [];
   let liveDocs: SessionDoc[] = [];
+  let truncated = false;
   try {
-    const [snapshot, live] = await Promise.all([
-      col
-        .where("startedAt", ">=", Timestamp.fromDate(range.from))
-        .where("startedAt", "<", Timestamp.fromDate(range.to))
-        .orderBy("startedAt", "desc")
-        .limit(MAX_SESSIONS)
-        .get(),
-      queryLiveDocs(),
-    ]);
+    const [rangeResult, live] = await Promise.all([getRangeSessions(range), queryLiveDocs()]);
     // The admin's own sessions never count (also those recorded before this rule).
-    docs = snapshot.docs.map((d) => d.data() as SessionDoc).filter((s) => !isAdminUserId(s.userId));
+    docs = rangeResult.docs.filter((s) => !isAdminUserId(s.userId));
+    truncated = rangeResult.truncated;
     liveDocs = live;
   } catch (error) {
     logFirebaseError("analytics:query", error);
@@ -233,7 +302,7 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
 
   for (const s of docs) {
     const visitorKey = s.userId ? `u_${s.userId}` : `ip_${s.ipHash}`;
-    const day = localDay(s.startedAt.toDate());
+    const day = localDay(asDate(s.startedAt));
     const views = s.pageViews || s.visitedPages?.length || 1;
     const duration = s.sessionDuration || 0;
 
@@ -284,7 +353,7 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
         avgDuration: 0,
         pageViews: views,
         pages: [],
-        lastActive: s.lastActive.toDate().toISOString(),
+        lastActive: asDate(s.lastActive).toISOString(),
         _pages: new Set(s.visitedPages ?? []),
         _anon: !s.userId,
       });
@@ -315,7 +384,7 @@ export async function getAnalyticsData(range: ResolvedRange): Promise<AnalyticsD
   return {
     range: { key: range.key, fromDay: range.fromDay, toDay: range.toDay },
     generatedAt: new Date().toISOString(),
-    truncated: docs.length >= MAX_SESSIONS,
+    truncated,
     liveNow: liveDocs.length,
     live: liveDocs.map((s) => toLiveSession(s, profiles)),
     kpis: {
@@ -361,9 +430,7 @@ async function queryLiveDocs(): Promise<SessionDoc[]> {
     .limit(200)
     .get();
   // Filtered here rather than in the query: no composite index needed.
-  return snapshot.docs
-    .map((d) => d.data() as SessionDoc)
-    .filter((s) => s.online !== false && !isAdminUserId(s.userId));
+  return snapshot.docs.map((d) => d.data() as SessionDoc).filter((s) => s.online !== false && !isAdminUserId(s.userId));
 }
 
 function toLiveSession(s: SessionDoc, profiles: Profiles): LiveSession {
@@ -387,8 +454,8 @@ function toLiveSession(s: SessionDoc, profiles: Profiles): LiveSession {
     pageViews: s.pageViews || pages.length || 1,
     sessionDuration: s.sessionDuration || 0,
     visitFrequency: s.visitFrequency || 1,
-    startedAt: s.startedAt.toDate().toISOString(),
-    lastActive: s.lastActive.toDate().toISOString(),
+    startedAt: asDate(s.startedAt).toISOString(),
+    lastActive: asDate(s.lastActive).toISOString(),
   };
 }
 

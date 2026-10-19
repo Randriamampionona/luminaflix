@@ -42,5 +42,6 @@ export interface AnalyticsSession {
 /** Client → /api/analytics/track */
 export type TrackEvent =
   | { type: "start"; sessionId: string; path: string; referrer?: string | null }
-  | { type: "page"; sessionId: string; path: string }
+  /** `newPage`: first visit of this path in the session (the browser keeps the list, max 50). */
+  | { type: "page"; sessionId: string; path: string; newPage?: boolean }
   | { type: "ping" | "end"; sessionId: string; activeSeconds: number };
