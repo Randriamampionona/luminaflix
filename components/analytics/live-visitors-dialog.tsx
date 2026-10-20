@@ -19,6 +19,7 @@ import {
 import { useEffect, useId, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { LiveSession } from "@/lib/analytics/queries";
+import { MessageVisitorButton, VisitorChatPanel } from "@/components/admin/analytics-visitor-item";
 import { cn } from "@/lib/utils";
 import { countryName, flag, formatDuration, formatNumber } from "./format";
 
@@ -62,6 +63,7 @@ function VisitorCard({
   onToggle: () => void;
 }) {
   const detailsId = useId();
+  const [chatOpen, setChatOpen] = useState(false);
   const DeviceIcon = DEVICE_ICON[session.device as keyof typeof DEVICE_ICON] ?? Monitor;
   const signedIn = session.visitorType === "authenticated";
   // Heartbeats arrive every 60 s while the tab is visible: older than 90 s = probably leaving.
@@ -119,6 +121,7 @@ function VisitorCard({
           <span className="text-[11px] text-fg-subtle" title={new Date(session.lastActive).toLocaleString()}>
             {secondsAgo(session.lastActive, now)}
           </span>
+          <MessageVisitorButton open={chatOpen} onToggle={() => setChatOpen((v) => !v)} />
           <button
             type="button"
             onClick={onToggle}
@@ -139,6 +142,14 @@ function VisitorCard({
           </button>
         </div>
       </div>
+
+      {/* Live chat with this visitor (admin) */}
+      {chatOpen && (
+        <VisitorChatPanel
+          sessionId={session.sessionId}
+          visitorLabel={signedIn ? (session.name ?? session.email ?? "this visitor") : session.ipAddress}
+        />
+      )}
 
       {/* Current page */}
       <a

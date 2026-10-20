@@ -995,5 +995,18 @@
     "signIn": "I already have an account",
     "later": "Maybe later",
     "free": "Free, no credit card — it takes 30 seconds."
+  },
+  "liveChat": {
+    "title": "Live chat",
+    "badge": "Team",
+    "subtitle": "Online now — reply right here",
+    "endedShort": "Conversation ended",
+    "ended": "This conversation has ended. Messages aren't kept.",
+    "placeholder": "Write a reply…",
+    "send": "Send",
+    "you": "You",
+    "minimize": "Minimize",
+    "close": "Close the chat",
+    "open": "Open the chat"
   }
 }

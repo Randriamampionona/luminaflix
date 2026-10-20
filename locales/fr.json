@@ -995,5 +995,18 @@
     "signIn": "J'ai déjà un compte",
     "later": "Plus tard",
     "free": "Gratuit, sans carte bancaire — 30 secondes suffisent."
+  },
+  "liveChat": {
+    "title": "Discussion en direct",
+    "badge": "Équipe",
+    "subtitle": "En ligne — répondez ici",
+    "endedShort": "Discussion terminée",
+    "ended": "Cette discussion est terminée. Les messages ne sont pas conservés.",
+    "placeholder": "Écrire une réponse…",
+    "send": "Envoyer",
+    "you": "Vous",
+    "minimize": "Réduire",
+    "close": "Fermer la discussion",
+    "open": "Ouvrir la discussion"
   }
 }

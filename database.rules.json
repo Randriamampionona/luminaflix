@@ -1,0 +1,30 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "live_chats": {
+      ".indexOn": ["leftAt", "updatedAt"],
+      "$sid": {
+        ".read": "$sid.matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)",
+        ".write": "!newData.exists() && $sid.matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)",
+        "visitorOnline": {
+          ".write": "data.parent().child('startedAt').exists()",
+          ".validate": "newData.isBoolean()"
+        },
+        "leftAt": {
+          ".write": "data.parent().child('startedAt').exists()",
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "messages": {
+          "$mid": {
+            ".write": "!data.exists() && root.child('live_chats').child($sid).child('startedAt').exists()",
+            ".validate": "newData.hasChildren(['from', 'text', 'at']) && newData.child('from').val() === 'visitor' && newData.child('text').isString() && newData.child('text').val().length >= 1 && newData.child('text').val().length <= 500 && newData.child('at').val() === now"
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

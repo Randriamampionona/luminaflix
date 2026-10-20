@@ -142,7 +142,16 @@ function readServiceAccount(): ServiceAccount {
 function getApp(): admin.app.App {
   if (admin.apps.length) return admin.app();
   const { projectId, clientEmail, privateKey } = readServiceAccount();
-  return admin.initializeApp({ credential: admin.credential.cert({ projectId, clientEmail, privateKey }) });
+  return admin.initializeApp({
+    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+    // Realtime Database (live chat). Optional: everything else works without it.
+    ...(realtimeDbUrl() && { databaseURL: realtimeDbUrl() }),
+  });
+}
+
+/** e.g. https://<project>-default-rtdb.europe-west1.firebasedatabase.app */
+function realtimeDbUrl() {
+  return (process.env.FIREBASE_DATABASE_URL || process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "").trim() || undefined;
 }
 
 let firestore: admin.firestore.Firestore | null = null;
@@ -159,6 +168,15 @@ export function getDb(): admin.firestore.Firestore {
 /** Firebase Cloud Messaging (push notifications), same app/credentials as Firestore. */
 export function getMessaging(): admin.messaging.Messaging {
   return getApp().messaging();
+}
+
+/**
+ * Firebase Realtime Database (live chat only — no Firestore quota involved).
+ * Throws FirebaseConfigError when FIREBASE_DATABASE_URL isn't set.
+ */
+export function getRealtimeDb(): admin.database.Database {
+  if (!realtimeDbUrl()) throw new FirebaseConfigError("Missing environment variable: NEXT_PUBLIC_FIREBASE_DATABASE_URL.");
+  return getApp().database();
 }
 
 /** Log once per error message instead of on every request. */

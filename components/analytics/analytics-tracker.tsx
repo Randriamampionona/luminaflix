@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ANALYTICS_SESSION_KEY } from "@/lib/analytics/client-session";
 
 /**
  * Privacy-friendly page tracking → /api/analytics/track.
@@ -17,7 +18,7 @@ import { useEffect, useRef } from "react";
  * - In development, every event is logged to the browser console.
  */
 const ENDPOINT = "/api/analytics/track";
-const SESSION_KEY = "lf_analytics_session";
+const SESSION_KEY = ANALYTICS_SESSION_KEY;
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 /**
  * Presence heartbeat (1 Firestore write each): the live view drops a visitor
