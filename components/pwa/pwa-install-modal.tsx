@@ -27,7 +27,7 @@ const SHOW_DELAY_MS = Number(process.env.NEXT_PUBLIC_PWA_PROMPT_DELAY_MS) || 10_
 /** "Maybe later" hides the popup for this long. */
 const SNOOZE_MS = 30 * 60 * 1000;
 const DISMISSED_KEY = "lf_pwa_dismissed_at";
-const HIDDEN_ON = ["/sign-in", "/sign-up", "/analytics", "/offline", "/launch"];
+const HIDDEN_ON = ["/sign-in", "/sign-up", "/analytics", "/offline", "/launch", "/bot-filter"];
 
 const readNumber = (key: string) => {
   try {

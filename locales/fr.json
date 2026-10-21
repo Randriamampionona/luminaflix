@@ -677,7 +677,7 @@
         },
         {
           "title": "Services tiers",
-          "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies."
+          "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies. Les visiteurs situés hors de Madagascar sont vérifiés une fois avec Google reCAPTCHA, soumis aux règles de confidentialité et conditions d'utilisation de Google."
         },
         {
           "title": "Vos droits",
@@ -1008,5 +1008,22 @@
     "minimize": "Réduire",
     "close": "Fermer la discussion",
     "open": "Ouvrir la discussion"
+  },
+  "botFilter": {
+    "eyebrow": "Vérification",
+    "title": "Petite vérification avant de continuer",
+    "body": "Pour éloigner les robots, les visites depuis l'extérieur de Madagascar sont vérifiées une fois. Cochez la case ci-dessous — ça ne prend qu'une seconde.",
+    "remember": "Mémorisé 7 jours sur cet appareil.",
+    "loading": "Chargement de la vérification…",
+    "verifying": "Vérification…",
+    "success": "C'est bon — redirection vers votre page…",
+    "failed": "La vérification a échoué. Veuillez réessayer.",
+    "expired": "La vérification a expiré. Cochez de nouveau la case.",
+    "unavailable": "La vérification n'a pas pu se charger. Vérifiez votre connexion et rechargez la page.",
+    "rateLimited": "Trop de tentatives. Patientez quelques minutes avant de réessayer.",
+    "continue": "Continuer",
+    "protectedBy": "Protégé par Google reCAPTCHA —",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
   }
 }

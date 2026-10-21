@@ -49,7 +49,7 @@ export default function LiveVisitorChat() {
   const messages = room?.messages ?? [];
   const lastAdminAt = messages.filter((m) => m.from === "admin").at(-1)?.at ?? 0;
   const unread = minimized ? messages.filter((m) => m.from === "admin" && m.at > seenAt).length : 0;
-  const visible = !dismissed && pathname !== "/launch" && (lastAdminAt > 0 || ended);
+  const visible = !dismissed && pathname !== "/launch" && pathname !== "/bot-filter" && (lastAdminAt > 0 || ended);
 
   // Keep the newest message in view.
   useEffect(() => {

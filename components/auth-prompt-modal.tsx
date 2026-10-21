@@ -22,7 +22,7 @@ const KEYS = {
   nextTrigger: "auth_prompt_next_trigger",
 } as const;
 /** Never over these pages (the sign-in pages themselves, the launch screen, admin pages, offline). */
-const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch", "/offline", "/analytics", "/media-infos"];
+const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch", "/offline", "/analytics", "/media-infos", "/bot-filter"];
 
 const read = (key: string) => {
   try {

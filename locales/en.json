@@ -677,7 +677,7 @@
         },
         {
           "title": "Third-party services",
-          "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies."
+          "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies. Visitors from outside Madagascar are checked once with Google reCAPTCHA, which is subject to Google's Privacy Policy and Terms."
         },
         {
           "title": "Your rights",
@@ -1008,5 +1008,22 @@
     "minimize": "Minimize",
     "close": "Close the chat",
     "open": "Open the chat"
+  },
+  "botFilter": {
+    "eyebrow": "Security check",
+    "title": "Quick check before you continue",
+    "body": "To keep bots away, visits from outside Madagascar are checked once. Tick the box below — it only takes a second.",
+    "remember": "Remembered for 7 days on this device.",
+    "loading": "Loading the check…",
+    "verifying": "Checking…",
+    "success": "All good — taking you to your page…",
+    "failed": "The check didn't go through. Please try again.",
+    "expired": "The check expired. Tick the box again.",
+    "unavailable": "The check couldn't load. Check your connection and reload the page.",
+    "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+    "continue": "Continue",
+    "protectedBy": "Protected by Google reCAPTCHA —",
+    "privacy": "Privacy",
+    "terms": "Terms"
   }
 }

@@ -13,7 +13,7 @@ const DISMISSED_KEY = "fcm_prompt_dismissed_at";
 const RETRY_AFTER_MS = 15 * 60 * 1000;
 /** Shown 3 s after arrival. */
 const SHOW_DELAY_MS = 3_000;
-const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch"];
+const HIDDEN_ON = ["/sign-in", "/sign-up", "/launch", "/bot-filter"];
 /** Installed app: the phone's own Allow / Don't allow dialog was already shown in this app session. */
 const NATIVE_ASKED_KEY = "lf_native_push_asked";
 
