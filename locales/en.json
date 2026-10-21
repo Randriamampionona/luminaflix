@@ -677,7 +677,7 @@
         },
         {
           "title": "Third-party services",
-          "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies. Visitors from outside Madagascar are checked once with Google reCAPTCHA, which is subject to Google's Privacy Policy and Terms."
+          "body": "Movie and series information comes from TMDB. Video players are provided by third-party services that have their own privacy policies and may set their own cookies. Visitors from outside Madagascar are checked once with Google reCAPTCHA, which is subject to Google's Privacy Policy and Terms. To spot VPNs and proxies in our audience statistics, visitor IP addresses are checked with proxycheck.io."
         },
         {
           "title": "Your rights",

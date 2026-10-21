@@ -132,6 +132,11 @@ export interface LiveSession {
   device: string;
   browser: string;
   referrer: string | null;
+  /** VPN / proxy reputation of the IP (null: unknown). */
+  vpn: { detected: boolean; type: string | null; provider: string | null } | null;
+  /** Device time zone + its country (VPN hint when it differs from `country`). */
+  timeZone: string | null;
+  timeZoneCountry: string | null;
   currentPage: string;
   pages: string[];
   pageViews: number;
@@ -449,6 +454,9 @@ function toLiveSession(s: SessionDoc, profiles: Profiles): LiveSession {
     device: s.device || "desktop",
     browser: s.browser || "Other",
     referrer: s.referrer ?? null,
+    vpn: s.vpn ?? null,
+    timeZone: s.timeZone ?? null,
+    timeZoneCountry: s.timeZoneCountry ?? null,
     currentPage: s.currentPage || pages[pages.length - 1] || "/",
     pages,
     pageViews: s.pageViews || pages.length || 1,

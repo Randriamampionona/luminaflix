@@ -73,3 +73,12 @@ Collecting (masked) IPs and location is personal data under GDPR: mention it in 
 ## Firestore budget
 See `FIRESTORE_USAGE.md`: page views cost 1 write (no read), heartbeats every 60 s, dashboard days are
 cached, and `ANALYTICS_MODE=light|off` reduces or stops analytics writes.
+
+## VPN detection
+- At the start of each visit the IP is checked with **proxycheck.io** (VPN / proxy / data-center addresses),
+  cached 24 h per IP, 2 s max. Free: 100 checks/day without a key, **1,000/day with a free key**
+  (`PROXYCHECK_API_KEY`, from https://proxycheck.io/dashboard). `VPN_CHECK=off` disables it.
+- The browser also sends its **time zone**; if it belongs to another country than the IP, the visit shows
+  "Possible VPN" (e.g. IP in Kenya, device on Indian/Antananarivo).
+- Stored on the session: `vpn { detected, type, provider }`, `timeZone`, `timeZoneCountry`. The real address
+  behind a VPN is never known nor looked for. Only visits started after this update have the data.

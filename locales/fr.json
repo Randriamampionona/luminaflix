@@ -677,7 +677,7 @@
         },
         {
           "title": "Services tiers",
-          "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies. Les visiteurs situés hors de Madagascar sont vérifiés une fois avec Google reCAPTCHA, soumis aux règles de confidentialité et conditions d'utilisation de Google."
+          "body": "Les informations sur les films et séries proviennent de TMDB. Les lecteurs vidéo sont fournis par des services tiers qui disposent de leurs propres politiques de confidentialité et peuvent déposer leurs propres cookies. Les visiteurs situés hors de Madagascar sont vérifiés une fois avec Google reCAPTCHA, soumis aux règles de confidentialité et conditions d'utilisation de Google. Pour repérer les VPN et proxys dans nos statistiques d'audience, les adresses IP des visiteurs sont vérifiées auprès de proxycheck.io."
         },
         {
           "title": "Vos droits",

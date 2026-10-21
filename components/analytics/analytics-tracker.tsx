@@ -122,7 +122,14 @@ export default function AnalyticsTracker() {
       markPage(session.current, pathname);
       visibleSince.current = document.visibilityState === "visible" ? Date.now() : null;
       writeSession(session.current);
-      send({ type: "start", sessionId: session.current.id, path: pathname, referrer: document.referrer || null });
+      send({
+        type: "start",
+        sessionId: session.current.id,
+        path: pathname,
+        referrer: document.referrer || null,
+        // Device time zone: compared with the IP's country to spot VPNs.
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
       return;
     }
     if (!session.current) return;

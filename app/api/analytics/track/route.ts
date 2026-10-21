@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import admin from "firebase-admin";
 import { ADMIN_NO_TRACK_COOKIE, isAdminUserId } from "@/lib/analytics/admin";
 import { lookupGeo } from "@/lib/analytics/geo";
+import { deviceTimeZone, lookupVpn } from "@/lib/analytics/vpn";
 import { clientIpFromHeaders, hashIp, maskIp } from "@/lib/analytics/ip";
 import { browserFromUa, deviceFromUa, isBot } from "@/lib/analytics/user-agent";
 import type { TrackEvent } from "@/lib/analytics/types";
@@ -119,7 +120,9 @@ export async function POST(request: Request) {
       const path = cleanPath(event.path);
       if (!path) return noContent();
 
-      const geo = event.type === "start" ? await lookupGeo(request.headers, ip) : null;
+      // Geo + VPN reputation in parallel (VPN check: cached per IP, 2 s max).
+      const [geo, vpn] = await Promise.all([lookupGeo(request.headers, ip), lookupVpn(ip, ipHash)]);
+      const tz = deviceTimeZone(event.timeZone);
       const visitorKey = userId ? `u_${userId}` : `ip_${ipHash}`;
       const visitorRef = db.collection("ANALYTICS_VISITORS").doc(visitorKey);
 
@@ -149,6 +152,9 @@ export async function POST(request: Request) {
             ipHash,
             country: geo?.country ?? "XX",
             city: geo?.city ?? null,
+            vpn,
+            timeZone: tz.timeZone,
+            timeZoneCountry: tz.timeZoneCountry,
             device: deviceFromUa(ua ?? ""),
             browser: browserFromUa(ua ?? ""),
             referrer: cleanReferrer(event.type === "start" ? event.referrer : null, request.headers.get("host")),

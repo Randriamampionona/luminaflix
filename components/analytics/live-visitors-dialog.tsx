@@ -9,11 +9,15 @@ import {
   Link2,
   MapPin,
   Monitor,
+  Network,
   Repeat,
+  ShieldAlert,
+  ShieldQuestion,
   Smartphone,
   Tablet,
   UserCheck,
   UserRound,
+  Clock3,
   X,
 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
@@ -64,6 +68,11 @@ function VisitorCard({
 }) {
   const detailsId = useId();
   const [chatOpen, setChatOpen] = useState(false);
+  // VPN: reputation of the IP, or the device's time zone in another country than the IP.
+  const tzMismatch =
+    !!session.timeZoneCountry && session.country !== "XX" && session.timeZoneCountry !== session.country;
+  const vpnState = session.vpn?.detected ? "vpn" : tzMismatch ? "possible" : null;
+  const vpnLabel = session.vpn?.type && session.vpn.type !== "VPN" ? session.vpn.type : "VPN";
   const DeviceIcon = DEVICE_ICON[session.device as keyof typeof DEVICE_ICON] ?? Monitor;
   const signedIn = session.visitorType === "authenticated";
   // Heartbeats arrive every 60 s while the tab is visible: older than 90 s = probably leaving.
@@ -109,10 +118,36 @@ function VisitorCard({
               {signedIn ? <UserCheck className="h-3 w-3" aria-hidden /> : <UserRound className="h-3 w-3" aria-hidden />}
               {signedIn ? "Signed in" : "Anonymous"}
             </span>
+            {vpnState && (
+              <span
+                title={
+                  vpnState === "vpn"
+                    ? [session.vpn?.type, session.vpn?.provider].filter(Boolean).join(" · ") || "VPN / proxy"
+                    : `Device time zone in ${countryName(session.timeZoneCountry ?? "XX")}, IP in ${countryName(session.country)}`
+                }
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                  vpnState === "vpn"
+                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                    : "border border-amber-500/40 text-amber-600 dark:text-amber-400",
+                )}
+              >
+                {vpnState === "vpn" ? (
+                  <ShieldAlert className="h-3 w-3" aria-hidden />
+                ) : (
+                  <ShieldQuestion className="h-3 w-3" aria-hidden />
+                )}
+                {vpnState === "vpn" ? vpnLabel : "Possible VPN"}
+              </span>
+            )}
           </div>
           <p className="mt-0.5 truncate text-xs text-fg-subtle">
             {signedIn && session.email && session.name ? `${session.email} · ` : ""}
-            {countryName(session.country)} · <span className="capitalize">{session.device}</span> · {session.browser} ·{" "}
+            {countryName(session.country)}
+            {vpnState && session.timeZoneCountry && tzMismatch && (
+              <> (device in {countryName(session.timeZoneCountry)})</>
+            )}{" "}
+            · <span className="capitalize">{session.device}</span> · {session.browser} ·{" "}
             {formatDuration(session.sessionDuration)}
           </p>
         </div>
@@ -202,6 +237,23 @@ function VisitorCard({
             </Meta>
             <Meta icon={Link2} label="Came from">
               {session.referrer ?? "Direct"}
+            </Meta>
+            <Meta icon={Network} label="Network">
+              {session.vpn
+                ? session.vpn.detected
+                  ? [vpnLabel, session.vpn.provider].filter(Boolean).join(" · ")
+                  : "Regular connection"
+                : "Not checked"}
+            </Meta>
+            <Meta icon={Clock3} label="Device time zone">
+              {session.timeZone ? (
+                <span className={cn(tzMismatch && "text-amber-600 dark:text-amber-400")}>
+                  {session.timeZoneCountry ? `${flag(session.timeZoneCountry)} ` : ""}
+                  {session.timeZone.replace(/_/g, " ")}
+                </span>
+              ) : (
+                "—"
+              )}
             </Meta>
             {signedIn && session.userId && (
               <Meta icon={UserCheck} label="User id">

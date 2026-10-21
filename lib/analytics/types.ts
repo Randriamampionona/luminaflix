@@ -29,6 +29,11 @@ export interface AnalyticsSession {
   pageViews: number;
   /** Total number of sessions for this user (signed in) or IP (anonymous), including this one. */
   visitFrequency: number;
+  /** VPN / proxy reputation of the IP (null: not checked / unknown). */
+  vpn?: { detected: boolean; type: string | null; provider: string | null } | null;
+  /** Device time zone (e.g. "Indian/Antananarivo") and its country — a VPN hint when it differs from `country`. */
+  timeZone?: string | null;
+  timeZoneCountry?: string | null;
   /** True while the tab is open and visible; false once it is hidden or closed. */
   online: boolean;
   /** When the visitor last left (tab hidden / closed), null while online. */
@@ -41,7 +46,7 @@ export interface AnalyticsSession {
 
 /** Client → /api/analytics/track */
 export type TrackEvent =
-  | { type: "start"; sessionId: string; path: string; referrer?: string | null }
+  | { type: "start"; sessionId: string; path: string; referrer?: string | null; timeZone?: string }
   /** `newPage`: first visit of this path in the session (the browser keeps the list, max 50). */
   | { type: "page"; sessionId: string; path: string; newPage?: boolean }
   | { type: "ping" | "end"; sessionId: string; activeSeconds: number };
