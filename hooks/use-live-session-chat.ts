@@ -10,8 +10,8 @@ type Rtdb = Awaited<ReturnType<typeof loadRealtimeDb>>;
 interface State {
   sessionId: string;
   room: ChatRoom | null;
-  /** The room existed and is gone: the chat was ended (by either side). */
-  ended: boolean;
+  /** startedAt of the conversation that was just ended (by either side), or null. */
+  endedChat: number | null;
 }
 
 /**
@@ -46,16 +46,23 @@ export function useLiveSessionChat(sessionId: string | null, role: ChatRole) {
           (snapshot) => {
             const room = parseRoom(snapshot.val());
             setConnected(sessionId);
-            setState((prev) => ({
-              sessionId,
-              room,
-              ended: !room && !!(prev?.sessionId === sessionId && prev.room?.startedAt),
-            }));
+            setState((prev) => {
+              const previous = prev?.sessionId === sessionId ? prev : null;
+              return {
+                sessionId,
+                room,
+                // Room gone: remember which conversation ended (kept while there's no new room).
+                endedChat: room ? null : (previous?.room?.startedAt ?? previous?.endedChat ?? null),
+              };
+            });
             // Chat ended (room deleted): drop the pending "offline" write so it
             // doesn't recreate an empty room when the tab closes.
             if (role === "visitor" && !room && presenceFor.current === sessionId) {
               presenceFor.current = null;
-              void fn.onDisconnect(roomRef).cancel().catch(() => {});
+              void fn
+                .onDisconnect(roomRef)
+                .cancel()
+                .catch(() => {});
             }
             // Visitor presence, only once a chat exists (no writes for everyone else).
             if (role === "visitor" && room?.startedAt && presenceFor.current !== sessionId) {
@@ -132,7 +139,9 @@ export function useLiveSessionChat(sessionId: string | null, role: ChatRole) {
     /** "off": no session or chat not configured; "connecting"; "ready". */
     status: !sessionId || !isChatConfigured() ? "off" : connected === sessionId ? "ready" : "connecting",
     room: current?.room ?? null,
-    ended: current?.ended ?? false,
+    ended: (current?.endedChat ?? null) !== null,
+    /** startedAt of the conversation that ended (null if none). */
+    endedChat: current?.endedChat ?? null,
     error,
     send,
     end,

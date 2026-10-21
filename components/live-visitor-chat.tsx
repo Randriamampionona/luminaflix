@@ -32,10 +32,15 @@ export default function LiveVisitorChat() {
   const pathname = usePathname();
   const sessionId = useSyncExternalStore(subscribeSession, readAnalyticsSessionId, () => null);
   const [enabled, setEnabled] = useState(false);
-  const { room, ended, send, end } = useLiveSessionChat(enabled ? sessionId : null, "visitor");
+  const { room, ended, endedChat, send, end } = useLiveSessionChat(enabled ? sessionId : null, "visitor");
   const [minimized, setMinimized] = useState(false);
   const [seenAt, setSeenAt] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
+  /**
+   * The conversation the visitor closed (its startedAt). A NEW conversation
+   * from the admin has another startedAt, so the widget opens again for it —
+   * no reload needed.
+   */
+  const [closedChat, setClosedChat] = useState<number | null>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -49,7 +54,11 @@ export default function LiveVisitorChat() {
   const messages = room?.messages ?? [];
   const lastAdminAt = messages.filter((m) => m.from === "admin").at(-1)?.at ?? 0;
   const unread = minimized ? messages.filter((m) => m.from === "admin" && m.at > seenAt).length : 0;
-  const visible = !dismissed && pathname !== "/launch" && pathname !== "/bot-filter" && (lastAdminAt > 0 || ended);
+  const startedAt = room?.startedAt ?? null;
+  // A live conversation not closed by the visitor, or the "ended" notice of one.
+  const showsChat =
+    startedAt !== null ? startedAt !== closedChat && lastAdminAt > 0 : endedChat !== null && endedChat !== closedChat;
+  const visible = showsChat && pathname !== "/launch" && pathname !== "/bot-filter";
 
   // Keep the newest message in view.
   useEffect(() => {
@@ -123,7 +132,10 @@ export default function LiveVisitorChat() {
         <button
           type="button"
           onClick={() => {
-            setDismissed(true);
+            setClosedChat(startedAt ?? endedChat ?? -1);
+            // The next conversation opens expanded, with a fresh unread count.
+            setMinimized(false);
+            setSeenAt(Date.now());
             if (!ended) void end();
           }}
           aria-label={t("close")}

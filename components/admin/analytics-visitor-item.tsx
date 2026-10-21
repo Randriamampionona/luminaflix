@@ -119,7 +119,11 @@ export function VisitorChatPanel({ sessionId, visitorLabel }: { sessionId: strin
               </p>
             </div>
           ))}
-          {ended && <p className="text-center text-[11px] text-fg-subtle">Chat ended — every message was deleted.</p>}
+          {ended && (
+            <p className="text-center text-[11px] text-fg-subtle">
+              Chat ended — every message was deleted. Send a new message to start another one.
+            </p>
+          )}
         </div>
       )}
 
@@ -130,53 +134,52 @@ export function VisitorChatPanel({ sessionId, visitorLabel }: { sessionId: strin
         </p>
       )}
 
-      {!ended && (
-        <div className="space-y-2 border-t border-line p-3">
-          {!started && (
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_REPLIES.map((reply) => (
-                <button
-                  key={reply}
-                  type="button"
-                  disabled={sending || status !== "ready"}
-                  onClick={() => void dispatch(reply)}
-                  className="cursor-pointer rounded-full border border-cyan-500/30 bg-cyan-500/5 px-3 py-1.5 text-left text-[11px] font-semibold text-fg-soft transition-colors hover:border-cyan-500/60 hover:text-foreground disabled:cursor-wait disabled:opacity-50"
-                >
-                  {reply}
-                </button>
-              ))}
-            </div>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void dispatch(text);
-            }}
-            className="flex gap-2"
+      {/* Composer: always available — after an ended chat, sending starts a new one. */}
+      <div className="space-y-2 border-t border-line p-3">
+        {(!started || ended) && (
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_REPLIES.map((reply) => (
+              <button
+                key={reply}
+                type="button"
+                disabled={sending || status !== "ready"}
+                onClick={() => void dispatch(reply)}
+                className="cursor-pointer rounded-full border border-cyan-500/30 bg-cyan-500/5 px-3 py-1.5 text-left text-[11px] font-semibold text-fg-soft transition-colors hover:border-cyan-500/60 hover:text-foreground disabled:cursor-wait disabled:opacity-50"
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void dispatch(text);
+          }}
+          className="flex gap-2"
+        >
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={CHAT_MAX_LENGTH}
+            placeholder={started && !ended ? "Reply…" : "Or write your own message…"}
+            aria-label="Message"
+            className="min-w-0 flex-1 rounded-xl border border-line-strong bg-background/70 px-3 py-2 text-xs text-foreground outline-none placeholder:text-fg-faint focus:border-cyan-500/60"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || sending || status !== "ready"}
+            aria-label="Send"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-cyan-500 text-black transition-colors hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              maxLength={CHAT_MAX_LENGTH}
-              placeholder={started ? "Reply…" : "Or write your own message…"}
-              aria-label="Message"
-              className="min-w-0 flex-1 rounded-xl border border-line-strong bg-background/70 px-3 py-2 text-xs text-foreground outline-none placeholder:text-fg-faint focus:border-cyan-500/60"
-            />
-            <button
-              type="submit"
-              disabled={!text.trim() || sending || status !== "ready"}
-              aria-label="Send"
-              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-cyan-500 text-black transition-colors hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {sending ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : (
-                <Send className="h-4 w-4" aria-hidden />
-              )}
-            </button>
-          </form>
-        </div>
-      )}
+            {sending ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Send className="h-4 w-4" aria-hidden />
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
