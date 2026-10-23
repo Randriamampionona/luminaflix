@@ -70,15 +70,32 @@ export default function StreamPlayer({
   const isEpisode = kind !== "movie";
 
   const [groupKey, setGroupKey] = useState<ProviderGroup["key"]>(groups[0].key);
-  const [sourceId, setSourceId] = useState<string>(groups[0].providers[0].id);
+  /** Server picked by the user; null = automatic (first server, or the French one that has the title). */
+  const [sourceId, setSourceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
-  const activeSource: Provider =
-    activeGroup.providers.find((p) => p.id === sourceId) ?? activeGroup.providers[0];
 
-  const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
+  // French tab: check silently which French player has this title / episode —
+  // VIDZY first (in its first French language), then Frembed — otherwise offer
+  // (then switch to) an English server.
+  const isFrenchTab = activeGroup.key === "fr" || activeGroup.key === "vf";
+  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: isFrenchTab });
+  const autoSourceId =
+    isFrenchTab && availability.provider === "frembed"
+      ? (activeGroup.providers.find((p) => p.id.startsWith("frembed"))?.id ?? activeGroup.providers[0].id)
+      : activeGroup.providers[0].id;
+  const activeSource: Provider =
+    activeGroup.providers.find((p) => p.id === (sourceId ?? autoSourceId)) ?? activeGroup.providers[0];
+
+  const embedUrl = activeSource.url({
+    mediaId,
+    imdbId,
+    season,
+    episode,
+    frLang: availability.lang ?? undefined,
+  });
   const splash = tmdbImage(backdropPath || posterPath);
 
   // Custom fullscreen: lock scroll + orientation, Escape exits, always restore.
@@ -105,7 +122,7 @@ export default function StreamPlayer({
     };
   }, [isFullscreen]);
 
-  const selectSource = useCallback((id: string) => {
+  const selectSource = useCallback((id: string | null) => {
     setSourceId(id);
     setIsFullscreen(false);
     setIsPlaying(false);
@@ -116,20 +133,17 @@ export default function StreamPlayer({
       const group = groups.find((g) => g.key === key);
       if (!group) return;
       setGroupKey(key);
-      selectSource(group.providers[0].id);
+      selectSource(null); // automatic choice in that tab
     },
     [groups, selectSource],
   );
 
-  // Frembed (FR) is the default server: check silently that it has this
-  // title / episode, otherwise offer (then switch to) an English server.
-  const onFrembed = activeSource.id.startsWith("frembed");
-  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: onFrembed });
+  const onFrenchPlayer = isFrenchTab && (activeSource.id === "vidzy" || activeSource.id.startsWith("frembed"));
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const englishGroup = groups.find((g) => g.key === "en" || g.key === "vo");
   const contentKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
   const showFrUnavailable =
-    onFrembed && availability === "unavailable" && !!englishGroup && dismissedFor !== contentKey;
+    onFrenchPlayer && availability.status === "unavailable" && !!englishGroup && dismissedFor !== contentKey;
 
   const switchToEnglish = useCallback(() => {
     if (!englishGroup) return;

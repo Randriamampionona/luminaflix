@@ -4,29 +4,44 @@ import { useEffect, useState } from "react";
 import type { PlayerKind } from "@/components/player/providers";
 
 type Status = "checking" | "available" | "unavailable" | "unknown";
+type FrLang = "vf" | "vostfr";
+
+interface FrAvailability {
+  status: Status;
+  /** French player that has the title: VIDZY first, then Frembed. */
+  provider: "vidzy" | "frembed" | null;
+  /** VIDZY language to open ("vf" before "vostfr", in Vidzy's order). */
+  lang: FrLang | null;
+}
+
+const UNKNOWN: FrAvailability = { status: "unknown", provider: null, lang: null };
+const CHECKING: FrAvailability = { status: "checking", provider: null, lang: null };
 
 /** Same title asked twice in a visit (switching tabs/episodes back and forth): one request. */
-const cache = new Map<string, Promise<Status>>();
+const cache = new Map<string, Promise<FrAvailability>>();
 
 function check(url: string) {
   let pending = cache.get(url);
   if (!pending) {
     pending = fetch(url)
       .then((res) => (res.ok ? res.json() : { available: null }))
-      .then((body: { available?: boolean | null }) =>
-        body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
-      )
-      .catch(() => "unknown" as const);
+      .then((body: { available?: boolean | null; provider?: string | null; lang?: string | null }) => ({
+        status: body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
+        provider: body.provider === "vidzy" || body.provider === "frembed" ? body.provider : null,
+        lang: body.lang === "vf" || body.lang === "vostfr" ? body.lang : null,
+      }))
+      .catch(() => UNKNOWN) as Promise<FrAvailability>;
     // Don't keep "unknown" (network hiccup): ask again next time.
-    void pending.then((status) => status === "unknown" && cache.delete(url));
+    void pending.then((r) => r.status === "unknown" && cache.delete(url));
     cache.set(url, pending);
   }
   return pending;
 }
 
 /**
- * Silent background check: is this movie / episode on Frembed (the default FR
- * player)? Only runs while `enabled` (a Frembed server is selected).
+ * Silent background check of the French players (app/api/player/availability):
+ * which one has this movie / episode (VIDZY, then Frembed), in which language,
+ * or none. Only runs while `enabled` (the French tab is selected).
  */
 export function useFrembedAvailability({
   kind,
@@ -42,7 +57,7 @@ export function useFrembedAvailability({
   season?: number;
   episode?: number;
   enabled: boolean;
-}): Status {
+}): FrAvailability {
   const params = new URLSearchParams({ kind, id: mediaId });
   if (imdbId) params.set("imdb", imdbId);
   if (kind !== "movie") {
@@ -50,19 +65,19 @@ export function useFrembedAvailability({
     params.set("e", String(episode ?? 1));
   }
   const url = `/api/player/availability?${params}`;
-  const [result, setResult] = useState<{ url: string; status: Status } | null>(null);
+  const [result, setResult] = useState<{ url: string; value: FrAvailability } | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    void check(url).then((status) => {
-      if (active) setResult({ url, status });
+    void check(url).then((value) => {
+      if (active) setResult({ url, value });
     });
     return () => {
       active = false;
     };
   }, [url, enabled]);
 
-  if (!enabled) return "unknown";
-  return result?.url === url ? result.status : "checking";
+  if (!enabled) return UNKNOWN;
+  return result?.url === url ? result.value : CHECKING;
 }
