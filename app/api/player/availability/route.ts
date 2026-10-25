@@ -1,10 +1,10 @@
 /**
  * GET /api/player/availability?kind=movie|anime|drama&id=<tmdb>&imdb=<tt…>&s=<season>&e=<episode>
- * → { available: true | false | null, provider: "vidzy" | "frembed" | null, lang: "vf" | "vostfr" | null, version }
+ * → { available: true | false | null, provider: "vidzy" | "frembed" | null, langs: ("vf" | "vostfr")[], lang, version }
  *
  * Which French (VF / VOSTFR) player has this title / episode, in this order:
  * 1. VIDZY  — https://vidzy.org/api/{tmdbId} (TMDB ids only): `available`, `detectedType`,
- *    `languages` (first of "vf" / "vostfr" in the list is used), `seasons[].episodes` for series.
+ *    `languages` (every "vf" / "vostfr" in VIDZY's order → one VIDZY server each), `seasons[].episodes` for series.
  * 2. FREMBED — public JSON API (https://frembed.bar/api-docs):
  *    movies /api/public/v1/movies/{id} (total), series /tv/{id}?sa=&epi= (totalItems),
  *    anime /anime/{id}?sa=&epi= (404 when absent, /tv as a fallback).
@@ -23,7 +23,7 @@ const FR_LANGS = ["vf", "vostfr"] as const;
 type Kind = "movie" | "anime" | "drama" | "tv";
 type FrLang = (typeof FR_LANGS)[number];
 type Check = { available: boolean | null; version: string | null };
-type Result = Check & { provider: "vidzy" | "frembed" | null; lang: FrLang | null };
+type Result = Check & { provider: "vidzy" | "frembed" | null; langs: FrLang[]; lang: FrLang | null };
 
 async function getJson<T>(url: string): Promise<T | "not-found" | null> {
   try {
@@ -54,24 +54,25 @@ async function checkVidzy(
   id: string,
   season: number,
   episode: number,
-): Promise<{ available: boolean | null; lang: FrLang | null }> {
+): Promise<{ available: boolean | null; langs: FrLang[] }> {
   const data = await getJson<VidzyResponse>(`${VIDZY}/api/${id}`);
-  if (data === null) return { available: null, lang: null };
-  if (data === "not-found" || data.available !== true) return { available: false, lang: null };
+  if (data === null) return { available: null, langs: [] };
+  if (data === "not-found" || data.available !== true) return { available: false, langs: [] };
   // Same id can be a movie on TMDB and a series: only accept the right type.
   if (data.detectedType && data.detectedType !== (kind === "movie" ? "movie" : "tv")) {
-    return { available: false, lang: null };
+    return { available: false, langs: [] };
   }
-  // First French language in Vidzy's own order (e.g. ["vf", "vostfr"] → "vf").
-  const languages = Array.isArray(data.languages) ? data.languages.map(String) : [];
-  const lang = (languages.find((l): l is FrLang => (FR_LANGS as readonly string[]).includes(l)) ??
-    null) as FrLang | null;
-  if (!lang) return { available: false, lang: null };
+  // Every French language, in VIDZY's own order (["vf", "vostfr"] → VF first, then VOSTFR).
+  const languages = Array.isArray(data.languages) ? data.languages.map((l) => String(l).toLowerCase()) : [];
+  const langs = FR_LANGS.filter((l) => languages.includes(l)).sort(
+    (a, b) => languages.indexOf(a) - languages.indexOf(b),
+  );
+  if (!langs.length) return { available: false, langs: [] };
   if (kind !== "movie" && Array.isArray(data.seasons)) {
     const s = data.seasons.find((x) => x.season === season);
-    if (!s?.episodes?.includes(episode)) return { available: false, lang: null };
+    if (!s?.episodes?.includes(episode)) return { available: false, langs: [] };
   }
-  return { available: true, lang };
+  return { available: true, langs };
 }
 
 // ---------------------------------------------------------------- FREMBED --
@@ -136,14 +137,20 @@ export async function GET(request: Request) {
 
   let result: Result;
   if (vidzy.available) {
-    result = { available: true, provider: "vidzy", lang: vidzy.lang, version: vidzy.lang?.toUpperCase() ?? null };
+    result = {
+      available: true,
+      provider: "vidzy",
+      langs: vidzy.langs,
+      lang: vidzy.langs[0],
+      version: vidzy.langs.map((l) => l.toUpperCase()).join(" + "),
+    };
   } else if (frembedCheck.available) {
-    result = { available: true, provider: "frembed", lang: null, version: frembedCheck.version };
+    result = { available: true, provider: "frembed", langs: [], lang: null, version: frembedCheck.version };
   } else if (vidzy.available === false && frembedCheck.available === false) {
-    result = { available: false, provider: null, lang: null, version: null };
+    result = { available: false, provider: null, langs: [], lang: null, version: null };
   } else {
     // One of the two couldn't be reached: don't claim "not available in French".
-    result = { available: null, provider: null, lang: null, version: null };
+    result = { available: null, provider: null, langs: [], lang: null, version: null };
   }
 
   return Response.json(result, {

@@ -10,12 +10,12 @@ interface FrAvailability {
   status: Status;
   /** French player that has the title: VIDZY first, then Frembed. */
   provider: "vidzy" | "frembed" | null;
-  /** VIDZY language to open ("vf" before "vostfr", in Vidzy's order). */
-  lang: FrLang | null;
+  /** Every French language VIDZY has, in its order (one VIDZY server each). */
+  langs: FrLang[];
 }
 
-const UNKNOWN: FrAvailability = { status: "unknown", provider: null, lang: null };
-const CHECKING: FrAvailability = { status: "checking", provider: null, lang: null };
+const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [] };
+const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [] };
 
 /** Same title asked twice in a visit (switching tabs/episodes back and forth): one request. */
 const cache = new Map<string, Promise<FrAvailability>>();
@@ -25,10 +25,10 @@ function check(url: string) {
   if (!pending) {
     pending = fetch(url)
       .then((res) => (res.ok ? res.json() : { available: null }))
-      .then((body: { available?: boolean | null; provider?: string | null; lang?: string | null }) => ({
+      .then((body: { available?: boolean | null; provider?: string | null; langs?: unknown }) => ({
         status: body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
         provider: body.provider === "vidzy" || body.provider === "frembed" ? body.provider : null,
-        lang: body.lang === "vf" || body.lang === "vostfr" ? body.lang : null,
+        langs: Array.isArray(body.langs) ? body.langs.filter((l): l is FrLang => l === "vf" || l === "vostfr") : [],
       }))
       .catch(() => UNKNOWN) as Promise<FrAvailability>;
     // Don't keep "unknown" (network hiccup): ask again next time.

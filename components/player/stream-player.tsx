@@ -81,24 +81,33 @@ export default function StreamPlayer({
   const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
 
   // French tab: check silently which French player has this title / episode —
-  // VIDZY first (in its first French language), then Frembed — otherwise offer
-  // (then switch to) an English server.
+  // VIDZY first (one server per language it has: VF, VOSTFR), then Frembed —
+  // otherwise offer (then switch to) an English server.
   const isFrenchTab = activeGroup.key === "fr" || activeGroup.key === "vf";
   const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: isFrenchTab });
+  const checked = availability.status === "available" || availability.status === "unavailable";
+  // Once checked, only the VIDZY languages that exist are listed (VF, VOSTFR or both).
+  const providers =
+    isFrenchTab && checked
+      ? activeGroup.providers.filter(
+          (p) => !p.id.startsWith("vidzy_") || availability.langs.includes(p.id.slice(6) as "vf" | "vostfr"),
+        )
+      : activeGroup.providers;
+  const firstOf = (prefix: string) => providers.find((p) => p.id.startsWith(prefix))?.id;
   const autoSourceId =
-    isFrenchTab && availability.provider === "frembed"
-      ? (activeGroup.providers.find((p) => p.id.startsWith("frembed"))?.id ?? activeGroup.providers[0].id)
-      : activeGroup.providers[0].id;
+    (isFrenchTab && availability.provider === "vidzy" && availability.langs[0] && `vidzy_${availability.langs[0]}`) ||
+    (isFrenchTab && availability.provider === "frembed" && firstOf("frembed")) ||
+    // Neither has it: the first French server that isn't VIDZY (the notice offers English).
+    (isFrenchTab && availability.status === "unavailable" && (firstOf("frembed") ?? providers[0]?.id)) ||
+    providers[0]?.id ||
+    activeGroup.providers[0].id;
+  // A manual pick that's no longer listed (e.g. VOSTFR not available) falls back to the automatic choice.
   const activeSource: Provider =
-    activeGroup.providers.find((p) => p.id === (sourceId ?? autoSourceId)) ?? activeGroup.providers[0];
+    providers.find((p) => p.id === sourceId) ??
+    providers.find((p) => p.id === autoSourceId) ??
+    activeGroup.providers[0];
 
-  const embedUrl = activeSource.url({
-    mediaId,
-    imdbId,
-    season,
-    episode,
-    frLang: availability.lang ?? undefined,
-  });
+  const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
   const splash = tmdbImage(backdropPath || posterPath);
 
   // Custom fullscreen: lock scroll + orientation, Escape exits, always restore.
@@ -141,7 +150,7 @@ export default function StreamPlayer({
     [groups, selectSource],
   );
 
-  const onFrenchPlayer = isFrenchTab && (activeSource.id === "vidzy" || activeSource.id.startsWith("frembed"));
+  const onFrenchPlayer = isFrenchTab && (activeSource.id.startsWith("vidzy_") || activeSource.id.startsWith("frembed"));
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const englishGroup = groups.find((g) => g.key === "en" || g.key === "vo");
   const contentKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
@@ -303,7 +312,7 @@ export default function StreamPlayer({
           aria-label={t("servers")}
           className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2 sm:gap-4 lg:grid-cols-3"
         >
-          {activeGroup.providers.map((provider) => {
+          {providers.map((provider) => {
             const Icon = provider.icon;
             const isActive = activeSource.id === provider.id;
             return (

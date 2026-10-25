@@ -1,5 +1,6 @@
 import {
   Boxes,
+  Captions,
   Clapperboard,
   Crown,
   FastForward,
@@ -18,7 +19,8 @@ import {
 
 /**
  * Stream sources for the unified player (components/player/stream-player.tsx).
- * The FIRST group is French everywhere, and its FIRST provider is VIDZY.
+ * The FIRST group is French everywhere, starting with VIDZY: one server per
+ * language (VF, VOSTFR) — the player only shows the languages VIDZY has.
  * app/api/player/availability checks in the background which French player
  * has the title (VIDZY first, then Frembed): the player opens VIDZY in the
  * right language, switches to Frembed if only Frembed has it, and offers an
@@ -29,8 +31,6 @@ export interface StreamTarget {
   imdbId?: string;
   season?: number;
   episode?: number;
-  /** VIDZY language found by the availability check ("vf" before "vostfr"). */
-  frLang?: "vf" | "vostfr";
 }
 
 export interface Provider {
@@ -57,15 +57,14 @@ const FREMBED = (process.env.NEXT_PUBLIC_FREMBED_BASE_URL || "https://frembed.ba
 
 /** VIDZY's domain (TMDB ids only). NEXT_PUBLIC_ for the same reason; redeploy after changing it. */
 const VIDZY = (process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org").replace(/\/+$/, "");
-/** "/vf", "/vostfr" or "" (until the check knows the language). */
-const lang = (t: StreamTarget) => (t.frLang ? `/${t.frLang}` : "");
 
 const s = (t: StreamTarget) => t.season ?? 1;
 const e = (t: StreamTarget) => t.episode ?? 1;
 
 /** One distinct icon per source, identical in every tab it appears in. */
 const ICONS = {
-  vidzy: Star,
+  vidzyVf: Star,
+  vidzyVostfr: Captions,
   frembedTmdb: Clapperboard,
   frembedImdb: Film,
   frembed: Tv2,
@@ -86,7 +85,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "fr",
       providers: [
-        { name: "Lumina VIDZY (FR)", id: "vidzy", icon: ICONS.vidzy, url: (t) => `${VIDZY}/movie/${t.mediaId}${lang(t)}` },
+        { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/movie/${t.mediaId}/vf` },
+        { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/movie/${t.mediaId}/vostfr` },
         { name: "Lumina frembed.bar TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `${FREMBED}/embed/movie/${t.mediaId}` },
         { name: "Lumina frembed.bar IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
       ],
@@ -109,7 +109,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina VIDZY (FR)", id: "vidzy", icon: ICONS.vidzy, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}${lang(t)}` },
+        { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vf` },
+        { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vostfr` },
         { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
       ],
     },
@@ -134,7 +135,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina VIDZY (FR)", id: "vidzy", icon: ICONS.vidzy, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}${lang(t)}` },
+        { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vf` },
+        { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vostfr` },
         { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
         { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
       ],
@@ -158,7 +160,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
     {
       key: "vf",
       providers: [
-        { name: "Lumina VIDZY (FR)", id: "vidzy", icon: ICONS.vidzy, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}${lang(t)}` },
+        { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vf` },
+        { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}/vostfr` },
         { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
         { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
       ],
