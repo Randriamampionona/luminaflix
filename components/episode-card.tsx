@@ -19,7 +19,7 @@ function EpisodeCard({
   ep: AnimeEpisode;
   seriesId: string;
   seasonNumber: number;
-  path: "anime" | "k-drama";
+  path: "anime" | "k-drama" | "tv-shows";
 }) {
   const t = useTranslations();
 

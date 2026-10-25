@@ -23,13 +23,13 @@ export default async function SectionSearchResults({
   result: Promise<SmartSearchResult>;
   page: number;
   mode: string;
-  section: "anime" | "k-drama";
+  section: "anime" | "k-drama" | "tv-shows";
 }) {
   const data = result.then((r) => r.data);
   const streamKey = `${query}:${page}:${mode}`;
   const basePath = `/${section}/search/${encodeURIComponent(query)}`;
   const [t, tNav] = await Promise.all([getTranslations("search"), getTranslations("nav")]);
-  const sectionLabel = section === "anime" ? tNav("anime") : tNav("kdrama");
+  const sectionLabel = section === "anime" ? tNav("anime") : section === "k-drama" ? tNav("kdrama") : tNav("tvShows");
 
   return (
     <PageShell>
@@ -60,7 +60,7 @@ export default async function SectionSearchResults({
         data={data}
         streamKey={streamKey}
         transform={withOriginalTitle}
-        kind={section === "anime" ? "anime" : "tv"}
+        kind={section === "anime" ? "anime" : section === "k-drama" ? "kdrama" : "tv"}
         page={page}
         basePath={basePath}
         searchParams={mode === "off" ? { ai: "0" } : undefined}

@@ -132,7 +132,8 @@
       "example3": "Korean drama about a pilot who lands in North Korea",
       "enterHint": "to search",
       "toggleHint": "open / close"
-    }
+    },
+    "tvPlaceholder": "Search TV shows…"
   },
   "footer": {
     "tagline": "Movies, series, anime and K-dramas in one place. Pick a title, press play, and share it with the people you watch with.",
@@ -399,7 +400,8 @@
       "unavailable": {
         "movie": "This movie is currently unavailable in VF/VOSTFR.",
         "drama": "This K-drama episode is currently unavailable in VF/VOSTFR.",
-        "anime": "This anime episode is currently unavailable in VF/VOSTFR."
+        "anime": "This anime episode is currently unavailable in VF/VOSTFR.",
+        "tv": "This TV show episode is currently unavailable in VF/VOSTFR."
       },
       "hint": "Please check back later or switch to an English provider.",
       "switch": "Switch to EN provider",
@@ -964,7 +966,8 @@
     "kinds": {
       "movie": "Movie",
       "anime": "Anime",
-      "drama": "K-Drama"
+      "drama": "K-Drama",
+      "tv": "TV Show"
     },
     "seasonsValue": "{seasons, plural, one {# season} other {# seasons}} · {episodes, plural, =0 {episodes soon} one {# episode} other {# episodes}}"
   },

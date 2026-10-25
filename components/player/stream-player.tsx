@@ -50,6 +50,9 @@ function getOrientation(): LockableOrientation | undefined {
  * AnimePlayer and DramaPlayer, which were ~95% duplicated). Sources come
  * from PLAYER_CONFIG and are unchanged.
  */
+/** Route section of each player kind (share links). */
+const SECTION: Record<PlayerKind, string> = { movie: "movies", anime: "anime", drama: "k-drama", tv: "tv-shows" };
+
 export default function StreamPlayer({
   kind,
   mediaId,
@@ -351,7 +354,7 @@ export default function StreamPlayer({
             path:
               kind === "movie"
                 ? `/movies/${mediaId}`
-                : `/${kind === "anime" ? "anime" : "k-drama"}/play/${mediaId}?s=${season ?? 1}&e=${episode ?? 1}`,
+                : `/${SECTION[kind]}/play/${mediaId}?s=${season ?? 1}&e=${episode ?? 1}`,
             posterPath,
             overview,
             year: releaseYear,
@@ -360,7 +363,7 @@ export default function StreamPlayer({
               ? `S${season ?? 1} · E${episode ?? 1}${episodeName ? ` — ${episodeName}` : ""}`
               : null,
             // Episodes: also give the series page (all seasons & episodes).
-            seriesPath: isEpisode ? `/${kind === "anime" ? "anime" : "k-drama"}/${mediaId}` : null,
+            seriesPath: isEpisode ? `/${SECTION[kind]}/${mediaId}` : null,
           }}
         />
 

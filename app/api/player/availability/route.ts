@@ -20,7 +20,7 @@ const FREMBED_API = `${clean(process.env.NEXT_PUBLIC_FREMBED_BASE_URL || process
 const CACHE_SECONDS = 600;
 const FR_LANGS = ["vf", "vostfr"] as const;
 
-type Kind = "movie" | "anime" | "drama";
+type Kind = "movie" | "anime" | "drama" | "tv";
 type FrLang = (typeof FR_LANGS)[number];
 type Check = { available: boolean | null; version: string | null };
 type Result = Check & { provider: "vidzy" | "frembed" | null; lang: FrLang | null };
@@ -122,7 +122,7 @@ export async function GET(request: Request) {
   const season = Number(params.get("s") || 1);
   const episode = Number(params.get("e") || 1);
 
-  if (!["movie", "anime", "drama"].includes(kind) || !/^\d{1,9}$/.test(id)) {
+  if (!["movie", "anime", "drama", "tv"].includes(kind) || !/^\d{1,9}$/.test(id)) {
     return Response.json({ error: "invalid" }, { status: 400 });
   }
   if (!Number.isInteger(season) || !Number.isInteger(episode) || season < 0 || episode < 1) {

@@ -1,7 +1,8 @@
+import { isKoreanSeries } from "@/lib/media";
 import { searchFilteredTv } from "@/lib/search/tmdb-search";
 import type { Movie, TMDBResponse } from "@/typing";
 
-const isKorean = (item: Movie) => Boolean(item.origin_country?.includes("KR") || item.original_language === "ko");
+const isKorean = (item: Movie) => isKoreanSeries(item);
 
 /**
  * K-drama search (Korean series on TMDB). Reads several TMDB pages per app

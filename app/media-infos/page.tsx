@@ -23,7 +23,7 @@ export default async function MediaInfosPage({ searchParams }: { searchParams: S
   }
 
   const { type, id } = await searchParams;
-  const kind: InfoKind = type === "anime" || type === "kdrama" ? type : "movie";
+  const kind: InfoKind = type === "anime" || type === "kdrama" || type === "tv" ? type : "movie";
   return (
     <PageShell>
       <MediaInfosExplorer initialKind={kind} initialId={id ?? ""} />

@@ -39,7 +39,7 @@ interface Details {
   credits?: { cast?: { name: string; character?: string; profile_path?: string | null }[] };
 }
 
-const KINDS: InfoKind[] = ["movie", "anime", "kdrama"];
+const KINDS: InfoKind[] = ["movie", "anime", "kdrama", "tv"];
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 export async function GET(request: Request) {
@@ -75,7 +75,8 @@ export async function GET(request: Request) {
   if (!d?.id) return json({ error: "not-found" }, 404);
 
   const date = d.release_date || d.first_air_date || null;
-  const routeBase = kind === "movie" ? "/movies" : kind === "anime" ? "/anime" : "/k-drama";
+  const routeBase =
+    kind === "movie" ? "/movies" : kind === "anime" ? "/anime" : kind === "tv" ? "/tv-shows" : "/k-drama";
   const info: MediaInfo = {
     kind,
     tmdbId: d.id,

@@ -132,7 +132,8 @@
       "example3": "une héritière coréenne qui atterrit en Corée du Nord en parapente",
       "enterHint": "pour rechercher",
       "toggleHint": "ouvrir / fermer"
-    }
+    },
+    "tvPlaceholder": "Rechercher une série…"
   },
   "footer": {
     "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",
@@ -399,7 +400,8 @@
       "unavailable": {
         "movie": "Ce film n'est pas encore disponible en VF/VOSTFR.",
         "drama": "Cet épisode de K-drama n'est pas encore disponible en VF/VOSTFR.",
-        "anime": "Cet épisode d'anime n'est pas encore disponible en VF/VOSTFR."
+        "anime": "Cet épisode d'anime n'est pas encore disponible en VF/VOSTFR.",
+        "tv": "Cet épisode de série n'est pas encore disponible en VF/VOSTFR."
       },
       "hint": "Revenez plus tard ou passez sur un lecteur en anglais.",
       "switch": "Passer au lecteur EN",
@@ -964,7 +966,8 @@
     "kinds": {
       "movie": "Film",
       "anime": "Anime",
-      "drama": "K-Drama"
+      "drama": "K-Drama",
+      "tv": "Série"
     },
     "seasonsValue": "{seasons, plural, one {# saison} other {# saisons}} · {episodes, plural, =0 {épisodes à venir} one {# épisode} other {# épisodes}}"
   },

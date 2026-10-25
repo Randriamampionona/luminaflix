@@ -48,6 +48,12 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
       },
       {
+        name: "TV Shows",
+        short_name: "TV Shows",
+        url: "/launch?to=/tv-shows",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+      {
         name: "Anime",
         short_name: "Anime",
         url: "/launch?to=/anime",

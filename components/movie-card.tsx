@@ -37,7 +37,8 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
     [open],
   );
 
-  const badge = type === "anime" ? t("anime") : type === "tv" ? t("series") : t("quality4k");
+  const badge =
+    type === "anime" ? t("anime") : type === "kdrama" ? t("kdrama") : type === "tv" ? t("series") : t("quality4k");
 
   return (
     <div

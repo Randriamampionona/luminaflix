@@ -35,6 +35,7 @@ const KINDS: { key: InfoKind; label: string; icon: LucideIcon }[] = [
   { key: "movie", label: "Movie", icon: Film },
   { key: "anime", label: "Anime", icon: Sparkles },
   { key: "kdrama", label: "K-Drama", icon: Tv },
+  { key: "tv", label: "TV Show", icon: Clapperboard },
 ];
 
 const ERRORS: Record<string, string> = {

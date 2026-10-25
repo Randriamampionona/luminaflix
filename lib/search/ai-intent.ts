@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { OpenAIError, getModel, isOpenAIConfigured, openaiRequest, resetModels } from "@/lib/ai/openai";
 
-export type SearchScope = "all" | "anime" | "kdrama";
+export type SearchScope = "all" | "anime" | "kdrama" | "tv";
 
 export interface SearchIntent {
   detectedLanguage: "fr" | "en" | "mg" | "other";
@@ -18,6 +18,7 @@ const SCOPE_HINT: Record<SearchScope, string> = {
   all: "movies and TV series of any country",
   anime: "Japanese anime series (TV)",
   kdrama: "Korean dramas (K-dramas, TV series)",
+  tv: "TV series of any country (not movies, not anime)",
 };
 
 const SYSTEM_PROMPT = `You are a media metadata resolver for a streaming catalog backed by TMDB (The Movie Database).

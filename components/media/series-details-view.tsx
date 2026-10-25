@@ -22,7 +22,7 @@ export default async function SeriesDetailsView({
 }: {
   series: SeriesDetails | null;
   initialEpisodes: AnimeEpisode[];
-  path: "anime" | "k-drama";
+  path: "anime" | "k-drama" | "tv-shows";
 }) {
   const t = await getTranslations("details");
 
@@ -94,7 +94,7 @@ export default async function SeriesDetailsView({
         <ShareCard
           info={{
             title: series.name,
-            kind: path === "anime" ? "anime" : "drama",
+            kind: path === "anime" ? "anime" : path === "k-drama" ? "drama" : "tv",
             path: `/${path}/${series.id}`,
             posterPath: series.poster_path,
             overview: series.overview,

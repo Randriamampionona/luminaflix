@@ -43,7 +43,8 @@ export async function TopFilmsRow() {
 
 export async function TopTvRow() {
   const [t, shows] = await Promise.all([getTranslations("home"), getTrendingTV()]);
-  return <MovieRow title={t("topTv")} movies={shows} type="tv" />;
+  // No fixed type: each series opens in its section (K-Drama, Anime or TV Shows).
+  return <MovieRow title={t("topTv")} movies={shows} />;
 }
 
 export async function LatestRow() {

@@ -36,7 +36,7 @@ export default async function EpisodePlayView({
   episodes: AnimeEpisode[];
   season: number;
   episode: number;
-  path: "anime" | "k-drama";
+  path: "anime" | "k-drama" | "tv-shows";
   interaction: Promise<MediaInteraction>;
 }) {
   const t = await getTranslations("details");
@@ -95,7 +95,7 @@ export default async function EpisodePlayView({
       </header>
 
       <StreamPlayer
-        kind={path === "anime" ? "anime" : "drama"}
+        kind={path === "anime" ? "anime" : path === "k-drama" ? "drama" : "tv"}
         mediaId={String(series.id)}
         season={season}
         episode={episode}

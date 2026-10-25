@@ -48,7 +48,7 @@ export default function EpisodeExplorer({
   seriesId: string;
   initialEpisodes: AnimeEpisode[];
   seasons: Season[];
-  path: "anime" | "k-drama";
+  path: "anime" | "k-drama" | "tv-shows";
 }) {
   const t = useTranslations("episodes");
   const tc = useTranslations("common");

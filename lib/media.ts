@@ -1,13 +1,18 @@
 import type { Movie } from "@/typing";
 
 /** Which section/route a title belongs to. */
-export type MediaKind = "movie" | "tv" | "anime";
+export type MediaKind = "movie" | "tv" | "kdrama" | "anime";
 
 const BASE_ROUTE: Record<MediaKind, string> = {
   movie: "/movies",
-  tv: "/k-drama", // generic TMDB TV route (episodes + player)
+  tv: "/tv-shows", // series of any country (episodes + player)
+  kdrama: "/k-drama", // Korean series
   anime: "/anime",
 };
+
+/** Korean series → K-Drama section. */
+export const isKoreanSeries = (item: Pick<Movie, "origin_country" | "original_language">) =>
+  Boolean(item.origin_country?.includes("KR") || item.original_language === "ko");
 
 export function getDisplayTitle(item: Pick<Movie, "title" | "name">) {
   return item.title || item.name || "";
@@ -17,14 +22,15 @@ export function getReleaseYear(item: Pick<Movie, "release_date" | "first_air_dat
   return (item.release_date || item.first_air_date || "").split("-")[0] || "";
 }
 
-/** Infers the route kind for mixed results (e.g. /search/multi). */
+/** Infers the route kind for mixed results (e.g. /search/multi): movie, anime, K-drama or TV show. */
 export function inferMediaKind(item: Movie): MediaKind {
   const isTv = item.media_type === "tv" || (!item.title && !!item.name);
   if (!isTv) return "movie";
   const isAnime =
     item.genre_ids?.includes(16) &&
     (item.original_language === "ja" || item.origin_country?.includes("JP"));
-  return isAnime ? "anime" : "tv";
+  if (isAnime) return "anime";
+  return isKoreanSeries(item) ? "kdrama" : "tv";
 }
 
 export function getWatchHref(id: number | string, kind: MediaKind, title?: string) {

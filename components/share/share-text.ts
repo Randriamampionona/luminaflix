@@ -5,8 +5,8 @@
  */
 export interface ShareInfo {
   title: string;
-  /** "movie" | "anime" | "drama" (K-drama / series) */
-  kind: "movie" | "anime" | "drama";
+  /** "movie" | "anime" | "drama" (K-drama) | "tv" (TV show) */
+  kind: "movie" | "anime" | "drama" | "tv";
   /** Site path of the page to open, e.g. "/movies/123" or "/anime/play/45?s=1&e=3". */
   path: string;
   posterPath?: string | null;

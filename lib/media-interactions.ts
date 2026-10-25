@@ -2,8 +2,8 @@
  * Shared types/helpers for likes, dislikes and favorites. Safe to import from
  * client components and from the server actions in action/stream-actions.ts.
  */
-export type MediaType = "MOVIE" | "K_DRAMA" | "ANIME";
-export const MEDIA_TYPES: MediaType[] = ["MOVIE", "K_DRAMA", "ANIME"];
+export type MediaType = "MOVIE" | "K_DRAMA" | "ANIME" | "TV_SHOW";
+export const MEDIA_TYPES: MediaType[] = ["MOVIE", "K_DRAMA", "ANIME", "TV_SHOW"];
 
 export interface MediaRef {
   mediaId: string;

@@ -16,7 +16,8 @@ import { cn } from "@/lib/utils";
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ type?: string; fallback?: string; lang?: string }>;
 
-const toKind = (value?: string): MediaKind => (value === "anime" ? "anime" : value === "tv" ? "tv" : "movie");
+const toKind = (value?: string): MediaKind =>
+  value === "anime" ? "anime" : value === "kdrama" ? "kdrama" : value === "tv" ? "tv" : "movie";
 
 interface TitleDetails {
   title: string;
@@ -107,7 +108,8 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
   const watchHref = getWatchHref(id, kind, title || sp.fallback);
   const backdrop = tmdbImage(details?.backdropPath);
   const poster = tmdbImage(details?.posterPath);
-  const kindLabel = kind === "anime" ? tMedia("anime") : kind === "tv" ? tMedia("series") : tMedia("movie");
+  const kindLabel =
+    kind === "anime" ? tMedia("anime") : kind === "kdrama" ? tMedia("kdrama") : kind === "tv" ? tMedia("series") : tMedia("movie");
 
   // TMDB may only have the trailer in another language (e.g. English only).
   const isOtherLanguage = !!trailer?.lang && trailer.lang !== requested;

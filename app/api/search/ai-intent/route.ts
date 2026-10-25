@@ -10,7 +10,7 @@ import { resolveSearchIntent, type SearchScope } from "@/lib/search/ai-intent";
  * exposes it to client-side features (suggestions, previews…).
  */
 const limited = createRateLimiter({ max: 20, windowMs: 10 * 60 * 1000 });
-const SCOPES: SearchScope[] = ["all", "anime", "kdrama"];
+const SCOPES: SearchScope[] = ["all", "anime", "kdrama", "tv"];
 
 export async function POST(request: Request) {
   if (!isOpenAIConfigured()) {

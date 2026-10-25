@@ -13,7 +13,7 @@ export default function SectionSearch({
   placeholder,
   submitLabel,
 }: {
-  basePath: "/anime/search" | "/k-drama/search";
+  basePath: "/anime/search" | "/k-drama/search" | "/tv-shows/search";
   placeholder: string;
   submitLabel: string;
 }) {

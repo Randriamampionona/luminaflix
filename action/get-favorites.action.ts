@@ -3,7 +3,7 @@ import { logFirebaseError } from "@/lib/firebase-admin";
 import { readFavorites } from "@/lib/firestore-cache";
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 
-export type FavoriteType = "MOVIE" | "K_DRAMA" | "ANIME";
+export type FavoriteType = "MOVIE" | "K_DRAMA" | "ANIME" | "TV_SHOW";
 
 interface StoredFavorite {
   id: string;

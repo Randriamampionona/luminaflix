@@ -2,6 +2,7 @@ import "server-only";
 import { getSearchAnime } from "@/action/get-search-anime.action";
 import { getSearchKDramas } from "@/action/get-search-kdrama.action";
 import { getSearchResults } from "@/action/get-search-results.action";
+import { getSearchTVShows } from "@/action/get-search-tv.action";
 import { isOpenAIConfigured } from "@/lib/ai/openai";
 import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 import type { Movie, TMDBResponse } from "@/typing";
@@ -24,6 +25,7 @@ const searchers: Record<SearchScope, (query: string, page: number) => Promise<TM
   all: (q, p) => getSearchResults(q, p),
   anime: (q, p) => getSearchAnime(q, p),
   kdrama: (q, p) => getSearchKDramas(q, p),
+  tv: (q, p) => getSearchTVShows(q, p),
 };
 
 /** AI-inferred titles are precise: one TMDB page per title is enough. */
@@ -31,6 +33,7 @@ const titleSearchers: Record<SearchScope, (title: string) => Promise<TMDBRespons
   all: (t) => getSearchResults(t, 1),
   anime: (t) => getSearchAnime(t, 1, 1),
   kdrama: (t) => getSearchKDramas(t, 1, 1),
+  tv: (t) => getSearchTVShows(t, 1, 1),
 };
 
 // AI calls cost money: 30 per IP per 10 minutes (cached repeats count too).
@@ -84,7 +87,7 @@ async function aiSearch(query: string, scope: SearchScope): Promise<SmartSearchR
 }
 
 /**
- * Unified search pipeline for /search, /anime/search and /k-drama/search:
+ * Unified search pipeline for /search, /anime/search, /k-drama/search and /tv-shows/search:
  * 1. Short, title-like queries → regular TMDB search.
  * 2. Descriptions ("un homme qui voyage dans le temps avec une voiture") →
  *    the AI infers 1–3 canonical titles → each is searched and merged.

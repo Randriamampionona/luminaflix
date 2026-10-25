@@ -15,7 +15,7 @@ const pickTrailer = (videos: Video[]) =>
 export async function getMovieTrailer(id: string, requestedLang?: string, type?: string) {
   if (!/^\d+$/.test(id)) return null;
   const language = requestedLang === "en" ? "en-US" : "fr-FR";
-  const primary: "movie" | "tv" = type === "anime" || type === "tv" || type === "k-drama" ? "tv" : "movie";
+  const primary: "movie" | "tv" = type === "anime" || type === "tv" || type === "kdrama" || type === "k-drama" ? "tv" : "movie";
   const secondary = primary === "movie" ? "tv" : "movie";
 
   const fetchVideos = async (mediaType: "movie" | "tv", lang: string) => {

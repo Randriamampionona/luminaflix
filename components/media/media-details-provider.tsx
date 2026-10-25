@@ -78,7 +78,8 @@ function DetailsContent({
     [movie.id, kind, title],
   );
 
-  const label = kind === "tv" ? t("series") : kind === "anime" ? t("anime") : t("movie");
+  const label =
+    kind === "tv" ? t("series") : kind === "kdrama" ? t("kdrama") : kind === "anime" ? t("anime") : t("movie");
 
   return (
     <DialogContent className="z-100 max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[2rem] border-line bg-surface/95 p-0 text-foreground backdrop-blur-2xl no-scrollbar sm:max-w-175">

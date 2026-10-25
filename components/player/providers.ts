@@ -46,7 +46,7 @@ export interface ProviderGroup {
   providers: Provider[];
 }
 
-export type PlayerKind = "movie" | "anime" | "drama";
+export type PlayerKind = "movie" | "anime" | "drama" | "tv";
 
 /**
  * Frembed's current domain (it changes when one gets blocked).
@@ -153,10 +153,35 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
       ],
     },
   ],
+  // TV shows (any country): same servers as K-dramas.
+  tv: [
+    {
+      key: "vf",
+      providers: [
+        { name: "Lumina VIDZY (FR)", id: "vidzy", icon: ICONS.vidzy, url: (t) => `${VIDZY}/serie/${t.mediaId}/${s(t)}/${e(t)}${lang(t)}` },
+        { name: "Lumina Best (FR)", id: "frembed", icon: ICONS.frembed, url: (t) => `${FREMBED}/embed/serie/${t.mediaId}?sa=${s(t)}&epi=${e(t)}` },
+        { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+      ],
+    },
+    {
+      key: "vo",
+      providers: [
+        { name: "VidSrc (Global)", id: "vidsrc", icon: ICONS.vidsrc, url: (t) => `https://vidsrc.to/embed/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "VidLink (Direct)", id: "vidlink", icon: ICONS.vidlink, url: (t) => `https://vidlink.pro/tv/${t.mediaId}/${s(t)}/${e(t)}?primaryColor=06b6d4` },
+        { name: "VidFast (Flash)", id: "vidfast", icon: ICONS.vidfast, url: (t) => `https://vidfast.vc/tv/${t.mediaId}/${s(t)}/${e(t)}?autoPlay=true` },
+        { name: "Videasy (Legacy)", id: "videasy", icon: ICONS.videasy, url: (t) => `https://player.videasy.ws/embed/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "VidNest (Mirror)", id: "vidnest", icon: ICONS.vidnest, url: (t) => `https://vidnest.fun/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "MoviesAPI", id: "moviesapi", icon: ICONS.moviesapi, url: (t) => `https://moviesapi.to/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "EmbedMaster", id: "embedmaster", icon: ICONS.embedmaster, url: (t) => `https://embedmaster.link/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+        { name: "2Embed", id: "2embed", icon: ICONS.twoEmbed, url: (t) => `https://www.2embed.online/embed/tv/${t.mediaId}/${s(t)}/${e(t)}` },
+      ],
+    },
+  ],
 };
 
-export const REACTION_TYPE: Record<PlayerKind, "MOVIE" | "ANIME" | "K_DRAMA"> = {
+export const REACTION_TYPE: Record<PlayerKind, "MOVIE" | "ANIME" | "K_DRAMA" | "TV_SHOW"> = {
   movie: "MOVIE",
   anime: "ANIME",
   drama: "K_DRAMA",
+  tv: "TV_SHOW",
 };

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import AdvancedFilter from "@/components/movies/advanced-filter";
 import SortDropdown from "@/components/movies/sort-dropdown";
+import SectionSearch from "@/components/section-search";
 import { resolveSort } from "@/lib/filters";
 
 type SearchParams = { page?: string; sort?: string; genre?: string; year?: string };
@@ -17,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * BUG FIX: this page used movie genres/sorts (filters silently did nothing)
- * and its cards opened /movies/<tvId>, i.e. the wrong title.
+ * TV shows (series of any country): cards open /tv-shows/<id> (own details,
+ * player and search, separate from /k-drama and /anime).
  */
 export default async function TVShowsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
@@ -27,7 +28,7 @@ export default async function TVShowsPage({ searchParams }: { searchParams: Prom
   const genre = params.genre ?? "all";
   const year = params.year ?? "all";
 
-  const t = await getTranslations("pages.tvShows");
+  const [t, tSearch] = await Promise.all([getTranslations("pages.tvShows"), getTranslations("search")]);
   const data = getAllTVShows(page, sort, genre, year);
   const streamKey = JSON.stringify(params);
 
@@ -43,6 +44,12 @@ export default async function TVShowsPage({ searchParams }: { searchParams: Prom
         }
         actions={
           <>
+            <SectionSearch
+              basePath="/tv-shows/search"
+              placeholder={tSearch("tvPlaceholder")}
+              submitLabel={tSearch("submit")}
+            />
+            <ControlDivider />
             <AdvancedFilter mediaType="tv" />
             <ControlDivider />
             <SortDropdown mediaType="tv" />

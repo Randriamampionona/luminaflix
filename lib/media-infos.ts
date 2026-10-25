@@ -1,5 +1,5 @@
 /** Shared between the admin API and the /media-infos page. */
-export type InfoKind = "movie" | "anime" | "kdrama";
+export type InfoKind = "movie" | "anime" | "kdrama" | "tv";
 
 export interface MediaInfo {
   kind: InfoKind;

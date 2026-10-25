@@ -42,7 +42,7 @@ export default async function KDramaPage({ searchParams }: { searchParams: Promi
         data={data}
         streamKey={streamKey}
         transform={withOriginalTitle}
-        kind="tv"
+        kind="kdrama"
         page={page}
         basePath="/k-drama"
         searchParams={params}
