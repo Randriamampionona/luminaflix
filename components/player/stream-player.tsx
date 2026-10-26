@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFrembedAvailability } from "@/hooks/use-frembed-availability";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Activity, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
+import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
 import DirectLuminaLinker from "@/components/direct-lumina-linker";
 import ShareCard from "@/components/share/share-card";
 import GuardProtocol from "@/components/guard-protocol";
@@ -76,6 +76,14 @@ export default function StreamPlayer({
   /** Server picked by the user; null = automatic (first server, or the French one that has the title). */
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const playerBoxRef = useRef<HTMLDivElement>(null);
+  /** "Download directly" (VIDZY): a hint points at the player's own download button for a few seconds. */
+  const [downloadHint, setDownloadHint] = useState(false);
+  useEffect(() => {
+    if (!downloadHint) return;
+    const timer = setTimeout(() => setDownloadHint(false), 9000);
+    return () => clearTimeout(timer);
+  }, [downloadHint]);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
@@ -210,6 +218,7 @@ export default function StreamPlayer({
 
         <div className="flex flex-col items-end space-y-2">
           <div
+            ref={playerBoxRef}
             className={cn(
               // Always dark: artwork, video and overlay controls.
               "dark overflow-hidden border border-line-strong bg-background text-foreground shadow-2xl ring-1 ring-line transition-all duration-500",
@@ -266,6 +275,22 @@ export default function StreamPlayer({
                     {isEpisode ? t("playEpisode") : t("play")}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* VIDZY "Download directly": points at the player's "Télécharger" button (bottom-right bar). */}
+            {downloadHint && activeSource.id.startsWith("vidzy_") && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute right-[11%] bottom-16 z-20 flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-2 duration-500 sm:bottom-20"
+              >
+                <span className="rounded-full bg-cyan-500 px-3 py-1.5 text-[10px] font-black tracking-widest whitespace-nowrap text-black uppercase shadow-[0_8px_30px_rgba(6,182,212,0.8)]">
+                  {t("downloadHint")}
+                </span>
+                <ArrowDown
+                  className="h-7 w-7 animate-bounce text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
+                  strokeWidth={3}
+                />
               </div>
             )}
 
@@ -353,7 +378,17 @@ export default function StreamPlayer({
           })}
         </div>
 
-        <DirectLuminaLinker embedUrl={embedUrl} title={title || `Lumina_${kind}_${mediaId}`} />
+        <DirectLuminaLinker
+          embedUrl={embedUrl}
+          title={title || `Lumina_${kind}_${mediaId}`}
+          // VIDZY has its own download button: offer it before 1DM.
+          directDownload={activeSource.id.startsWith("vidzy_")}
+          onDirectDownload={() => {
+            setIsPlaying(true);
+            setDownloadHint(true);
+            playerBoxRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
 
         {/* Share the title currently playing */}
         <ShareCard

@@ -2,7 +2,20 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { Apple, Check, Copy, Download, ExternalLink, Info, Lock, Play, Smartphone, X } from "lucide-react";
+import {
+  Apple,
+  ArrowRight,
+  Check,
+  Copy,
+  Download,
+  ExternalLink,
+  Info,
+  Lock,
+  Play,
+  Smartphone,
+  X,
+  Zap,
+} from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { useAuthGate } from "@/hooks/use-auth-gate";
@@ -24,6 +37,13 @@ const detectMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 interface DirectLuminaLinkerProps {
   embedUrl: string;
   title?: string;
+  /**
+   * The selected server has its own download button (VIDZY's "Télécharger"):
+   * the CTA first explains it and offers "Download directly" or "1DM anyway".
+   */
+  directDownload?: boolean;
+  /** "Download directly": the player starts and points at its download button. */
+  onDirectDownload?: () => void;
 }
 
 /**
@@ -37,23 +57,37 @@ interface DirectLuminaLinkerProps {
  * Motion (entrance, attention ping, shine, icon bob) is disabled for users
  * who prefer reduced motion.
  */
-export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: DirectLuminaLinkerProps) {
+export default function DirectLuminaLinker({
+  embedUrl,
+  title = "LuminaFlix",
+  directDownload = false,
+  onDirectDownload,
+}: DirectLuminaLinkerProps) {
   const t = useTranslations("download");
   const { isSignedIn, requireAuth } = useAuthGate();
 
   const isMobile = useSyncExternalStore(subscribeNoop, detectMobile, () => false);
   const [showQR, setShowQR] = useState(false);
+  const [showDirect, setShowDirect] = useState(false);
+  const dialogOpen = showQR || showDirect;
+  const closeDialogs = () => {
+    setShowQR(false);
+    setShowDirect(false);
+  };
   const [currentUrl, setCurrentUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Dialog: Escape closes, focus moves in and back out, page doesn't scroll behind.
+  // Dialogs: Escape closes, focus moves in and back out, page doesn't scroll behind.
   useEffect(() => {
-    if (!showQR) return;
+    if (!dialogOpen) return;
     const trigger = triggerRef.current;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowQR(false);
+      if (e.key === "Escape") {
+        setShowQR(false);
+        setShowDirect(false);
+      }
     };
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -64,11 +98,20 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
       document.removeEventListener("keydown", onKey);
       trigger?.focus();
     };
-  }, [showQR]);
+  }, [dialogOpen]);
 
   const handleClick = () => {
     if (!requireAuth()) return;
+    // VIDZY: explain its own download button first (1DM may not work with it).
+    if (directDownload) {
+      setShowDirect(true);
+      return;
+    }
+    startOneDm();
+  };
 
+  /** 1DM hand-off: Android intent on the phone, QR code on a computer. */
+  const startOneDm = () => {
     if (isMobile) {
       const intentUrl =
         `intent:${embedUrl}#Intent;` +
@@ -154,6 +197,113 @@ export default function DirectLuminaLinker({ embedUrl, title = "LuminaFlix" }: D
           </button>
         </div>
       </div>
+
+      {showDirect && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lumina-direct-title"
+          aria-describedby="lumina-direct-body"
+          onClick={closeDialogs}
+          className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in fade-in duration-300 sm:p-6"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="no-scrollbar relative max-h-full w-full max-w-lg overflow-y-auto rounded-4xl border border-line-strong bg-surface shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+          >
+            <div className="relative overflow-hidden px-6 pt-6 pb-5 sm:px-8">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl"
+              />
+              <div className="absolute top-0 left-0 h-1 w-full bg-linear-to-r from-cyan-400 via-cyan-500 to-blue-500" />
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={closeDialogs}
+                aria-label={t("close")}
+                className="absolute top-5 right-5 cursor-pointer rounded-full border border-line-strong bg-tint p-2 text-fg-subtle transition-colors hover:bg-tint-strong hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="relative space-y-3 pr-10">
+                <span className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1">
+                  <Zap className="h-3 w-3 text-brand" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-brand">
+                    {t("direct.badge")}
+                  </span>
+                </span>
+                <h3
+                  id="lumina-direct-title"
+                  className="text-2xl leading-tight font-black uppercase italic tracking-tighter text-foreground"
+                >
+                  {t("direct.title")}
+                  <span className="text-brand not-italic">.</span>
+                </h3>
+                <p id="lumina-direct-body" className="text-sm leading-relaxed text-fg-muted">
+                  {t("direct.body")}
+                </p>
+              </div>
+            </div>
+
+            {/* Animated demo of the player's "Télécharger" button */}
+            <div className="px-6 sm:px-8">
+              <figure className="overflow-hidden rounded-2xl border border-line-strong bg-black shadow-[0_0_50px_-10px_rgba(6,182,212,0.45)]">
+                {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF, no optimisation wanted */}
+                <img
+                  src="/images/vidzy-download-hint.gif"
+                  alt={t("direct.gifAlt")}
+                  width={560}
+                  height={220}
+                  className="block h-auto w-full"
+                />
+                <figcaption className="border-t border-white/10 px-4 py-2.5 text-center text-[11px] font-semibold text-zinc-300">
+                  {t("direct.caption")}
+                </figcaption>
+              </figure>
+
+              <div className="mt-4 flex items-start gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" aria-hidden />
+                <p className="text-xs leading-relaxed text-fg-soft">{t("direct.oneDmWarning")}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 px-6 pt-5 pb-6 sm:px-8">
+              <button
+                type="button"
+                onClick={() => {
+                  closeDialogs();
+                  onDirectDownload?.();
+                }}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-cyan-400 to-blue-500 py-3.5 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_14px_40px_-12px_rgba(6,182,212,0.9)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/40 active:translate-y-0"
+              >
+                <Download className="h-4 w-4" strokeWidth={2.5} aria-hidden />
+                {t("direct.cta")}
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={closeDialogs}
+                  className="cursor-pointer rounded-2xl border border-line-strong bg-tint py-3 text-[11px] font-black uppercase tracking-widest text-fg-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                >
+                  {t("direct.cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDirect(false);
+                    startOneDm();
+                  }}
+                  className="flex cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-line-strong bg-tint py-3 text-[11px] font-black uppercase tracking-widest text-fg-muted transition-colors hover:border-cyan-500/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                >
+                  {t("direct.oneDm")}
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showQR && (
         <div

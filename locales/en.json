@@ -407,7 +407,8 @@
       "switch": "Switch to EN provider",
       "stay": "Stay on FR",
       "switchShort": "Watch in EN"
-    }
+    },
+    "downloadHint": "Download here"
   },
   "actions": {
     "addFavorite": "Add to favorites",
@@ -445,7 +446,18 @@
     "hintBody": "For downloads, we recommend having the 1DM app installed on your phone.",
     "hintCta": "Don't have 1DM yet? Get it here:",
     "googlePlay": "Google Play",
-    "appStore": "App Store"
+    "appStore": "App Store",
+    "direct": {
+      "badge": "Direct download available",
+      "title": "Download straight from the player",
+      "body": "This server has its own download button. It's the fastest way to save this video in HD — no extra app needed.",
+      "gifAlt": "Animation: press play, then click the Télécharger button in the player bar",
+      "caption": "Press play, then click “Télécharger” in the player bar",
+      "oneDmWarning": "1DM may not work with this server. Use the player's own button for a reliable download.",
+      "cta": "Download directly",
+      "cancel": "Cancel",
+      "oneDm": "1DM anyway"
+    }
   },
   "guard": {
     "title": "Playback blocked",
