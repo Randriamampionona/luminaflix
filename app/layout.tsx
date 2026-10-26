@@ -16,6 +16,7 @@ import Toaster from "@/components/providers/toaster";
 import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AuthPromptModal from "@/components/auth-prompt-modal";
 import LiveVisitorChat from "@/components/live-visitor-chat";
+import SeasonalLayer from "@/components/seasonal/seasonal-layer";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -118,6 +119,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <AuthPromptModal />
               {/* Admin → visitor live chat: invisible until the admin writes (Realtime Database). */}
               <LiveVisitorChat />
+              {/* Halloween, Christmas, New Year, Valentine's Day decorations (nothing outside events). */}
+              <SeasonalLayer />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />
