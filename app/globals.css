@@ -495,6 +495,40 @@ body {
   from { transform: rotate(4deg); }
   to { transform: rotate(-4deg); }
 }
+/* Front leg waves while the spider rests at the bottom of its thread (same 11 s cycle as spider-ride). */
+@keyframes spider-wave {
+  0%, 44%, 64%, 100% { transform: rotate(0deg); }
+  48% { transform: rotate(-35deg); }
+  52% { transform: rotate(-5deg); }
+  56% { transform: rotate(-35deg); }
+  60% { transform: rotate(-5deg); }
+}
+/* Eyes closing briefly (characters blink). */
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+/* Pumpkin's right eye winks now and then. */
+@keyframes wink {
+  0%, 86%, 96%, 100% { transform: scaleY(1); }
+  90% { transform: scaleY(0.12); }
+}
+@keyframes arm-wave {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(14deg); }
+}
+/* Gift lid pops open (hinged on the left), sparkles fly out. */
+@keyframes gift-pop {
+  0%, 78%, 100% { transform: rotate(0deg) translateY(0); }
+  82% { transform: rotate(-24deg) translateY(-3px); }
+  88% { transform: rotate(-18deg) translateY(-2px); }
+  93% { transform: rotate(0deg) translateY(0); }
+}
+@keyframes gift-sparkle {
+  0%, 79% { opacity: 0; transform: translateY(8px) scale(0.4); }
+  85% { opacity: 1; transform: translateY(-4px) scale(1); }
+  95%, 100% { opacity: 0; transform: translateY(-12px) scale(1.1); }
+}
 @keyframes dew-twinkle {
   0%, 100% { opacity: 0.15; }
   50% { opacity: 0.9; }

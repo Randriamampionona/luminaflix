@@ -8,7 +8,7 @@ export default function Valentine() {
   return (
     <div aria-hidden className="pointer-events-none">
       <Particles mode="hearts" count={14} />
-      <CursorFollower>
+      <CursorFollower say="💕">
         <svg
           viewBox="0 0 24 22"
           className="h-6 w-6 animate-[ghost-float_1.8s_ease-in-out_infinite] drop-shadow-[0_2px_8px_rgba(244,63,94,0.6)]"

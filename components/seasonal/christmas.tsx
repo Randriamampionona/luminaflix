@@ -154,14 +154,24 @@ export function GiftBox({ className }: { className?: string }) {
           <stop offset="100%" stopColor="#ca8a04" />
         </linearGradient>
       </defs>
+      {/* sparkles escaping when the lid pops */}
+      <g className="animate-[gift-sparkle_7s_ease-out_infinite] motion-reduce:hidden" fill="#fde047">
+        <path d="M14 8 L15 11 L18 12 L15 13 L14 16 L13 13 L10 12 L13 11 Z" />
+        <path d="M30 4 L30.8 6.2 L33 7 L30.8 7.8 L30 10 L29.2 7.8 L27 7 L29.2 6.2 Z" />
+        <circle cx="22" cy="5" r="1.2" />
+      </g>
       <rect x="5" y="19" width="34" height="23" rx="2.5" fill="url(#gift-paper)" />
-      <rect x="3" y="13" width="38" height="9" rx="2.5" fill="#ef4444" />
-      <rect x="3" y="20" width="38" height="2" fill="#000" opacity="0.15" />
-      <rect x="19" y="13" width="6" height="29" fill="url(#gift-ribbon)" />
-      <path d="M22 13 C14 1 4 6 11 13 Z" fill="url(#gift-ribbon)" />
-      <path d="M22 13 C30 1 40 6 33 13 Z" fill="url(#gift-ribbon)" />
-      <circle cx="22" cy="13" r="2.6" fill="#facc15" />
+      <rect x="19" y="19" width="6" height="23" fill="url(#gift-ribbon)" />
       <path d="M8 23 L8 38" stroke="white" strokeWidth="1.5" opacity="0.25" strokeLinecap="round" />
+      {/* lid + bow */}
+      <g className="origin-[3px_20px] animate-[gift-pop_7s_ease-in-out_infinite] motion-reduce:animate-none">
+        <rect x="3" y="13" width="38" height="9" rx="2.5" fill="#ef4444" />
+        <rect x="3" y="20" width="38" height="2" fill="#000" opacity="0.15" />
+        <rect x="19" y="13" width="6" height="9" fill="url(#gift-ribbon)" />
+        <path d="M22 13 C14 1 4 6 11 13 Z" fill="url(#gift-ribbon)" />
+        <path d="M22 13 C30 1 40 6 33 13 Z" fill="url(#gift-ribbon)" />
+        <circle cx="22" cy="13" r="2.6" fill="#facc15" />
+      </g>
     </svg>
   );
 }
@@ -169,7 +179,7 @@ export function GiftBox({ className }: { className?: string }) {
 function Snowman() {
   return (
     <svg
-      viewBox="0 0 38 52"
+      viewBox="-2 -4 42 56"
       className="h-11 w-8 animate-[ghost-float_2.4s_ease-in-out_infinite] drop-shadow-[0_3px_6px_rgba(0,0,0,0.35)] motion-reduce:animate-none"
       aria-hidden
     >
@@ -179,13 +189,24 @@ function Snowman() {
           <stop offset="100%" stopColor="#cbd5e1" />
         </radialGradient>
       </defs>
+      <path d="M8 33 L1 27 M3.5 29.5 L1.5 31" stroke="#78350f" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      <path
+        d="M30 33 L37 25 M34.5 28 L37.5 29"
+        stroke="#78350f"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        fill="none"
+        className="origin-[30px_33px] animate-[arm-wave_1.6s_ease-in-out_infinite_alternate] motion-reduce:animate-none"
+      />
       <circle cx="19" cy="38" r="12" fill="url(#snow-ball)" />
       <circle cx="19" cy="19" r="8.5" fill="url(#snow-ball)" />
       <path d="M8 9 L30 9 L28 6 L10 6 Z" fill="#111827" />
       <rect x="12" y="-2" width="14" height="9" rx="1.5" fill="#111827" />
       <rect x="12" y="4" width="14" height="2" fill="#dc2626" />
-      <circle cx="16" cy="17.5" r="1.2" fill="#111827" />
-      <circle cx="22" cy="17.5" r="1.2" fill="#111827" />
+      <g className="origin-center animate-[blink_4.2s_ease-in-out_infinite] [transform-box:fill-box] motion-reduce:animate-none">
+        <circle cx="16" cy="17.5" r="1.2" fill="#111827" />
+        <circle cx="22" cy="17.5" r="1.2" fill="#111827" />
+      </g>
       <path d="M19 19.5 L26 21 L19 22.5 Z" fill="#f97316" />
       <path d="M10 26 Q19 31 28 26 L28 29 Q19 34 10 29 Z" fill="#dc2626" />
       <path d="M24 29 L27 38 L23 37 Z" fill="#b91c1c" />
@@ -207,7 +228,7 @@ export default function Christmas() {
         </div>
         <GiftBox className="h-8 w-8 origin-bottom animate-[gift-wiggle_6s_ease-in-out_infinite] sm:h-10 sm:w-10 motion-reduce:animate-none" />
       </div>
-      <CursorFollower>
+      <CursorFollower say="Brrr! ❄️">
         <Snowman />
       </CursorFollower>
     </div>

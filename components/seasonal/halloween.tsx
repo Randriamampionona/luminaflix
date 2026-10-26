@@ -67,7 +67,11 @@ function Web({ size, className }: { size: number; className?: string }) {
   );
 }
 
-/** Spider with jointed legs (femur + tibia), glossy abdomen and tiny glowing eyes. */
+/**
+ * Spider hanging head-down from its silk (the thread comes out of the
+ * abdomen, like a real one): jointed legs walking in alternate pairs, glossy
+ * abdomen, glowing eyes, and a front leg that waves hello at the bottom.
+ */
 function Spider() {
   // [shoulder angle°, knee distance, foot angle°] for the 4 legs of one side.
   const legs = [
@@ -96,7 +100,7 @@ function Spider() {
       </defs>
       <g fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
         <g className="origin-[20px_16px] animate-[spider-legs-a_0.9s_ease-in-out_infinite_alternate] motion-reduce:animate-none">
-          {legs.map((l, i) => (i % 2 === 0 ? <path key={`l${i}`} d={leg(-1, l, i)} /> : null))}
+          {legs.map((l, i) => (i % 2 === 0 && i !== 0 ? <path key={`l${i}`} d={leg(-1, l, i)} /> : null))}
           {legs.map((l, i) => (i % 2 === 1 ? <path key={`r${i}`} d={leg(1, l, i)} /> : null))}
         </g>
         <g className="origin-[20px_16px] animate-[spider-legs-b_0.9s_ease-in-out_infinite_alternate] motion-reduce:animate-none">
@@ -104,11 +108,25 @@ function Spider() {
           {legs.map((l, i) => (i % 2 === 0 ? <path key={`r${i}`} d={leg(1, l, i)} /> : null))}
         </g>
       </g>
+      {/* front leg that waves (synced with the descent: at the bottom of the thread) */}
+      <path
+        d={leg(-1, legs[0], 0)}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        className="origin-[17px_15px] animate-[spider-wave_11s_ease-in-out_infinite] motion-reduce:animate-none"
+      />
       <ellipse cx="20" cy="25" rx="7" ry="8.5" fill="url(#spider-abdomen)" />
       <path d="M20 19 L20 31 M17 23 L23 27 M23 23 L17 27" stroke="#f97316" strokeWidth="0.6" opacity="0.5" />
       <ellipse cx="20" cy="15" rx="4.2" ry="3.8" fill="currentColor" />
-      <circle cx="18.6" cy="13.6" r="0.9" fill="#fb923c" />
-      <circle cx="21.4" cy="13.6" r="0.9" fill="#fb923c" />
+      <g className="origin-center animate-[blink_4.5s_ease-in-out_infinite] [transform-box:fill-box] motion-reduce:animate-none">
+        <circle cx="18.5" cy="13.4" r="1.15" fill="#fb923c" />
+        <circle cx="21.5" cy="13.4" r="1.15" fill="#fb923c" />
+        <circle cx="17.2" cy="15.2" r="0.55" fill="#fb923c" />
+        <circle cx="22.8" cy="15.2" r="0.55" fill="#fb923c" />
+      </g>
     </svg>
   );
 }
@@ -155,7 +173,10 @@ function Pumpkin() {
         className="animate-[pumpkin-flicker_3s_ease-in-out_infinite] motion-reduce:animate-none"
       >
         <path d="M20 31 L30 31 L25 22 Z" />
-        <path d="M42 31 L52 31 L47 22 Z" />
+        <path
+          d="M42 31 L52 31 L47 22 Z"
+          className="origin-center animate-[wink_7s_ease-in-out_infinite] [transform-box:fill-box] motion-reduce:animate-none"
+        />
         <path d="M33.5 37 L38.5 37 L36 32 Z" />
         <path d="M17 42 Q36 58 55 42 L52 47 L48 44 L44 49 L40 45 L36 50 L32 45 L28 49 L24 44 L20 47 Z" />
       </g>
@@ -183,11 +204,21 @@ function Ghost() {
         d="M22 2 C10 2 5 12 5 23 L5 44 C8 41 11 41 13 45 C15 49 18 49 20 45 C22 41 25 41 27 45 C29 49 32 49 34 45 C36 41 39 41 39 44 L39 23 C39 12 34 2 22 2 Z"
         fill="url(#ghost-body)"
       />
-      <ellipse cx="16" cy="21" rx="3" ry="4.2" fill="#0f172a" />
-      <ellipse cx="28" cy="21" rx="3" ry="4.2" fill="#0f172a" />
-      <circle cx="17" cy="19.6" r="1" fill="#fff" />
-      <circle cx="29" cy="19.6" r="1" fill="#fff" />
-      <ellipse cx="22" cy="31" rx="3" ry="3.6" fill="#0f172a" />
+      <g className="origin-center animate-[blink_3.8s_ease-in-out_infinite] [transform-box:fill-box] motion-reduce:animate-none">
+        <ellipse cx="16" cy="21" rx="3" ry="4.2" fill="#0f172a" />
+        <ellipse cx="28" cy="21" rx="3" ry="4.2" fill="#0f172a" />
+        <circle cx="17" cy="19.6" r="1" fill="#fff" />
+        <circle cx="29" cy="19.6" r="1" fill="#fff" />
+      </g>
+      {/* mouth: small "o", opens wide for "Boo!" when the mouse rests */}
+      <ellipse
+        cx="22"
+        cy="31"
+        rx="3"
+        ry="3.6"
+        fill="#0f172a"
+        className="origin-center transition-transform duration-300 [transform-box:fill-box] group-data-[idle=true]:scale-[1.35_1.6]"
+      />
       <circle cx="12" cy="27" r="2.4" fill="#fda4af" opacity="0.55" />
       <circle cx="32" cy="27" r="2.4" fill="#fda4af" opacity="0.55" />
     </svg>
@@ -231,8 +262,11 @@ export default function Halloween() {
           {/* silk: grows from the web, the spider rides its end */}
           <span className="absolute top-0 left-1/2 block h-(--drop) w-px origin-top -translate-x-1/2 animate-[silk-grow_11s_ease-in-out_infinite] bg-linear-to-b from-zinc-400/30 to-zinc-400/80 motion-reduce:scale-y-50 motion-reduce:animate-none" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 animate-[spider-ride_11s_ease-in-out_infinite] motion-reduce:translate-y-[calc(var(--drop)*0.5)] motion-reduce:animate-none">
-            <div className="-mt-1 animate-[spider-sway_3.7s_ease-in-out_infinite] motion-reduce:animate-none">
-              <Spider />
+            <div className="-mt-1.5 origin-top animate-[spider-sway_3.7s_ease-in-out_infinite] motion-reduce:animate-none">
+              {/* head down, abdomen (and spinnerets) up against the silk */}
+              <div className="rotate-180">
+                <Spider />
+              </div>
             </div>
           </div>
         </div>
@@ -257,7 +291,7 @@ export default function Halloween() {
         <Bat />
       </div>
 
-      <CursorFollower>
+      <CursorFollower say="Boo! 👻">
         <Ghost />
       </CursorFollower>
     </div>
