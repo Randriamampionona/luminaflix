@@ -123,8 +123,8 @@ export default function AdsNoticeModal() {
             <img
               src="/images/ads-notice-demo.gif"
               alt={t("gifAlt")}
-              width={560}
-              height={320}
+              width={540}
+              height={306}
               className="block h-auto w-full"
             />
           </figure>
