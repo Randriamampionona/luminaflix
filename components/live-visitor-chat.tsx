@@ -52,8 +52,7 @@ export default function LiveVisitorChat() {
   }, []);
 
   const messages = room?.messages ?? [];
-  const adminMessages = messages.filter((m) => m.from === "admin");
-  const lastAdminAt = adminMessages[adminMessages.length - 1]?.at ?? 0;
+  const lastAdminAt = messages.filter((m) => m.from === "admin").at(-1)?.at ?? 0;
   const unread = minimized ? messages.filter((m) => m.from === "admin" && m.at > seenAt).length : 0;
   const startedAt = room?.startedAt ?? null;
   // A live conversation not closed by the visitor, or the "ended" notice of one.

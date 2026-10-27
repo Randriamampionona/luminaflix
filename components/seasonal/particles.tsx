@@ -31,8 +31,6 @@ export default function Particles({ mode, count, duration }: { mode: Mode; count
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Smart TVs: weak GPUs — keep the decorations, skip the particle canvas.
-    if (document.documentElement.classList.contains("tv")) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
