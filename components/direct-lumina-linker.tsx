@@ -254,7 +254,7 @@ export default function DirectLuminaLinker({
                   src="/images/vidzy-download-hint.gif"
                   alt={t("direct.gifAlt")}
                   width={560}
-                  height={220}
+                  height={320}
                   className="block h-auto w-full"
                 />
                 <figcaption className="border-t border-white/10 px-4 py-2.5 text-center text-[11px] font-semibold text-zinc-300">
