@@ -1040,5 +1040,17 @@
     "protectedBy": "Protected by Google reCAPTCHA —",
     "privacy": "Privacy",
     "terms": "Terms"
+  },
+  "adsNotice": {
+    "badge": "Before you press play",
+    "title": "Notice regarding external player ads",
+    "body": "Our videos play in external players that we don't control. Some of them may open an unwanted ad tab or redirect you to another page. It's harmless: just close that tab (or go back) and return to LuminaFlix — your movie is right where you left it.",
+    "gifAlt": "Demo: pressing play opens an ad tab; closing it brings you back to the movie",
+    "step1": "Press play on the player.",
+    "step2": "If an ad tab or page opens, close it (or press back).",
+    "step3": "Return to LuminaFlix and press play again if needed.",
+    "dontShow": "Don't show this again",
+    "gotIt": "Got it",
+    "close": "Close"
   }
 }

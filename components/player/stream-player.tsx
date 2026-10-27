@@ -12,6 +12,7 @@ import SignalMonitor from "@/components/signal-monitor";
 import { tmdbImage } from "@/lib/media";
 import type { MediaInteraction } from "@/lib/media-interactions";
 import PlayerActions from "./actions/player-actions";
+import AdsNoticeModal from "./ads-notice-modal";
 import FrUnavailableBanner from "./fr-unavailable-banner";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
@@ -377,6 +378,9 @@ export default function StreamPlayer({
             );
           })}
         </div>
+
+        {/* External players may open ad tabs: explain it once per visit. */}
+        <AdsNoticeModal />
 
         <DirectLuminaLinker
           embedUrl={embedUrl}

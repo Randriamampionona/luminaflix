@@ -1040,5 +1040,17 @@
     "protectedBy": "Protégé par Google reCAPTCHA —",
     "privacy": "Confidentialité",
     "terms": "Conditions"
+  },
+  "adsNotice": {
+    "badge": "Avant de lancer la lecture",
+    "title": "À propos des publicités des lecteurs externes",
+    "body": "Nos vidéos sont lues dans des lecteurs externes que nous ne contrôlons pas. Certains peuvent ouvrir un onglet publicitaire ou vous rediriger vers une autre page. C'est sans danger : fermez simplement cet onglet (ou revenez en arrière) et retournez sur LuminaFlix — votre film vous attend au même endroit.",
+    "gifAlt": "Démo : la lecture ouvre un onglet publicitaire ; le fermer vous ramène au film",
+    "step1": "Lancez la lecture dans le lecteur.",
+    "step2": "Si un onglet ou une page de pub s'ouvre, fermez-le (ou revenez en arrière).",
+    "step3": "Revenez sur LuminaFlix et relancez la lecture si besoin.",
+    "dontShow": "Ne plus afficher",
+    "gotIt": "J'ai compris",
+    "close": "Fermer"
   }
 }
