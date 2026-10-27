@@ -52,13 +52,12 @@
     "typescript": "^5"
   },
   "browserslist": [
-    "chrome >= 56",
-    "edge >= 79",
-    "firefox >= 78",
-    "safari >= 12",
-    "ios_saf >= 12",
-    "samsung >= 7",
-    "android >= 56",
-    "opera >= 43"
+    "chrome >= 80",
+    "edge >= 80",
+    "firefox >= 90",
+    "safari >= 14.1",
+    "ios_saf >= 14.5",
+    "samsung >= 13",
+    "opera >= 67"
   ]
 }

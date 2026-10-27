@@ -1,8 +1,8 @@
 /**
  * CSS pipeline:
  * 1. Tailwind CSS v4.
- * 2. postcss-preset-env — compiles modern CSS for the browsers listed in
- *    package.json "browserslist" (incl. Smart TVs: Tizen, webOS, Android TV):
+ * 2. postcss-preset-env — compiles modern CSS for legacy engines down to
+ *    Chromium 56 / Safari 12 (incl. Smart TVs: Tizen, webOS, Android TV):
  *    cascade layers (@layer is unknown to Chromium < 99 and would drop ALL
  *    utilities), logical properties (padding-inline…), nesting, media ranges,
  *    and vendor prefixes via autoprefixer.
@@ -20,6 +20,9 @@ const config = {
   plugins: {
     "@tailwindcss/postcss": {},
     "postcss-preset-env": {
+      // CSS goes further back than the JavaScript ("browserslist" in package.json):
+      // on TVs too old to run the app's JavaScript, pages still render styled.
+      browsers: ["chrome >= 56", "safari >= 12", "ios_saf >= 12", "firefox >= 78", "samsung >= 7", "android >= 56"],
       stage: 2,
       features: {
         "cascade-layers": true,
