@@ -17,6 +17,7 @@ import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AuthPromptModal from "@/components/auth-prompt-modal";
 import LiveVisitorChat from "@/components/live-visitor-chat";
 import SeasonalLayer from "@/components/seasonal/seasonal-layer";
+import LegacySupport from "@/components/tv/legacy-support";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -37,6 +38,9 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  // TV / old mobile browsers: never start zoomed out on an over-wide layout
+  // (zooming in stays allowed).
+  minimumScale: 1,
   // A11Y: removed `maximumScale: 1`, which blocked pinch-zoom.
 };
 
@@ -92,6 +96,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       {/* No hard-coded "dark": next-themes sets the class before first paint. */}
       <html lang={locale} suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
+          {/* Smart TV / legacy engines: TV detection + flexbox gap polyfill */}
+          <LegacySupport />
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
           <script dangerouslySetInnerHTML={{ __html: PWA_CAPTURE_SCRIPT }} />
           <ThemeProvider>

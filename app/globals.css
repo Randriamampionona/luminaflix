@@ -593,3 +593,58 @@ body {
   91% { transform: rotate(-3deg); }
   94% { transform: rotate(1.5deg); }
 }
+
+/* ───────────── Smart TV & legacy browsers (see TV_SUPPORT.md) ─────────────
+   <html> gets "tv" on TV browsers and "legacy-css" on old engines
+   (components/tv/legacy-support.tsx). Build-time fallbacks for modern CSS
+   are added by postcss.config.mjs + postcss/legacy-tv.cjs. */
+html {
+  /* No automatic text inflation (Android TV / WebView, iOS landscape). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* TV screens are watched from a sofa: scale the whole UI (everything is in rem)
+   with the screen's CSS width — 1080p panels usually report 1920px, 4K panels
+   3840px (DPR 1) or 1920px (DPR 2). */
+html.tv {
+  font-size: 100%;
+  overflow-x: hidden; /* no sideways scroll → the TV never zooms the page out */
+}
+@media (min-width: 1600px) {
+  html.tv { font-size: 112.5%; }
+}
+@media (min-width: 2400px) {
+  html.tv { font-size: 150%; }
+}
+@media (min-width: 3200px) {
+  html.tv { font-size: 200%; }
+}
+/* 4K panel reporting 1920px at 2× density: keep the 1080p size, sharper. */
+@media (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), (min-width: 1600px) and (min-resolution: 2dppx) {
+  html.tv { font-size: 112.5%; }
+}
+html.tv img,
+html.tv video,
+html.tv iframe {
+  max-width: 100%;
+}
+/* TV GPUs struggle with live blur: keep the translucent colours, drop the blur. */
+html.tv * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* Remote-control navigation: always show where the focus is. */
+html.tv :focus {
+  outline: 3px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Old engines: images/videos never wider than their box, and no layout wider than the screen. */
+html.legacy-css img,
+html.legacy-css video {
+  max-width: 100%;
+}
+html.legacy-css {
+  overflow-x: hidden;
+}

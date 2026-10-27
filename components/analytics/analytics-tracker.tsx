@@ -36,6 +36,16 @@ type StoredSession = {
   pages?: string[];
 };
 
+/** UUID v4 — crypto.randomUUID() is missing on older TV browsers (Chromium < 92). */
+function uuid() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
 /** Records `path` in the session; true if it's the first visit of this route. */
 function markPage(s: StoredSession, path: string) {
   const pages = s.pages ?? [];
@@ -118,7 +128,7 @@ export default function AnalyticsTracker() {
       started.current = true;
       const existing = readSession();
       const fresh = !existing || Date.now() - existing.lastSeen > SESSION_TIMEOUT_MS;
-      session.current = fresh ? { id: crypto.randomUUID(), lastSeen: Date.now(), activeMs: 0 } : existing;
+      session.current = fresh ? { id: uuid(), lastSeen: Date.now(), activeMs: 0 } : existing;
       markPage(session.current, pathname);
       visibleSince.current = document.visibilityState === "visible" ? Date.now() : null;
       writeSession(session.current);
