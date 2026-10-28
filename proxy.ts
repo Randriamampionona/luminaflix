@@ -61,5 +61,9 @@ export const config = {
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
+    // Clerk production on *.vercel.app: the SDK proxies Clerk's Frontend API
+    // through /__clerk on this site (incl. clerk.browser.js, which the
+    // static-file rule above would otherwise skip).
+    "/__clerk/(.*)",
   ],
 };
