@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { type NextFetchEvent, type NextRequest, NextResponse } from "next/server";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeFromLegacyParam } from "@/i18n/config";
 import { BOT_FILTER_PATH, HUMAN_COOKIE, needsHumanCheck, verifyHumanToken } from "@/lib/bot-filter";
 
@@ -8,7 +8,7 @@ const isProtectedRoute = createRouteMatcher(["/wishlist(.*)", "/favorites(.*)", 
 
 const LEGACY_LOCALE_PARAM = "display_lang";
 
-export default clerkMiddleware(
+const clerkHandler = clerkMiddleware(
   async (auth, req) => {
     // Bot filter: visitors outside Madagascar pass a Google reCAPTCHA once
     // (/bot-filter), then a signed cookie lets them through for 7 days.
@@ -55,15 +55,38 @@ export default clerkMiddleware(
   },
 );
 
+/**
+ * Clerk production on *.vercel.app: there is no clerk.<domain> DNS record
+ * possible, so Clerk's Frontend API is proxied through this site at /__clerk
+ * (https://clerk.com/docs/guides/dashboard/dns-domains/proxy-fapi).
+ *
+ * Active only when NEXT_PUBLIC_CLERK_PROXY_URL is set (Vercel → Production:
+ * https://lumina-flix.vercel.app/__clerk). Never set it with development keys
+ * (localhost, previews): proxying doesn't work for development instances.
+ */
+const CLERK_PROXY_URL = process.env.NEXT_PUBLIC_CLERK_PROXY_URL?.replace(/\/+$/, "");
+const CLERK_FRONTEND_API = "https://frontend-api.clerk.dev";
+
+export default function proxy(req: NextRequest, event: NextFetchEvent) {
+  if (CLERK_PROXY_URL && req.nextUrl.pathname.startsWith("/__clerk")) {
+    const headers = new Headers(req.headers);
+    headers.set("Clerk-Proxy-Url", CLERK_PROXY_URL);
+    headers.set("Clerk-Secret-Key", process.env.CLERK_SECRET_KEY ?? "");
+    headers.set("X-Forwarded-For", req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "");
+    const target = new URL(req.nextUrl.pathname.replace(/^\/__clerk/, "") + req.nextUrl.search, CLERK_FRONTEND_API);
+    return NextResponse.rewrite(target, { request: { headers } });
+  }
+  return clerkHandler(req, event);
+}
+
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
-    // Clerk production on *.vercel.app: the SDK proxies Clerk's Frontend API
-    // through /__clerk on this site (incl. clerk.browser.js, which the
-    // static-file rule above would otherwise skip).
+    // Clerk Frontend API proxy (incl. clerk.browser.js, which the static-file
+    // rule above would otherwise skip).
     "/__clerk/(.*)",
   ],
 };
