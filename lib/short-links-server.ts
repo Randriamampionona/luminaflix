@@ -9,9 +9,14 @@ import { SHORT_CODE_RE, type ShortLinkKind } from "@/lib/short-links";
  * Short links in Firestore (free-plan friendly):
  *
  *   SHORT_LINKS/{code}        target, kind, title, mediaKind, mediaId, createdAt,
- *                             clicks (counter), visitors (hashed IPs), lastClickAt
+ *                             clicks (counter), visitors (hashed IPs), lastClickAt,
+ *                             shares (times it was actually copied / sent)
  *   SHORT_LINK_DAILY/{day}    total, visitors[], codes.{code}, kinds.{kind},
- *                             sources.{source}, countries.{CC}   (one doc per day)
+ *                             sources.{source}, countries.{CC},
+ *                             shares, channels.{copy|native|whatsapp|telegram}
+ *
+ * Links are prepared in advance (when the share card comes into view), so a
+ * link existing doesn't mean it was shared: `shares` counts real shares.
  *
  * Codes are derived from the target (same movie link → same code), so sharing
  * the same title again reuses its link. Creating costs 1 read + 1 write once;
@@ -77,7 +82,7 @@ async function createOrGet(target: string, meta: ShortLinkMeta): Promise<string>
 
 /** Short code for a target (cached: Firestore is only touched the first time). */
 export function getShortCode(target: string, meta: ShortLinkMeta) {
-  return unstable_cache(() => createOrGet(target, meta), ["short-link-v1", target], { revalidate: CACHE_SECONDS })();
+  return unstable_cache(() => createOrGet(target, meta), ["short-link-v2", target], { revalidate: CACHE_SECONDS })();
 }
 
 /** Target of a code, or null (cached; null too if Firestore can't be reached). */
@@ -91,15 +96,24 @@ export async function resolveShortCode(code: string): Promise<string | null> {
   }
 }
 
-function resolveCached(code: string): Promise<string | null> {
-  return unstable_cache(
-    async () => {
-      const snap = await getDb().collection(LINKS).doc(code).get();
-      return snap.exists ? (snap.get("target") as string) : null;
-    },
-    ["short-link-target-v1", code],
-    { revalidate: CACHE_SECONDS },
-  )();
+/** Thrown inside the cache for unknown codes: "not found" is never cached, so a link recreated later works at once. */
+class ShortLinkNotFound extends Error {}
+
+async function resolveCached(code: string): Promise<string | null> {
+  try {
+    return await unstable_cache(
+      async () => {
+        const snap = await getDb().collection(LINKS).doc(code).get();
+        if (!snap.exists) throw new ShortLinkNotFound(code);
+        return snap.get("target") as string;
+      },
+      ["short-link-target-v2", code],
+      { revalidate: CACHE_SECONDS },
+    )();
+  } catch (error) {
+    if (error instanceof ShortLinkNotFound) return null;
+    throw error;
+  }
 }
 
 function localDay(date = new Date()) {
@@ -138,11 +152,16 @@ export async function recordShortLinkClick(
     const kind = (await resolveKind(code)) ?? "page";
     const day = localDay();
     const batch = db.batch();
-    batch.update(link, {
-      clicks: inc,
-      lastClickAt: now,
-      visitors: admin.firestore.FieldValue.arrayUnion(ipHash),
-    });
+    // merge (not update): never fails, even if the link document was deleted
+    batch.set(
+      link,
+      {
+        clicks: inc,
+        lastClickAt: now,
+        visitors: admin.firestore.FieldValue.arrayUnion(ipHash),
+      },
+      { merge: true },
+    );
     batch.set(
       db.collection(DAILY).doc(day),
       {
@@ -162,13 +181,28 @@ export async function recordShortLinkClick(
   }
 }
 
+/** A share really happened (copy, share sheet, WhatsApp, Telegram): 2 writes. Never throws. */
+export async function recordShortLinkShare(code: string, channel: string) {
+  try {
+    const db = getDb();
+    const inc = admin.firestore.FieldValue.increment(1);
+    const day = localDay();
+    const batch = db.batch();
+    batch.set(db.collection(LINKS).doc(code), { shares: inc }, { merge: true });
+    batch.set(db.collection(DAILY).doc(day), { day, shares: inc, channels: { [channel]: inc } }, { merge: true });
+    await batch.commit();
+  } catch (error) {
+    logFirebaseError("short-links:share", error);
+  }
+}
+
 function resolveKind(code: string): Promise<ShortLinkKind | null> {
   return unstable_cache(
     async () => {
       const snap = await getDb().collection(LINKS).doc(code).get();
       return (snap.get("kind") as ShortLinkKind) ?? null;
     },
-    ["short-link-kind-v1", code],
+    ["short-link-kind-v2", code],
     { revalidate: CACHE_SECONDS },
   )();
 }
@@ -179,7 +213,11 @@ export interface ShortLinkStats {
   totalClicks: number;
   uniqueVisitors: number;
   linksClicked: number;
-  linksCreated: number;
+  /** Times a title was copied / sent from the share card (this period). */
+  shares: number;
+  channels: { channel: string; shares: number }[];
+  /** Links shared at least once (all time). */
+  linksShared: number;
   series: { day: string; clicks: number; visitors: number }[];
   kinds: { kind: ShortLinkKind; clicks: number }[];
   sources: { source: string; clicks: number }[];
@@ -200,7 +238,9 @@ const EMPTY: ShortLinkStats = {
   totalClicks: 0,
   uniqueVisitors: 0,
   linksClicked: 0,
-  linksCreated: 0,
+  shares: 0,
+  channels: [],
+  linksShared: 0,
   series: [],
   kinds: [],
   sources: [],
@@ -231,30 +271,38 @@ async function fetchStats(fromDay: string, toDay: string): Promise<ShortLinkStat
   const kinds = new Map<string, number>();
   const sources = new Map<string, number>();
   const countries = new Map<string, number>();
+  const channels = new Map<string, number>();
   let totalClicks = 0;
+  let shares = 0;
   const series = snaps.map((snap, i) => {
     const data = snap.data() ?? {};
     const dayVisitors: string[] = data.visitors ?? [];
     dayVisitors.forEach((v) => visitors.add(v));
     totalClicks += data.total ?? 0;
+    shares += data.shares ?? 0;
     const add = (map: Map<string, number>, obj?: Record<string, number>) =>
       Object.entries(obj ?? {}).forEach(([k, v]) => map.set(k, (map.get(k) ?? 0) + v));
     add(codes, data.codes);
     add(kinds, data.kinds);
     add(sources, data.sources);
     add(countries, data.countries);
+    add(channels, data.channels);
     return { day: days[i], clicks: data.total ?? 0, visitors: dayVisitors.length };
   });
 
   const top = [...codes.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
   const linkSnaps = top.length ? await db.getAll(...top.map(([code]) => db.collection(LINKS).doc(code))) : [];
-  const created = await db.collection(LINKS).count().get();
+  const shared = await db.collection(LINKS).where("shares", ">", 0).count().get();
 
   return {
     totalClicks,
     uniqueVisitors: visitors.size,
     linksClicked: codes.size,
-    linksCreated: created.data().count,
+    shares,
+    channels: [...channels.entries()]
+      .map(([channel, n]) => ({ channel, shares: n }))
+      .sort((a, b) => b.shares - a.shares),
+    linksShared: shared.data().count,
     series,
     kinds: sortDesc([...kinds.entries()].map(([kind, clicks]) => ({ kind: kind as ShortLinkKind, clicks }))),
     sources: sortDesc([...sources.entries()].map(([source, clicks]) => ({ source, clicks }))),
@@ -279,7 +327,7 @@ async function fetchStats(fromDay: string, toDay: string): Promise<ShortLinkStat
 /** Dashboard data for a range of local days (cached 2 min, like the rest of /analytics). */
 export async function getShortLinkStats(fromDay: string, toDay: string): Promise<ShortLinkStats> {
   try {
-    return await unstable_cache(() => fetchStats(fromDay, toDay), ["short-link-stats-v1", fromDay, toDay], {
+    return await unstable_cache(() => fetchStats(fromDay, toDay), ["short-link-stats-v2", fromDay, toDay], {
       revalidate: 120,
     })();
   } catch (error) {

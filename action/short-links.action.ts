@@ -1,9 +1,12 @@
 "use server";
 
-import { headers } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
+import { cookies, headers } from "next/headers";
+import { ADMIN_NO_TRACK_COOKIE, isAdminUserId } from "@/lib/analytics/admin";
 import { clientIpFromHeaders } from "@/lib/analytics/ip";
 import { logFirebaseError } from "@/lib/firebase-admin";
-import { getShortCode } from "@/lib/short-links-server";
+import { getShortCode, recordShortLinkShare } from "@/lib/short-links-server";
+import { SHORT_CODE_RE } from "@/lib/short-links";
 import type { ShortLinkCodes, ShortLinkKind } from "@/lib/short-links";
 
 interface ShortenInput {
@@ -57,4 +60,21 @@ export async function shortenShareLinks(input: ShortenInput): Promise<ShortLinkC
     }),
   );
   return result;
+}
+
+const CHANNELS = ["copy", "native", "whatsapp", "telegram"] as const;
+
+/**
+ * The visitor really shared the title (copy button, share sheet, WhatsApp,
+ * Telegram): counted on its page link. The admin's own shares are ignored.
+ */
+export async function markShortLinkShared(code: string, channel: string): Promise<void> {
+  if (!SHORT_CODE_RE.test(code) || !(CHANNELS as readonly string[]).includes(channel)) return;
+  const [h, jar] = await Promise.all([headers(), cookies()]);
+  if (limited(clientIpFromHeaders(h) ?? "unknown")) return;
+  const userId = await auth()
+    .then((session) => session.userId)
+    .catch(() => null);
+  if (jar.has(ADMIN_NO_TRACK_COOKIE) || isAdminUserId(userId)) return;
+  await recordShortLinkShare(code, channel);
 }

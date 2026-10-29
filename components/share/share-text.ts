@@ -124,7 +124,7 @@ export function buildShareHtml(info: ShareInfo, links: ShareLinks, l: ShareLabel
  * passing promises to ClipboardItem keeps the click's permission while we
  * wait — needed by Safari. Falls back to waiting, then copyShare().
  */
-export async function copyShareWhenReady(content: Promise<{ text: string; html: string }>) {
+export async function copyShareWhenReady(content: Promise<{ text: string; html: string }>): Promise<boolean> {
   try {
     if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
       await navigator.clipboard.write([

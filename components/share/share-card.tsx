@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { toast } from "sonner";
 import { tmdbImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
-import { shortenShareLinks } from "@/action/short-links.action";
+import { markShortLinkShared, shortenShareLinks } from "@/action/short-links.action";
 import type { ShortLinkCodes } from "@/lib/short-links";
 import {
   buildShareHtml,
@@ -105,7 +105,13 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     trailer: fullLinks.trailer && codes?.trailer ? `${origin}/${codes.trailer}` : fullLinks.trailer,
     poster: fullLinks.poster && codes?.poster ? `${origin}/${codes.poster}` : fullLinks.poster,
   });
-  const links = linksFrom(short?.key === shortKey ? short.codes : undefined);
+  const codes = short?.key === shortKey ? short.codes : undefined;
+  const links = linksFrom(codes);
+
+  /** Counts a real share on the stats (fire and forget). */
+  const reportShare = (channel: "copy" | "native" | "whatsapp" | "telegram", pageCode = codes?.page) => {
+    if (pageCode) void markShortLinkShared(pageCode, channel).catch(() => {});
+  };
   const url = links.page;
   const labels: ShareLabels = {
     title: t("lines.title"),
@@ -132,10 +138,11 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
       new Promise<ShortLinkCodes>((resolve) => setTimeout(() => resolve({}), 3000)),
     ]).then((codes) => {
       const ready = linksFrom(Object.keys(codes).length ? codes : undefined);
-      return { text: buildShareText(info, ready, labels), html: buildShareHtml(info, ready, labels) };
+      return { codes, text: buildShareText(info, ready, labels), html: buildShareHtml(info, ready, labels) };
     });
     const ok = await copyShareWhenReady(content);
     if (ok) {
+      void content.then(({ codes: ready }) => reportShare("copy", ready.page));
       setCopied(true);
       toast.success(t("toastTitle"), { description: t("toastBody", { title: info.title }) });
     } else {
@@ -147,6 +154,7 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     try {
       // The link goes in `url`, so leave it out of the text.
       await navigator.share({ title: info.title, text: text.replace(/^🔗.*\n?/m, ""), url });
+      reportShare("native");
     } catch {
       // cancelled by the user
     }
@@ -225,6 +233,7 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
           )}
           <a
             href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+            onClick={() => reportShare("whatsapp")}
             target="_blank"
             rel="noopener noreferrer"
             className={chip}
@@ -234,6 +243,7 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
           </a>
           <a
             href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text.replace(/^🔗.*\n?/m, ""))}`}
+            onClick={() => reportShare("telegram")}
             target="_blank"
             rel="noopener noreferrer"
             className={chip}

@@ -38,6 +38,13 @@ const SOURCE: Record<string, string> = {
   direct: "Direct / copied",
 };
 
+const CHANNEL: Record<string, string> = {
+  copy: "Copy button",
+  native: "Phone share sheet",
+  whatsapp: "WhatsApp button",
+  telegram: "Telegram button",
+};
+
 const noop = () => () => {};
 const getOrigin = () => window.location.origin;
 /** "Last click … ago" is measured from when the page opened (a stable snapshot). */
@@ -77,7 +84,12 @@ export default function ShortLinksPanel({ stats }: { stats: ShortLinkStats }) {
           }
         />
         <Kpi icon={Link2} label="Links clicked" value={formatNumber(stats.linksClicked)} sub="Different short links" />
-        <Kpi icon={Share2} label="Links created" value={formatNumber(stats.linksCreated)} sub="All time" />
+        <Kpi
+          icon={Share2}
+          label="Shares"
+          value={formatNumber(stats.shares)}
+          sub={`Copied or sent, this period · ${formatNumber(stats.linksShared)} titles shared all time`}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
@@ -99,6 +111,19 @@ export default function ShortLinksPanel({ stats }: { stats: ShortLinkStats }) {
             empty="No clicks yet."
             items={stats.sources.map((s) => ({ key: s.source, label: SOURCE[s.source] ?? s.source, value: s.clicks }))}
           />
+          {stats.channels.length > 0 && (
+            <div className="mt-5 border-t border-line pt-4">
+              <p className="mb-2 text-[11px] font-bold tracking-wider text-fg-subtle uppercase">Shared via</p>
+              <RankList
+                empty=""
+                items={stats.channels.map((ch) => ({
+                  key: ch.channel,
+                  label: CHANNEL[ch.channel] ?? ch.channel,
+                  value: ch.shares,
+                }))}
+              />
+            </div>
+          )}
           {stats.kinds.length > 0 && (
             <div className="mt-5 border-t border-line pt-4">
               <p className="mb-2 text-[11px] font-bold tracking-wider text-fg-subtle uppercase">Link type</p>
