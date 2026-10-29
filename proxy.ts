@@ -11,13 +11,6 @@ const LEGACY_LOCALE_PARAM = "display_lang";
 
 const clerkHandler = clerkMiddleware(
   async (auth, req) => {
-    // Short links (https://…/Ab3xK9q): handled by app/api/s/[code] (redirect + click stats).
-    // A code always has a digit, so it never matches a page like /privacy.
-    const short = req.nextUrl.pathname.slice(1);
-    if (req.method === "GET" && SHORT_CODE_RE.test(short)) {
-      return NextResponse.rewrite(new URL(`/api/s/${short}${req.nextUrl.search}`, req.url));
-    }
-
     // Bot filter: visitors outside Madagascar pass a Google reCAPTCHA once
     // (/bot-filter), then a signed cookie lets them through for 7 days.
     if (
@@ -33,6 +26,15 @@ const clerkHandler = clerkMiddleware(
       url.pathname = BOT_FILTER_PATH;
       url.search = `?next=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`;
       return NextResponse.redirect(url, 307);
+    }
+
+    // Short links (https://…/Ab3xK9q): handled by app/api/s/[code] (redirect + click stats).
+    // Placed AFTER the bot filter: visitors from abroad pass the reCAPTCHA first,
+    // so only real people reach the redirect and get counted.
+    // A code always has a digit, so it never matches a page like /privacy.
+    const short = req.nextUrl.pathname.slice(1);
+    if (req.method === "GET" && SHORT_CODE_RE.test(short)) {
+      return NextResponse.rewrite(new URL(`/api/s/${short}${req.nextUrl.search}`, req.url));
     }
 
     // i18n: old links carried `?display_lang=fr-FR` on every URL. Strip it,
