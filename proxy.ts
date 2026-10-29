@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { type NextFetchEvent, type NextRequest, NextResponse } from "next/server";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeFromLegacyParam } from "@/i18n/config";
 import { BOT_FILTER_PATH, HUMAN_COOKIE, needsHumanCheck, verifyHumanToken } from "@/lib/bot-filter";
+import { SHORT_CODE_RE } from "@/lib/short-links";
 
 // Signed-in only. /analytics and /media-infos additionally check the admin account on the page itself.
 const isProtectedRoute = createRouteMatcher(["/wishlist(.*)", "/favorites(.*)", "/admin(.*)", "/analytics(.*)", "/media-infos(.*)"]);
@@ -10,6 +11,13 @@ const LEGACY_LOCALE_PARAM = "display_lang";
 
 const clerkHandler = clerkMiddleware(
   async (auth, req) => {
+    // Short links (https://…/Ab3xK9q): handled by app/api/s/[code] (redirect + click stats).
+    // A code always has a digit, so it never matches a page like /privacy.
+    const short = req.nextUrl.pathname.slice(1);
+    if (req.method === "GET" && SHORT_CODE_RE.test(short)) {
+      return NextResponse.rewrite(new URL(`/api/s/${short}${req.nextUrl.search}`, req.url));
+    }
+
     // Bot filter: visitors outside Madagascar pass a Google reCAPTCHA once
     // (/bot-filter), then a signed cookie lets them through for 7 days.
     if (

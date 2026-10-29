@@ -26,14 +26,22 @@ export interface ShareInfo {
 const TRAILER_TYPE: Record<ShareInfo["kind"], string> = { movie: "movie", anime: "anime", drama: "kdrama", tv: "tv" };
 
 /**
- * Trailer page of the shared title, in the sharer's language
- * (e.g. https://…/trailer/1561726?type=movie&lang=fr). The TMDB id is the
- * numeric segment of `path` ("/movies/123", "/anime/play/45?s=1&e=3"…).
+ * Trailer page path of the shared title, in the sharer's language
+ * (e.g. /trailer/1561726?type=movie&lang=fr). The TMDB id is the numeric
+ * segment of `path` ("/movies/123", "/anime/play/45?s=1&e=3"…).
  */
-export function trailerUrlFor(info: ShareInfo, origin: string, locale: string) {
+export function trailerPathFor(info: ShareInfo, locale: string) {
   const id = /\/(\d+)(?:[/?#]|$)/.exec(info.path)?.[1];
   if (!id) return null;
-  return `${origin}/trailer/${id}?${new URLSearchParams({ type: TRAILER_TYPE[info.kind], lang: locale })}`;
+  return `/trailer/${id}?${new URLSearchParams({ type: TRAILER_TYPE[info.kind], lang: locale })}`;
+}
+
+/** The links written in the shared text (short links when ready, full URLs otherwise). */
+export interface ShareLinks {
+  page: string;
+  series: string | null;
+  trailer: string | null;
+  poster: string | null;
 }
 
 export interface ShareLabels {
@@ -53,7 +61,8 @@ export interface ShareLabels {
   trailer: string;
 }
 
-const posterUrl = (posterPath?: string | null) => (posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null);
+export const posterUrl = (posterPath?: string | null) =>
+  posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
 
 const truncate = (text: string, max: number) => {
   const clean = text.replace(/\s+/g, " ").trim();
@@ -63,15 +72,8 @@ const truncate = (text: string, max: number) => {
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]!);
 
-export function buildShareText(
-  info: ShareInfo,
-  url: string,
-  l: ShareLabels,
-  origin = "",
-  trailerUrl: string | null = null,
-) {
+export function buildShareText(info: ShareInfo, links: ShareLinks, l: ShareLabels) {
   const title = info.year ? `${info.title} (${info.year})` : info.title;
-  const poster = posterUrl(info.posterPath);
   return [
     `🎬 ${l.title}: ${title}`,
     `🎞️ ${l.type}: ${l.kind}`,
@@ -79,10 +81,10 @@ export function buildShareText(
     l.seasonsValue ? `📚 ${l.seasons}: ${l.seasonsValue}` : null,
     info.rating ? `⭐ ${l.rating}: ${info.rating.toFixed(1)}/10` : null,
     info.overview ? `📝 ${l.description}: ${truncate(info.overview, 220)}` : null,
-    `🔗 ${l.link}: ${url}`,
-    info.seriesPath ? `📂 ${l.allEpisodes}: ${origin}${info.seriesPath}` : null,
-    trailerUrl ? `🎥 ${l.trailer}: ${trailerUrl}` : null,
-    poster ? `🖼️ ${l.poster}: ${poster}` : null,
+    `🔗 ${l.link}: ${links.page}`,
+    links.series ? `📂 ${l.allEpisodes}: ${links.series}` : null,
+    links.trailer ? `🎥 ${l.trailer}: ${links.trailer}` : null,
+    links.poster ? `🖼️ ${l.poster}: ${links.poster}` : null,
     "",
     `🍿 ${l.footer}`,
   ]
@@ -90,15 +92,11 @@ export function buildShareText(
     .join("\n");
 }
 
-export function buildShareHtml(
-  info: ShareInfo,
-  url: string,
-  l: ShareLabels,
-  origin = "",
-  trailerUrl: string | null = null,
-) {
+export function buildShareHtml(info: ShareInfo, links: ShareLinks, l: ShareLabels) {
   const title = escapeHtml(info.year ? `${info.title} (${info.year})` : info.title);
+  // The <img> always uses the real image (a short link would not display as an image).
   const poster = posterUrl(info.posterPath);
+  const url = links.page;
   const meta = [l.kind, info.episodeLabel, l.seasonsValue, info.rating ? `⭐ ${info.rating.toFixed(1)}/10` : null]
     .filter(Boolean)
     .map((part) => escapeHtml(String(part)))
@@ -110,18 +108,41 @@ export function buildShareHtml(
   }<td style="vertical-align:top"><p style="margin:0;font-size:17px;font-weight:bold">🎬 ${title}</p><p style="margin:4px 0;color:#555;font-size:13px">${meta}</p>${
     info.overview ? `<p style="margin:6px 0;font-size:13px">📝 ${escapeHtml(truncate(info.overview, 220))}</p>` : ""
   }<p style="margin:6px 0;font-size:13px">🔗 <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>${
-    info.seriesPath
-      ? `<p style="margin:6px 0;font-size:13px">📂 ${escapeHtml(l.allEpisodes)}: <a href="${escapeHtml(origin + info.seriesPath)}">${escapeHtml(origin + info.seriesPath)}</a></p>`
+    links.series
+      ? `<p style="margin:6px 0;font-size:13px">📂 ${escapeHtml(l.allEpisodes)}: <a href="${escapeHtml(links.series)}">${escapeHtml(links.series)}</a></p>`
       : ""
   }${
-    trailerUrl
-      ? `<p style="margin:6px 0;font-size:13px">🎥 ${escapeHtml(l.trailer)}: <a href="${escapeHtml(trailerUrl)}">${escapeHtml(trailerUrl)}</a></p>`
+    links.trailer
+      ? `<p style="margin:6px 0;font-size:13px">🎥 ${escapeHtml(l.trailer)}: <a href="${escapeHtml(links.trailer)}">${escapeHtml(links.trailer)}</a></p>`
       : ""
   }<p style="margin:6px 0 0;font-size:13px">🍿 ${escapeHtml(l.footer)}</p></td></tr></table>`;
 }
 
 /** Copies the rich version when the browser allows it, plain text otherwise. */
-export async function copyShare(text: string, html: string) {
+/**
+ * Copies content that may still be loading (short links being created):
+ * passing promises to ClipboardItem keeps the click's permission while we
+ * wait — needed by Safari. Falls back to waiting, then copyShare().
+ */
+export async function copyShareWhenReady(content: Promise<{ text: string; html: string }>) {
+  try {
+    if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/plain": content.then(({ text }) => new Blob([text], { type: "text/plain" })),
+          "text/html": content.then(({ html }) => new Blob([html], { type: "text/html" })),
+        }),
+      ]);
+      return true;
+    }
+  } catch {
+    // browsers without promise support in ClipboardItem: below
+  }
+  const { text, html } = await content;
+  return copyShare(text, html);
+}
+
+async function copyShare(text: string, html: string) {
   try {
     if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
       await navigator.clipboard.write([

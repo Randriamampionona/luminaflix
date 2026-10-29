@@ -3,11 +3,22 @@
 import { Check, Copy, Link2, MessageCircle, Send, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { tmdbImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
-import { buildShareHtml, buildShareText, copyShare, trailerUrlFor, type ShareInfo, type ShareLabels } from "./share-text";
+import { shortenShareLinks } from "@/action/short-links.action";
+import type { ShortLinkCodes } from "@/lib/short-links";
+import {
+  buildShareHtml,
+  buildShareText,
+  copyShareWhenReady,
+  posterUrl,
+  trailerPathFor,
+  type ShareInfo,
+  type ShareLabels,
+  type ShareLinks,
+} from "./share-text";
 
 const noop = () => () => {};
 const getOrigin = () => window.location.origin;
@@ -18,6 +29,9 @@ const getCanShare = () => typeof navigator.share === "function";
  * Copy → clipboard gets the title, type, rating, short description, link,
  * trailer (in the current language) and poster (with emojis; rich version with
  * the image where supported) + a toast.
+ * Links are LuminaFlix short links (https://…/Ab3xK9q), prepared as soon as the
+ * card comes into view (action/short-links.action.ts); until they're ready —
+ * or if they can't be created — the full URLs are used.
  * Also: the phone's share sheet when available, WhatsApp and Telegram.
  */
 export default function ShareCard({ info, className }: { info: ShareInfo; className?: string }) {
@@ -33,7 +47,66 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     return () => clearTimeout(timer);
   }, [copied]);
 
-  const url = `${origin}${info.path}`;
+  const trailerPath = trailerPathFor(info, locale);
+  const fullLinks: ShareLinks = {
+    page: `${origin}${info.path}`,
+    series: info.seriesPath ? `${origin}${info.seriesPath}` : null,
+    trailer: trailerPath ? `${origin}${trailerPath}` : null,
+    poster: posterUrl(info.posterPath),
+  };
+
+  // Short links for this title (prepared once per title / language).
+  const shortKey = `${info.path}|${trailerPath}|${info.seriesPath ?? ""}|${info.posterPath ?? ""}`;
+  const [short, setShort] = useState<{ key: string; codes: ShortLinkCodes } | null>(null);
+  const pending = useRef<{ key: string; promise: Promise<ShortLinkCodes> } | null>(null);
+  const cardRef = useRef<HTMLElement>(null);
+
+  const prepare = useCallback((): Promise<ShortLinkCodes> => {
+    if (pending.current?.key === shortKey) return pending.current.promise;
+    const promise = shortenShareLinks({
+      title: info.title,
+      mediaKind: info.kind,
+      links: {
+        page: info.path,
+        series: info.seriesPath ?? null,
+        trailer: trailerPath,
+        poster: posterUrl(info.posterPath),
+      },
+    })
+      .catch(() => ({}) as ShortLinkCodes)
+      .then((codes) => {
+        setShort({ key: shortKey, codes });
+        return codes;
+      });
+    pending.current = { key: shortKey, promise };
+    return promise;
+  }, [shortKey, info.title, info.kind, info.path, info.seriesPath, info.posterPath, trailerPath]);
+
+  // Prepare the short links when the card scrolls into view.
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          void prepare();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [prepare]);
+
+  const linksFrom = (codes: ShortLinkCodes | undefined): ShareLinks => ({
+    page: codes?.page ? `${origin}/${codes.page}` : fullLinks.page,
+    series: fullLinks.series && codes?.series ? `${origin}/${codes.series}` : fullLinks.series,
+    trailer: fullLinks.trailer && codes?.trailer ? `${origin}/${codes.trailer}` : fullLinks.trailer,
+    poster: fullLinks.poster && codes?.poster ? `${origin}/${codes.poster}` : fullLinks.poster,
+  });
+  const links = linksFrom(short?.key === shortKey ? short.codes : undefined);
+  const url = links.page;
   const labels: ShareLabels = {
     title: t("lines.title"),
     type: t("lines.type"),
@@ -49,12 +122,19 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     allEpisodes: t("lines.allEpisodes"),
     trailer: t("lines.trailer"),
   };
-  const trailerUrl = trailerUrlFor(info, origin, locale);
-  const text = buildShareText(info, url, labels, origin, trailerUrl);
+  const text = buildShareText(info, links, labels);
   const poster = tmdbImage(info.posterPath);
 
   const copy = async () => {
-    const ok = await copyShare(text, buildShareHtml(info, url, labels, origin, trailerUrl));
+    // Waits for the short links if they're not ready yet (max 3 s, then full URLs).
+    const content = Promise.race([
+      prepare(),
+      new Promise<ShortLinkCodes>((resolve) => setTimeout(() => resolve({}), 3000)),
+    ]).then((codes) => {
+      const ready = linksFrom(Object.keys(codes).length ? codes : undefined);
+      return { text: buildShareText(info, ready, labels), html: buildShareHtml(info, ready, labels) };
+    });
+    const ok = await copyShareWhenReady(content);
     if (ok) {
       setCopied(true);
       toast.success(t("toastTitle"), { description: t("toastBody", { title: info.title }) });
@@ -77,6 +157,9 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
 
   return (
     <section
+      ref={cardRef}
+      onPointerEnter={() => void prepare()}
+      onFocus={() => void prepare()}
       aria-labelledby="share-card-title"
       className={cn(
         "relative overflow-hidden rounded-4xl border border-line bg-surface p-5 shadow-2xl sm:p-7",

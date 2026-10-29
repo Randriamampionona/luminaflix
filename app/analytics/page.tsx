@@ -5,6 +5,7 @@ import AnalyticsForbidden from "@/components/analytics/forbidden";
 import { PageShell } from "@/components/layout/page-shell";
 import { checkAnalyticsAdmin } from "@/lib/analytics/admin";
 import { getAnalyticsData, resolveRange } from "@/lib/analytics/queries";
+import { getShortLinkStats } from "@/lib/short-links-server";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -31,11 +32,14 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
   }
 
   const range = resolveRange(await searchParams);
-  const data = await getAnalyticsData(range);
+  const [data, shortLinks] = await Promise.all([
+    getAnalyticsData(range),
+    getShortLinkStats(range.fromDay, range.toDay),
+  ]);
 
   return (
     <PageShell>
-      <AnalyticsDashboard data={data} />
+      <AnalyticsDashboard data={data} shortLinks={shortLinks} />
     </PageShell>
   );
 }

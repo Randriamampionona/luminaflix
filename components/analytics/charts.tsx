@@ -134,3 +134,60 @@ export function CountryChart({ data }: { data: { country: string; visitors: numb
     </div>
   );
 }
+
+/** Short-link clicks and unique people per day. */
+export function ClicksChart({ data }: { data: { day: string; clicks: number; visitors: number }[] }) {
+  return (
+    <div className="h-64 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+          <defs>
+            <linearGradient id="clicksFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="peopleFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+          <XAxis
+            dataKey="day"
+            tickFormatter={shortDay}
+            tick={{ fill: "var(--fg-subtle)", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={24}
+          />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fill: "var(--fg-subtle)", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            width={48}
+          />
+          <Tooltip content={ChartTooltip} cursor={{ stroke: "var(--line-stronger)" }} />
+          <Area
+            type="monotone"
+            dataKey="clicks"
+            name="Clicks"
+            stroke="#a855f7"
+            strokeWidth={2.5}
+            fill="url(#clicksFill)"
+            activeDot={{ r: 5, strokeWidth: 0 }}
+          />
+          <Area
+            type="monotone"
+            dataKey="visitors"
+            name="People"
+            stroke="#06b6d4"
+            strokeWidth={2}
+            fill="url(#peopleFill)"
+            activeDot={{ r: 4, strokeWidth: 0 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
