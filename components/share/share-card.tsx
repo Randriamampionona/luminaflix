@@ -2,12 +2,12 @@
 
 import { Check, Copy, Link2, MessageCircle, Send, Share2 } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { tmdbImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
-import { buildShareHtml, buildShareText, copyShare, type ShareInfo, type ShareLabels } from "./share-text";
+import { buildShareHtml, buildShareText, copyShare, trailerUrlFor, type ShareInfo, type ShareLabels } from "./share-text";
 
 const noop = () => () => {};
 const getOrigin = () => window.location.origin;
@@ -15,12 +15,14 @@ const getCanShare = () => typeof navigator.share === "function";
 
 /**
  * "Share it with your friends" card (players and the admin media page).
- * Copy → clipboard gets the title, type, rating, short description, link and
- * poster (with emojis; rich version with the image where supported) + a toast.
+ * Copy → clipboard gets the title, type, rating, short description, link,
+ * trailer (in the current language) and poster (with emojis; rich version with
+ * the image where supported) + a toast.
  * Also: the phone's share sheet when available, WhatsApp and Telegram.
  */
 export default function ShareCard({ info, className }: { info: ShareInfo; className?: string }) {
   const t = useTranslations("share");
+  const locale = useLocale();
   const origin = useSyncExternalStore(noop, getOrigin, () => process.env.NEXT_PUBLIC_DOMAIN ?? "");
   const canShare = useSyncExternalStore(noop, getCanShare, () => false);
   const [copied, setCopied] = useState(false);
@@ -45,12 +47,14 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
     seasons: t("lines.seasons"),
     seasonsValue: info.seasons ? t("seasonsValue", { seasons: info.seasons, episodes: info.episodes ?? 0 }) : null,
     allEpisodes: t("lines.allEpisodes"),
+    trailer: t("lines.trailer"),
   };
-  const text = buildShareText(info, url, labels, origin);
+  const trailerUrl = trailerUrlFor(info, origin, locale);
+  const text = buildShareText(info, url, labels, origin, trailerUrl);
   const poster = tmdbImage(info.posterPath);
 
   const copy = async () => {
-    const ok = await copyShare(text, buildShareHtml(info, url, labels, origin));
+    const ok = await copyShare(text, buildShareHtml(info, url, labels, origin, trailerUrl));
     if (ok) {
       setCopied(true);
       toast.success(t("toastTitle"), { description: t("toastBody", { title: info.title }) });

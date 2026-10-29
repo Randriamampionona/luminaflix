@@ -973,7 +973,8 @@
       "poster": "Affiche",
       "footer": "À regarder sur LuminaFlix !",
       "seasons": "Saisons",
-      "allEpisodes": "Tous les épisodes"
+      "allEpisodes": "Tous les épisodes",
+      "trailer": "Bande-annonce"
     },
     "kinds": {
       "movie": "Film",

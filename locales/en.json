@@ -973,7 +973,8 @@
       "poster": "Poster",
       "footer": "Watch it on LuminaFlix!",
       "seasons": "Seasons",
-      "allEpisodes": "All episodes"
+      "allEpisodes": "All episodes",
+      "trailer": "Trailer"
     },
     "kinds": {
       "movie": "Movie",

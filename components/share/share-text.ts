@@ -22,6 +22,20 @@ export interface ShareInfo {
   seriesPath?: string | null;
 }
 
+/** Share kind → trailer page type (app/trailer/[id]). */
+const TRAILER_TYPE: Record<ShareInfo["kind"], string> = { movie: "movie", anime: "anime", drama: "kdrama", tv: "tv" };
+
+/**
+ * Trailer page of the shared title, in the sharer's language
+ * (e.g. https://…/trailer/1561726?type=movie&lang=fr). The TMDB id is the
+ * numeric segment of `path` ("/movies/123", "/anime/play/45?s=1&e=3"…).
+ */
+export function trailerUrlFor(info: ShareInfo, origin: string, locale: string) {
+  const id = /\/(\d+)(?:[/?#]|$)/.exec(info.path)?.[1];
+  if (!id) return null;
+  return `${origin}/trailer/${id}?${new URLSearchParams({ type: TRAILER_TYPE[info.kind], lang: locale })}`;
+}
+
 export interface ShareLabels {
   title: string;
   type: string;
@@ -36,6 +50,7 @@ export interface ShareLabels {
   /** Formatted "2 seasons · 16 episodes", or null. */
   seasonsValue: string | null;
   allEpisodes: string;
+  trailer: string;
 }
 
 const posterUrl = (posterPath?: string | null) => (posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null);
@@ -48,7 +63,13 @@ const truncate = (text: string, max: number) => {
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]!);
 
-export function buildShareText(info: ShareInfo, url: string, l: ShareLabels, origin = "") {
+export function buildShareText(
+  info: ShareInfo,
+  url: string,
+  l: ShareLabels,
+  origin = "",
+  trailerUrl: string | null = null,
+) {
   const title = info.year ? `${info.title} (${info.year})` : info.title;
   const poster = posterUrl(info.posterPath);
   return [
@@ -60,6 +81,7 @@ export function buildShareText(info: ShareInfo, url: string, l: ShareLabels, ori
     info.overview ? `📝 ${l.description}: ${truncate(info.overview, 220)}` : null,
     `🔗 ${l.link}: ${url}`,
     info.seriesPath ? `📂 ${l.allEpisodes}: ${origin}${info.seriesPath}` : null,
+    trailerUrl ? `🎥 ${l.trailer}: ${trailerUrl}` : null,
     poster ? `🖼️ ${l.poster}: ${poster}` : null,
     "",
     `🍿 ${l.footer}`,
@@ -68,7 +90,13 @@ export function buildShareText(info: ShareInfo, url: string, l: ShareLabels, ori
     .join("\n");
 }
 
-export function buildShareHtml(info: ShareInfo, url: string, l: ShareLabels, origin = "") {
+export function buildShareHtml(
+  info: ShareInfo,
+  url: string,
+  l: ShareLabels,
+  origin = "",
+  trailerUrl: string | null = null,
+) {
   const title = escapeHtml(info.year ? `${info.title} (${info.year})` : info.title);
   const poster = posterUrl(info.posterPath);
   const meta = [l.kind, info.episodeLabel, l.seasonsValue, info.rating ? `⭐ ${info.rating.toFixed(1)}/10` : null]
@@ -84,6 +112,10 @@ export function buildShareHtml(info: ShareInfo, url: string, l: ShareLabels, ori
   }<p style="margin:6px 0;font-size:13px">🔗 <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>${
     info.seriesPath
       ? `<p style="margin:6px 0;font-size:13px">📂 ${escapeHtml(l.allEpisodes)}: <a href="${escapeHtml(origin + info.seriesPath)}">${escapeHtml(origin + info.seriesPath)}</a></p>`
+      : ""
+  }${
+    trailerUrl
+      ? `<p style="margin:6px 0;font-size:13px">🎥 ${escapeHtml(l.trailer)}: <a href="${escapeHtml(trailerUrl)}">${escapeHtml(trailerUrl)}</a></p>`
       : ""
   }<p style="margin:6px 0 0;font-size:13px">🍿 ${escapeHtml(l.footer)}</p></td></tr></table>`;
 }
