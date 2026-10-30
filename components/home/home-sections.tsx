@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { getCollectionCards } from "@/action/get-collections.action";
 import { getFeatured } from "@/action/get-featured.action";
 import { getGenres } from "@/action/get-genres.action";
 import { getLatestMovies } from "@/action/get-latest-movies.action";
@@ -8,6 +9,7 @@ import { getTopRatedMovies } from "@/action/get-top-rated-movies.action";
 import { getTrendingHero } from "@/action/get-trending-hero.action";
 import { getTrendingTV } from "@/action/get-trending-TV.action";
 import FeaturedBanner from "@/components/featured-banner";
+import { CollectionStrip } from "@/components/collections/collection-card";
 import GenreCard from "@/components/genre-card";
 import HeroSlider from "@/components/hero-slider";
 import { Container } from "@/components/layout/container";
@@ -85,6 +87,36 @@ export async function GenresSection() {
             <GenreCard key={genre.id} genre={genre} />
           ))}
         </div>
+      </Container>
+    </section>
+  );
+}
+
+/** Collections & franchises ("All Marvel in order", "Studio Ghibli"…). */
+export async function CollectionsSection() {
+  const [t, cards] = await Promise.all([getTranslations("collections"), getCollectionCards(8)]);
+  const visible = cards.filter((c) => c.count > 0);
+  if (visible.length === 0) return null;
+  return (
+    <section className="py-6 sm:py-8" aria-labelledby="home-collections">
+      <Container className="space-y-5">
+        <SectionHeader
+          id="home-collections"
+          eyebrow={t("eyebrow")}
+          title={t("homeTitle")}
+          action={
+            <Link
+              href="/collections"
+              className="group flex items-center gap-2 rounded-2xl border border-line-strong bg-tint px-4 py-2.5 transition-colors hover:border-cyan-500/50"
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-fg-muted group-hover:text-foreground">
+                {t("seeAll")}
+              </span>
+              <ArrowRight className="h-3.5 w-3.5 text-fg-muted group-hover:text-brand-bright" />
+            </Link>
+          }
+        />
+        <CollectionStrip cards={visible} countLabel={(count) => t("count", { count })} />
       </Container>
     </section>
   );

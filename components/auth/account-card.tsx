@@ -1,7 +1,8 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
-import { LogOut, Settings, ShieldCheck } from "lucide-react";
+import { LogOut, Settings, ShieldCheck, Trophy } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/layout/skeletons";
 
@@ -131,6 +132,14 @@ function AccountCardView({
           {t("signOut")}
         </button>
       </div>
+      {/* Profile: streak, badges and rank */}
+      <Link
+        href="/user-rank#me"
+        className="relative mt-2 flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 py-2.5 text-[10px] font-black uppercase tracking-widest text-amber-600 transition-colors hover:bg-amber-500/10 dark:text-amber-400"
+      >
+        <Trophy className="h-3.5 w-3.5" aria-hidden />
+        {t("badgesLink")}
+      </Link>
     </div>
   );
 }

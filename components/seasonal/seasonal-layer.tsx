@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { currentSeasonalEvent, type SeasonalEvent } from "@/lib/seasonal";
+import { usePref } from "@/lib/user-prefs";
 
 /**
  * Event-based decorations (Halloween, Christmas, New Year, Valentine's Day).
@@ -32,7 +33,9 @@ export default function SeasonalLayer() {
     () => currentSeasonalEvent(),
     () => null,
   );
-  if (!event || HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
+  // Data saver (menu → Preferences): no decorations.
+  const dataSaver = usePref("dataSaver");
+  if (!event || dataSaver || HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
   const Theme = THEMES[event];
   return <Theme />;
 }

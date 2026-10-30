@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFrembedAvailability } from "@/hooks/use-frembed-availability";
+import { recordActivity } from "@/action/user-stats.action";
+import { markGoodMoment } from "@/lib/good-moments";
+import { recordWatched } from "@/lib/watch-history";
+import { reportServer } from "@/action/server-health.action";
+import { rememberServer, useRememberedServer, useServerHealth } from "@/lib/server-health-client";
+import { toast } from "sonner";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
@@ -73,10 +79,41 @@ export default function StreamPlayer({
   const groups = PLAYER_CONFIG[kind];
   const isEpisode = kind !== "movie";
 
-  const [groupKey, setGroupKey] = useState<ProviderGroup["key"]>(groups[0].key);
+  /** Tab picked by the user; null = the tab of the server that worked last time, else the first. */
+  const [groupKey, setGroupKey] = useState<ProviderGroup["key"] | null>(null);
+  // Server health: the server that worked last time for this title comes first,
+  // then servers ranked by visitors' reports (lib/server-health-client.ts).
+  const remembered = useRememberedServer(kind, mediaId);
+  const health = useServerHealth(kind, mediaId);
   /** Server picked by the user; null = automatic (first server, or the French one that has the title). */
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // Playback started: history ("Because you watched…"), badges, and after
+  // 12 minutes of watching a "good moment" to offer the app / an account.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const mediaKind = ({ movie: "movie", anime: "anime", drama: "kdrama", tv: "tv" } as const)[kind];
+    recordWatched({ id: Number(mediaId), kind: mediaKind, title: title || "" });
+    try {
+      const key = `lf_watched_${mediaKind}_${mediaId}_${new Date().toISOString().slice(0, 10)}`;
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, "1");
+        void recordActivity("watch", mediaKind).catch(() => {});
+      }
+    } catch {
+      // storage blocked
+    }
+    let watchedMs = 0;
+    const tick = setInterval(() => {
+      if (document.visibilityState === "visible") watchedMs += 30_000;
+      if (watchedMs >= 12 * 60_000) {
+        markGoodMoment("watched");
+        clearInterval(tick);
+      }
+    }, 30_000);
+    return () => clearInterval(tick);
+  }, [isPlaying, kind, mediaId, title]);
   const playerBoxRef = useRef<HTMLDivElement>(null);
   /** "Download directly" (VIDZY): a hint points at the player's own download button for a few seconds. */
   const [downloadHint, setDownloadHint] = useState(false);
@@ -87,7 +124,8 @@ export default function StreamPlayer({
   }, [downloadHint]);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
+  const rememberedGroup = groups.find((g) => g.providers.some((p) => p.id === remembered))?.key;
+  const activeGroup = groups.find((g) => g.key === (groupKey ?? rememberedGroup)) ?? groups[0];
 
   // French tab: check silently which French player has this title / episode —
   // VIDZY first (one server per language it has: VF, VOSTFR), then Frembed —
@@ -96,12 +134,16 @@ export default function StreamPlayer({
   const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: isFrenchTab });
   const checked = availability.status === "available" || availability.status === "unavailable";
   // Once checked, only the VIDZY languages that exist are listed (VF, VOSTFR or both).
-  const providers =
+  const providers = (
     isFrenchTab && checked
       ? activeGroup.providers.filter(
           (p) => !p.id.startsWith("vidzy_") || availability.langs.includes(p.id.slice(6) as "vf" | "vostfr"),
         )
-      : activeGroup.providers;
+      : activeGroup.providers
+  )
+    .map((p, index) => ({ p, index, rank: (p.id === remembered ? 100 : 0) + health.rank(p.id) }))
+    .sort((a, b) => b.rank - a.rank || a.index - b.index)
+    .map(({ p }) => p);
   const firstOf = (prefix: string) => providers.find((p) => p.id.startsWith(prefix))?.id;
   const autoSourceId =
     (isFrenchTab && availability.provider === "vidzy" && availability.langs[0] && `vidzy_${availability.langs[0]}`) ||
@@ -113,10 +155,26 @@ export default function StreamPlayer({
   // A manual pick that's no longer listed (e.g. VOSTFR not available) falls back to the automatic choice.
   const activeSource: Provider =
     providers.find((p) => p.id === sourceId) ??
+    providers.find((p) => p.id === remembered) ??
     providers.find((p) => p.id === autoSourceId) ??
     activeGroup.providers[0];
 
   const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    let visibleMs = 0;
+    const tick = setInterval(() => {
+      if (document.visibilityState === "visible") visibleMs += 15_000;
+      if (visibleMs >= 3 * 60_000) {
+        clearInterval(tick);
+        rememberServer(kind, mediaId, activeSource.id);
+        void reportServer(kind, mediaId, activeSource.id, true).catch(() => {});
+      }
+    }, 15_000);
+    return () => clearInterval(tick);
+  }, [isPlaying, kind, mediaId, activeSource.id]);
+
   const splash = tmdbImage(backdropPath || posterPath);
 
   // Custom fullscreen: lock scroll + orientation, Escape exits, always restore.
@@ -158,6 +216,17 @@ export default function StreamPlayer({
     },
     [groups, selectSource],
   );
+
+  /** "Not working?": report it, forget it, and switch to the next server of the tab. */
+  const reportBroken = () => {
+    void reportServer(kind, mediaId, activeSource.id, false).catch(() => {});
+    if (remembered === activeSource.id) rememberServer(kind, mediaId, "");
+    const next = providers[(providers.findIndex((p) => p.id === activeSource.id) + 1) % providers.length];
+    toast.success(t("reportThanks"), {
+      description: next && next.id !== activeSource.id ? t("reportSwitched", { server: next.name }) : undefined,
+    });
+    if (next && next.id !== activeSource.id) selectSource(next.id);
+  };
 
   const onFrenchPlayer = isFrenchTab && (activeSource.id.startsWith("vidzy_") || activeSource.id.startsWith("frembed"));
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
@@ -361,6 +430,15 @@ export default function StreamPlayer({
                 >
                   <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </span>
+                {health.health(provider.id) && (
+                  <span
+                    title={health.health(provider.id) === "good" ? t("healthGood") : t("healthBad")}
+                    className={cn(
+                      "absolute top-2 right-2 h-2 w-2 rounded-full",
+                      health.health(provider.id) === "good" ? "bg-emerald-500" : "bg-red-500",
+                    )}
+                  />
+                )}
                 <span className="flex min-w-0 flex-col items-start text-left">
                   <span
                     className={cn(
@@ -378,6 +456,17 @@ export default function StreamPlayer({
             );
           })}
         </div>
+        {isPlaying && providers.length > 1 && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={reportBroken}
+              className="cursor-pointer rounded-xl px-3 py-2 text-[10px] font-black tracking-widest text-fg-subtle uppercase transition-colors hover:bg-red-500/10 hover:text-red-500"
+            >
+              {t("reportBroken")}
+            </button>
+          </div>
+        )}
 
         {/* External players may open ad tabs: explain it once per visit. */}
         <AdsNoticeModal />

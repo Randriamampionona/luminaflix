@@ -20,10 +20,9 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { type InstallPlatform, usePWAInstall } from "@/hooks/use-pwa-install";
+import { onGoodMoment } from "@/lib/good-moments";
 import { schedulePrompt, setPromptOpen } from "@/lib/prompt-lock";
 
-/** Delay before the popup appears (override with NEXT_PUBLIC_PWA_PROMPT_DELAY_MS). */
-const SHOW_DELAY_MS = Number(process.env.NEXT_PUBLIC_PWA_PROMPT_DELAY_MS) || 10_000;
 /** "Maybe later" hides the popup for this long. */
 const SNOOZE_MS = 30 * 60 * 1000;
 const DISMISSED_KEY = "lf_pwa_dismissed_at";
@@ -93,14 +92,19 @@ export default function PWAInstallModal() {
 
   useEffect(() => {
     if (!eligible) return;
-    // After "Maybe later": ask again once 30 min have passed — on a later visit,
-    // or during this one if the visitor is still here.
-    const dismissedAt = readNumber(DISMISSED_KEY);
-    // Counted from the moment the page started loading, not from this check.
-    const sinceArrival = Math.max(300, SHOW_DELAY_MS - performance.now());
-    const delay = dismissedAt ? Math.max(sinceArrival, dismissedAt + SNOOZE_MS - Date.now()) : sinceArrival;
-    // If the notification popup is open at that moment, wait until it's closed (+2 s).
-    return schedulePrompt("install", delay, () => setOpen(true), 2_000);
+    // Offered at a good moment (12 min watched, 3rd visit, a share — lib/good-moments.ts),
+    // not on a timer. After "Maybe later": not before 30 min have passed.
+    let cancelPrompt: (() => void) | undefined;
+    const stopWaiting = onGoodMoment(() => {
+      const dismissedAt = readNumber(DISMISSED_KEY);
+      const delay = dismissedAt ? Math.max(1_500, dismissedAt + SNOOZE_MS - Date.now()) : 1_500;
+      // If another popup is open at that moment, wait until it's closed (+2 s).
+      cancelPrompt = schedulePrompt("install", delay, () => setOpen(true), 2_000);
+    });
+    return () => {
+      stopWaiting();
+      cancelPrompt?.();
+    };
   }, [eligible, cycle]);
 
   useEffect(() => {

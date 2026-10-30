@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SignInLink from "@/components/auth/sign-in-link";
 import AnimatedLogo from "@/components/brand/animated-logo";
+import { onGoodMoment } from "@/lib/good-moments";
 import { schedulePrompt, setPromptOpen } from "@/lib/prompt-lock";
 
 /**
@@ -42,20 +43,6 @@ const write = (key: string, value: number) => {
 /** Delay after the Nth "Maybe later": 15, 20, 25… minutes. */
 const backoffMs = (dismissCount: number) => FIRST_DELAY_MS + dismissCount * STEP_MS;
 
-/** When the prompt is next due (ms timestamp), creating the session start on first visit. */
-function nextTriggerAt() {
-  const stored = read(KEYS.nextTrigger);
-  if (stored) return stored;
-  let start = read(KEYS.start);
-  if (!start) {
-    start = Date.now();
-    write(KEYS.start, start);
-  }
-  const first = start + FIRST_DELAY_MS;
-  write(KEYS.nextTrigger, first);
-  return first;
-}
-
 const BENEFITS: { key: "watchlist" | "sync" | "picks" | "downloads"; icon: LucideIcon }[] = [
   { key: "watchlist", icon: Heart },
   { key: "sync", icon: MonitorSmartphone },
@@ -83,25 +70,35 @@ export default function AuthPromptModal() {
 
   useEffect(() => {
     if (!eligible) return;
-    const delay = Math.max(0, nextTriggerAt() - Date.now());
-    return schedulePrompt(
-      "auth",
-      delay,
-      () => {
-        // Don't interrupt a movie in full screen: try again once it's closed.
-        if (document.fullscreenElement) {
-          const onExit = () => {
-            if (document.fullscreenElement) return;
-            document.removeEventListener("fullscreenchange", onExit);
-            setCycle((n) => n + 1);
-          };
-          document.addEventListener("fullscreenchange", onExit);
-          return;
-        }
-        setOpen(true);
-      },
-      2_000,
-    );
+    // Offered at a good moment (12 min watched, 3rd visit, a share — lib/good-moments.ts),
+    // then +5 min more after each "Maybe later" (15, 20, 25… min).
+    let cancelPrompt: (() => void) | undefined;
+    const stopWaiting = onGoodMoment(() => {
+      const next = read(KEYS.nextTrigger);
+      const delay = next ? Math.max(1_500, next - Date.now()) : 1_500;
+      cancelPrompt = schedulePrompt(
+        "auth",
+        delay,
+        () => {
+          // Don't interrupt a movie in full screen: try again once it's closed.
+          if (document.fullscreenElement) {
+            const onExit = () => {
+              if (document.fullscreenElement) return;
+              document.removeEventListener("fullscreenchange", onExit);
+              setCycle((n) => n + 1);
+            };
+            document.addEventListener("fullscreenchange", onExit);
+            return;
+          }
+          setOpen(true);
+        },
+        2_000,
+      );
+    });
+    return () => {
+      stopWaiting();
+      cancelPrompt?.();
+    };
   }, [eligible, cycle]);
 
   /** "Maybe later" (also ✕, Escape, clicking outside): next prompt 15, 20, 25… min from now. */

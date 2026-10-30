@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/json-ld";
+import { titleMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { cache } from "react";
@@ -81,11 +83,18 @@ export async function generateMetadata({
   searchParams: SearchParams;
 }): Promise<Metadata> {
   const [{ id }, sp, t] = await Promise.all([params, searchParams, getTranslations("metadata.pages")]);
-  const details = await getTitleDetails(id, toKind(sp.type));
-  return {
-    title: details ? `${t("trailer")} · ${details.title}` : t("trailer"),
-    robots: { index: false },
-  };
+  const kind = toKind(sp.type);
+  const details = await getTitleDetails(id, kind);
+  if (!details) return { title: t("trailer"), robots: { index: false } };
+  const seo = await getTranslations("seo");
+  // Info + trailer page: the one proposed to search engines ("<title> bande-annonce VF").
+  return titleMetadata({
+    kind,
+    id,
+    title: seo("trailerTitle", { title: details.title, year: details.year ? ` (${details.year})` : "" }),
+    description: details.overview || seo("trailerDescription", { title: details.title }),
+    index: true,
+  });
 }
 
 /**
@@ -133,6 +142,27 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
 
   return (
     <PageShell className="relative isolate" containerClassName="max-w-6xl">
+      {details && (
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": kind === "movie" ? "Movie" : "TVSeries",
+            name: details.title,
+            description: details.overview || undefined,
+            image: details.posterPath ? `https://image.tmdb.org/t/p/w500${details.posterPath}` : undefined,
+            datePublished: details.year || undefined,
+            genre: details.genres,
+            ...(trailer?.key && {
+              trailer: {
+                "@type": "VideoObject",
+                name: `${details.title} — trailer`,
+                embedUrl: `https://www.youtube.com/embed/${trailer.key}`,
+                thumbnailUrl: `https://i.ytimg.com/vi/${trailer.key}/hqdefault.jpg`,
+              },
+            }),
+          }}
+        />
+      )}
       {/* Ambient backdrop */}
       {backdrop && (
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[75vh] overflow-hidden">

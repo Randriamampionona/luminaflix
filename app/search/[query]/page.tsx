@@ -1,3 +1,4 @@
+import SearchCollections from "@/components/collections/search-collections";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Sparkles } from "lucide-react";
@@ -49,6 +50,11 @@ export default async function SearchPage({ params, searchParams }: { params: Par
           </span>
         }
       />
+      {page === 1 && (
+        <Suspense key={`collections:${decodedQuery}`} fallback={null}>
+          <SearchCollections query={decodedQuery} />
+        </Suspense>
+      )}
       <Suspense key={streamKey} fallback={null}>
         <Await promise={result}>{(r) => <AiSearchNotice ai={r.ai} exactHref={`${basePath}?ai=0`} />}</Await>
       </Suspense>

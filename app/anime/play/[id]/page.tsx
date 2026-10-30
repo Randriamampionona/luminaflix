@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { titleMetadata } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { getAnimeDetails, getAnimeSeasonEpisodes } from "@/action/get-anime-details.action";
 import { getMediaInteraction } from "@/action/stream-actions";
@@ -17,7 +18,14 @@ export async function generateMetadata({
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
   const { season, episode } = parseEpisodeParams(s, e);
   const [anime, t] = await Promise.all([getAnimeDetails(id), getTranslations("player")]);
-  return anime ? { title: `${anime.name} · ${t("episodeTag", { season, episode })}` } : {};
+  if (!anime) return {};
+  return titleMetadata({
+    kind: "anime",
+    id,
+    title: `${anime.name} · ${t("episodeTag", { season, episode })}`,
+    description: anime.overview,
+    index: false,
+  });
 }
 
 export default async function AnimePlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

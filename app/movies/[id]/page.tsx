@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { titleMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, ArrowRight, Search, Sparkles } from "lucide-react";
@@ -10,6 +11,9 @@ import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
 import { PageShell } from "@/components/layout/page-shell";
 import StreamPlayer from "@/components/player/stream-player";
+import RecommendationsRow from "@/components/recommendations-row";
+import { RowSkeleton } from "@/components/skeletons/home-skeletons";
+import { Suspense } from "react";
 import { getReleaseYear, tmdbImage } from "@/lib/media";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
@@ -24,12 +28,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     const t = await getTranslations("media");
     return { title: t("notFoundTitle"), robots: { index: false } };
   }
-  const image = tmdbImage(movie.backdrop_path || movie.poster_path);
-  return {
-    title: movie.title,
-    description: movie.overview?.slice(0, 160),
-    openGraph: image ? { images: [{ url: image }] } : undefined,
-  };
+  // Player page: rich link preview, but not proposed to search engines (the trailer page is).
+  return titleMetadata({ kind: "movie", id, title: movie.title, description: movie.overview, index: false });
 }
 
 export default async function WatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
@@ -110,7 +110,10 @@ export default async function WatchPage({ params, searchParams }: { params: Para
     );
   }
 
-  const released = movie.release_date ? format.dateTime(new Date(movie.release_date), { dateStyle: "medium" }) : null;
+  const released =
+    movie.release_date && !Number.isNaN(Date.parse(movie.release_date))
+      ? format.dateTime(new Date(movie.release_date), { dateStyle: "medium" })
+      : null;
 
   return (
     <PageShell>
@@ -144,6 +147,12 @@ export default async function WatchPage({ params, searchParams }: { params: Para
       <AdWrapper>
         <NativeBannerAd />
       </AdWrapper>
+
+      <Suspense fallback={<RowSkeleton />}>
+        <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+          <RecommendationsRow kind="movie" id={String(movie.id)} title={movie.title} />
+        </div>
+      </Suspense>
 
       <section className="grid grid-cols-1 gap-12 border-t border-line pt-12 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">

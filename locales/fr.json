@@ -60,7 +60,10 @@
     "downloadAppShort": "App",
     "analytics": "Analytics",
     "mediaInfos": "Infos médias",
-    "admin": "Admin"
+    "admin": "Admin",
+    "collections": "Collections",
+    "comingSoon": "Bientôt",
+    "userRank": "Top fans"
   },
   "auth": {
     "signIn": "Connexion",
@@ -69,7 +72,8 @@
     "account": "Compte",
     "memberBadge": "Membre",
     "manageAccount": "Gérer",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "badgesLink": "Mes badges & classement"
   },
   "language": {
     "label": "Langue",
@@ -193,7 +197,8 @@
       "subtitle": "{count, plural, one {# nouveau membre nous a rejoints} other {# nouveaux membres nous ont rejoints}}",
       "label": "Nouveaux membres"
     },
-    "installApp": "Installer l'App"
+    "installApp": "Installer l'App",
+    "becauseYouWatched": "Parce que vous avez regardé {title}"
   },
   "media": {
     "movie": "Film",
@@ -408,7 +413,12 @@
       "stay": "Rester en FR",
       "switchShort": "Passer en EN"
     },
-    "downloadHint": "Télécharger ici"
+    "downloadHint": "Télécharger ici",
+    "reportBroken": "Ça ne marche pas ? Signaler",
+    "reportThanks": "Merci pour le signalement !",
+    "reportSwitched": "Passage à {server}.",
+    "healthGood": "Fonctionne bien pour ce titre",
+    "healthBad": "Signalé comme ne fonctionnant pas pour ce titre"
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",
@@ -1053,5 +1063,118 @@
     "dontShow": "Ne plus afficher",
     "gotIt": "J'ai compris",
     "close": "Fermer"
+  },
+  "prefs": {
+    "frOnly": {
+      "label": "VF / VOSTFR uniquement",
+      "hint": "Les listes n'affichent que les titres disponibles en français ou sous-titrés en français.",
+      "chip": "VF / VOSTFR uniquement"
+    },
+    "dataSaver": {
+      "label": "Économie de données",
+      "hint": "Images plus légères, sans aperçus de bandes-annonces ni décorations — idéal en 4G.",
+      "chip": "Économie de données"
+    }
+  },
+  "collections": {
+    "eyebrow": "Collections",
+    "title": "Collections & sagas",
+    "description": "Les sagas dans l'ordre, les studios et le meilleur de l'année, au même endroit.",
+    "homeTitle": "Collections",
+    "seeAll": "Tout voir",
+    "all": "Toutes les collections",
+    "count": "{count, plural, one {# titre} other {# titres}}",
+    "inOrder": "Dans l'ordre de sortie",
+    "inSearch": "Collections"
+  },
+  "comingSoon": {
+    "eyebrow": "Calendrier",
+    "title": "Bientôt disponible",
+    "description": "Les films à venir et les sorties récentes. Touchez « Me prévenir » pour recevoir une notification dès qu'un film est disponible en VF ou VOSTFR.",
+    "empty": "Rien de prévu pour le moment.",
+    "weekOf": "Semaine du {date}",
+    "inCinemas": "Au cinéma",
+    "upcoming": "À venir",
+    "checking": "Vérification VF / VOSTFR…",
+    "available": "Disponible en {langs}",
+    "notify": "Me prévenir",
+    "notifying": "Notification activée",
+    "on": "On vous prévient dès que « {title} » est disponible en VF ou VOSTFR.",
+    "off": "Notification retirée pour « {title} ».",
+    "failed": "Impossible d'enregistrer la notification. Réessayez.",
+    "denied": "Les notifications sont bloquées dans les réglages du navigateur.",
+    "unsupported": "Ce navigateur ne peut pas recevoir de notifications.",
+    "push": {
+      "title": "🎉 {title} est disponible en {langs}",
+      "body": "Touchez pour le regarder sur LuminaFlix."
+    }
+  },
+  "badges": {
+    "eyebrow": "Communauté",
+    "title": "Top fans & badges",
+    "description": "Regardez, revenez chaque jour et collectionnez des badges. Les membres les plus actifs apparaissent ici.",
+    "yourProfile": "Votre profil",
+    "streak": "Série en cours",
+    "bestStreak": "Meilleure série",
+    "watched": "Titres regardés",
+    "pointsLabel": "Points",
+    "days": "{count, plural, one {# jour} other {# jours}}",
+    "points": "{count} pts",
+    "startHint": "Regardez un film ou un épisode pour lancer votre série et gagner vos premiers badges.",
+    "signInHint": "Créez un compte gratuit pour garder votre série, gagner des badges et apparaître dans le classement.",
+    "signUp": "Créer un compte gratuit",
+    "leaderboard": "Classement",
+    "empty": "Pas encore de classement — soyez le premier !",
+    "privacyNote": "Seuls votre prénom et votre initiale sont affichés. Vous pouvez vous masquer des listes publiques dans les réglages de votre compte.",
+    "topFans": "Top fans",
+    "seeRanking": "Classement",
+    "items": {
+      "firstWatch": {
+        "name": "Premier visionnage",
+        "hint": "Regarder un premier titre"
+      },
+      "streak3": {
+        "name": "En feu",
+        "hint": "Série de 3 jours"
+      },
+      "streak7": {
+        "name": "Semaine parfaite",
+        "hint": "Série de 7 jours"
+      },
+      "streak30": {
+        "name": "Légende",
+        "hint": "Série de 30 jours"
+      },
+      "movieBuff": {
+        "name": "Cinéphile",
+        "hint": "10 films"
+      },
+      "kdramaFan": {
+        "name": "Fan de K-drama",
+        "hint": "5 K-dramas"
+      },
+      "animeExplorer": {
+        "name": "Explorateur d'anime",
+        "hint": "5 animes"
+      },
+      "seriesBinger": {
+        "name": "Accro aux séries",
+        "hint": "10 séries"
+      },
+      "allRounder": {
+        "name": "Touche-à-tout",
+        "hint": "Un peu de tout"
+      },
+      "regular": {
+        "name": "Habitué",
+        "hint": "20 jours actifs"
+      }
+    }
+  },
+  "seo": {
+    "trailerTitle": "{title}{year} – bande-annonce VF, casting et où regarder",
+    "trailerDescription": "Regardez la bande-annonce de {title}, puis le film en streaming sur LuminaFlix.",
+    "seriesTitle": "{title}{year} – tous les épisodes en streaming",
+    "seriesDescription": "Toutes les saisons et tous les épisodes de {title} sur LuminaFlix."
   }
 }

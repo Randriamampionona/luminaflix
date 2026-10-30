@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { titleMetadata } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { getKDramaDetails, getSeasonEpisodes } from "@/action/get-kdrama-details.action";
 import { getMediaInteraction } from "@/action/stream-actions";
@@ -17,7 +18,14 @@ export async function generateMetadata({
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
   const { season, episode } = parseEpisodeParams(s, e);
   const [drama, t] = await Promise.all([getKDramaDetails(id), getTranslations("player")]);
-  return drama ? { title: `${drama.name} · ${t("episodeTag", { season, episode })}` } : {};
+  if (!drama) return {};
+  return titleMetadata({
+    kind: "kdrama",
+    id,
+    title: `${drama.name} · ${t("episodeTag", { season, episode })}`,
+    description: drama.overview,
+    index: false,
+  });
 }
 
 export default async function KDramaPlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

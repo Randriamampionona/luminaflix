@@ -17,6 +17,8 @@ import FcmPermissionModal from "@/components/fcm-permission-modal";
 import AuthPromptModal from "@/components/auth-prompt-modal";
 import LiveVisitorChat from "@/components/live-visitor-chat";
 import SeasonalLayer from "@/components/seasonal/seasonal-layer";
+import PrefsScript from "@/components/prefs/prefs-script";
+import EngagementTracker from "@/components/engagement-tracker";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -121,6 +123,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <LiveVisitorChat />
               {/* Halloween, Christmas, New Year, Valentine's Day decorations (nothing outside events). */}
               <SeasonalLayer />
+              {/* Data-saver preference applied before the first paint */}
+              <PrefsScript />
+              {/* Visits (good moments for the app / account offers) + daily streak for badges */}
+              <EngagementTracker />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />

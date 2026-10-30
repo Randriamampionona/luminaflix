@@ -1,3 +1,4 @@
+import PrefSwitch from "@/components/prefs/pref-switch";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import AdWrapper from "@/components/ads/ad-wrapper";
@@ -48,6 +49,11 @@ export async function MediaListing({
 
   return (
     <>
+      {items.length > 0 && (
+        <div className="mb-5 flex justify-end">
+          <PrefSwitch pref="frOnly" variant="chip" />
+        </div>
+      )}
       {items.length > 0 ? (
         <MediaGrid>
           {items.map((movie, index) => (

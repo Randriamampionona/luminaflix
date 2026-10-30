@@ -7,6 +7,9 @@ import NativeBannerAd from "@/components/ads/native-banner-ad";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageShell } from "@/components/layout/page-shell";
 import StreamPlayer from "@/components/player/stream-player";
+import RecommendationsRow from "@/components/recommendations-row";
+import { RowSkeleton } from "@/components/skeletons/home-skeletons";
+import { Suspense } from "react";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
 import type { MediaInteraction } from "@/lib/media-interactions";
@@ -119,6 +122,12 @@ export default async function EpisodePlayView({
           <p className={type.meta}>{t("subtitlesNote")}</p>
         </div>
       </section>
+
+      <Suspense fallback={<RowSkeleton />}>
+        <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+          <RecommendationsRow kind="tv" id={String(series.id)} title={series.name} />
+        </div>
+      </Suspense>
 
       <AdWrapper>
         <NativeBannerAd />

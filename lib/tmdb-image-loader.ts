@@ -11,8 +11,11 @@ const TMDB_PATTERN = /^https:\/\/image\.tmdb\.org\/t\/p\/[^/]+(\/.+)$/;
 export default function tmdbImageLoader({ src, width }: ImageLoaderProps) {
   const match = src.match(TMDB_PATTERN);
   if (match) {
+    // Data saver (menu → Preferences): about half the pixels, never above w500.
+    const saver = typeof window !== "undefined" && (window as Window & { __lfDataSaver?: boolean }).__lfDataSaver;
+    const target = saver ? Math.min(width * 0.6, 500) : width;
     const bucket =
-      TMDB_WIDTHS.find((size) => size >= width) ??
+      TMDB_WIDTHS.find((size) => size >= target) ??
       TMDB_WIDTHS[TMDB_WIDTHS.length - 1];
     return `https://image.tmdb.org/t/p/w${bucket}${match[1]}`;
   }

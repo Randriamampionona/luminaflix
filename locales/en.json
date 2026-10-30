@@ -60,7 +60,10 @@
     "downloadAppShort": "App",
     "analytics": "Analytics",
     "mediaInfos": "Media infos",
-    "admin": "Admin"
+    "admin": "Admin",
+    "collections": "Collections",
+    "comingSoon": "Coming soon",
+    "userRank": "Top fans"
   },
   "auth": {
     "signIn": "Sign in",
@@ -69,7 +72,8 @@
     "account": "Account",
     "memberBadge": "Member",
     "manageAccount": "Manage",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "badgesLink": "My badges & rank"
   },
   "language": {
     "label": "Language",
@@ -193,7 +197,8 @@
       "subtitle": "{count, plural, one {# new member joined us recently} other {# new members joined us recently}}",
       "label": "Newest members"
     },
-    "installApp": "Install the app"
+    "installApp": "Install the app",
+    "becauseYouWatched": "Because you watched {title}"
   },
   "media": {
     "movie": "Movie",
@@ -408,7 +413,12 @@
       "stay": "Stay on FR",
       "switchShort": "Watch in EN"
     },
-    "downloadHint": "Download here"
+    "downloadHint": "Download here",
+    "reportBroken": "Not working? Report it",
+    "reportThanks": "Thanks for reporting it!",
+    "reportSwitched": "Switched to {server}.",
+    "healthGood": "Works well for this title",
+    "healthBad": "Reported as not working for this title"
   },
   "actions": {
     "addFavorite": "Add to favorites",
@@ -1053,5 +1063,118 @@
     "dontShow": "Don't show this again",
     "gotIt": "Got it",
     "close": "Close"
+  },
+  "prefs": {
+    "frOnly": {
+      "label": "VF / VOSTFR only",
+      "hint": "Listings only show titles available in French or with French subtitles.",
+      "chip": "VF / VOSTFR only"
+    },
+    "dataSaver": {
+      "label": "Data saver",
+      "hint": "Smaller images, no trailer previews or decorations — ideal on mobile data.",
+      "chip": "Data saver"
+    }
+  },
+  "collections": {
+    "eyebrow": "Collections",
+    "title": "Collections & franchises",
+    "description": "Sagas in order, studios and the best of the year — all in one place.",
+    "homeTitle": "Collections",
+    "seeAll": "See all",
+    "all": "All collections",
+    "count": "{count, plural, one {# title} other {# titles}}",
+    "inOrder": "In release order",
+    "inSearch": "Collections"
+  },
+  "comingSoon": {
+    "eyebrow": "Calendar",
+    "title": "Coming soon",
+    "description": "Upcoming and recent movies. Tap “Notify me” to get a notification as soon as one is available in VF or VOSTFR.",
+    "empty": "Nothing scheduled right now.",
+    "weekOf": "Week of {date}",
+    "inCinemas": "In cinemas",
+    "upcoming": "Upcoming",
+    "checking": "Checking VF / VOSTFR…",
+    "available": "Available in {langs}",
+    "notify": "Notify me",
+    "notifying": "Notification on",
+    "on": "We'll notify you when “{title}” is available in VF or VOSTFR.",
+    "off": "Notification removed for “{title}”.",
+    "failed": "Couldn't save the notification. Please try again.",
+    "denied": "Notifications are blocked in your browser settings.",
+    "unsupported": "This browser can't receive notifications.",
+    "push": {
+      "title": "🎉 {title} is now available in {langs}",
+      "body": "Tap to watch it on LuminaFlix."
+    }
+  },
+  "badges": {
+    "eyebrow": "Community",
+    "title": "Top fans & badges",
+    "description": "Watch, come back every day and collect badges. The most active members appear here.",
+    "yourProfile": "Your profile",
+    "streak": "Current streak",
+    "bestStreak": "Best streak",
+    "watched": "Titles watched",
+    "pointsLabel": "Points",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "points": "{count} pts",
+    "startHint": "Watch a movie or an episode to start your streak and earn your first badges.",
+    "signInHint": "Create a free account to keep your streak, earn badges and appear in the ranking.",
+    "signUp": "Create a free account",
+    "leaderboard": "Ranking",
+    "empty": "No ranking yet — be the first!",
+    "privacyNote": "Only your first name and initial are shown. You can hide yourself from public lists in your account settings.",
+    "topFans": "Top fans",
+    "seeRanking": "Ranking",
+    "items": {
+      "firstWatch": {
+        "name": "First watch",
+        "hint": "Watch your first title"
+      },
+      "streak3": {
+        "name": "On fire",
+        "hint": "3-day streak"
+      },
+      "streak7": {
+        "name": "Week streak",
+        "hint": "7-day streak"
+      },
+      "streak30": {
+        "name": "Legend",
+        "hint": "30-day streak"
+      },
+      "movieBuff": {
+        "name": "Movie buff",
+        "hint": "10 movies"
+      },
+      "kdramaFan": {
+        "name": "K-drama fan",
+        "hint": "5 K-dramas"
+      },
+      "animeExplorer": {
+        "name": "Anime explorer",
+        "hint": "5 anime"
+      },
+      "seriesBinger": {
+        "name": "Series binger",
+        "hint": "10 TV shows"
+      },
+      "allRounder": {
+        "name": "All-rounder",
+        "hint": "A bit of everything"
+      },
+      "regular": {
+        "name": "Regular",
+        "hint": "20 active days"
+      }
+    }
+  },
+  "seo": {
+    "trailerTitle": "{title}{year} – trailer, cast & where to watch",
+    "trailerDescription": "Watch the trailer of {title}, then stream it on LuminaFlix.",
+    "seriesTitle": "{title}{year} – all episodes",
+    "seriesDescription": "All the seasons and episodes of {title} on LuminaFlix."
   }
 }

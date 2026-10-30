@@ -2,7 +2,10 @@ import { Suspense } from "react";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
 import HomeCTA from "@/components/home-cta";
+import BecauseYouWatched from "@/components/home/because-you-watched";
+import TopFans from "@/components/badges/top-fans";
 import {
+  CollectionsSection,
   FeaturedSection,
   GenresSection,
   HeroSection,
@@ -41,8 +44,15 @@ export default async function HomePage() {
           <NativeBannerAd />
         </AdWrapper>
 
+        {/* From this browser's history; nothing on a first visit. */}
+        <BecauseYouWatched />
+
         <Suspense fallback={<GenreTilesSkeleton />}>
           <GenresSection />
+        </Suspense>
+
+        <Suspense fallback={<RowSkeleton />}>
+          <CollectionsSection />
         </Suspense>
 
         <Suspense fallback={<RowSkeleton />}>
@@ -54,6 +64,10 @@ export default async function HomePage() {
         </Suspense>
 
         <HomeCTA />
+
+        <Suspense fallback={null}>
+          <TopFans />
+        </Suspense>
 
         <Suspense fallback={<RowSkeleton />}>
           <LatestRow />

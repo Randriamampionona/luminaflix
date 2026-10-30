@@ -4,7 +4,10 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { memo, useCallback } from "react";
 import { getDisplayTitle, getReleaseYear, tmdbImage, type MediaKind } from "@/lib/media";
+import { useFrStatus } from "@/lib/fr-status-client";
+import { usePref } from "@/lib/user-prefs";
 import type { Movie } from "@/typing";
+import { useHoverTrailer } from "./hover-trailer";
 import { useMediaDetails } from "./media/media-details-provider";
 
 /** Poster widths per breakpoint — must mirror MEDIA_GRID_CLASS / MovieRow. */
@@ -26,6 +29,11 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
   const year = getReleaseYear(movie);
   const poster = tmdbImage(movie.poster_path);
 
+  // "VF / VOSTFR only": hide titles without a French version, badge the others.
+  const frOnly = usePref("frOnly");
+  const frStatus = useFrStatus(type, movie.id, frOnly);
+  const preview = useHoverTrailer(movie.id, type);
+
   const open = useCallback(() => openDetails(movie, type), [openDetails, movie, type]);
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -37,6 +45,10 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
     [open],
   );
 
+  if (frOnly && frStatus === "none") return null;
+  const frBadge =
+    frStatus === "both" ? "VF · VOSTFR" : frStatus === "vf" || frStatus === "fr" ? "VF" : frStatus === "vostfr" ? "VOSTFR" : null;
+
   const badge =
     type === "anime" ? t("anime") : type === "kdrama" ? t("kdrama") : type === "tv" ? t("series") : t("quality4k");
 
@@ -47,6 +59,7 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
       aria-label={t("openDetails", { title })}
       onClick={open}
       onKeyDown={onKeyDown}
+      {...preview.handlers}
       className="group relative w-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       <div className="relative aspect-2/3 overflow-hidden rounded-md border border-line bg-elevated shadow-lg">
@@ -65,7 +78,14 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
           </div>
         )}
 
-        <span className="absolute right-2 top-2 rounded bg-cyan-500 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter text-black">
+        {preview.overlay}
+        {frBadge && (
+          <span className="absolute bottom-2 left-2 z-10 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-black tracking-wider text-white ring-1 ring-cyan-400/60 backdrop-blur-sm">
+            {frBadge}
+          </span>
+        )}
+
+        <span className="absolute right-2 top-2 z-10 rounded bg-cyan-500 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter text-black">
           {badge}
         </span>
         {movie.original_language && (

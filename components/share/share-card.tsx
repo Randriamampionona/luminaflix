@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { tmdbImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { markShortLinkShared, shortenShareLinks } from "@/action/short-links.action";
+import { markGoodMoment } from "@/lib/good-moments";
 import type { ShortLinkCodes } from "@/lib/short-links";
 import {
   buildShareHtml,
@@ -110,6 +111,7 @@ export default function ShareCard({ info, className }: { info: ShareInfo; classN
 
   /** Counts a real share on the stats (fire and forget). */
   const reportShare = (channel: "copy" | "native" | "whatsapp" | "telegram", pageCode = codes?.page) => {
+    markGoodMoment("shared");
     if (pageCode) void markShortLinkShared(pageCode, channel).catch(() => {});
   };
   const url = links.page;

@@ -7,6 +7,9 @@ export const NAV_ITEMS = [
   { key: "genres", href: "/genres" },
   { key: "anime", href: "/anime" },
   { key: "tvShows", href: "/tv-shows" },
+  { key: "collections", href: "/collections" },
+  { key: "comingSoon", href: "/coming-soon" },
+  { key: "userRank", href: "/user-rank" },
   { key: "favorites", href: "/favorites" },
   { key: "downloadApp", href: "/download_app" },
 ] as const;

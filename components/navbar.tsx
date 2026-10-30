@@ -23,6 +23,7 @@ import SignInLink from "@/components/auth/sign-in-link";
 import LanguageSwitcher from "@/components/i18n/language-switcher";
 import { Container } from "@/components/layout/container";
 import ThemeToggle from "@/components/theme-toggle";
+import PrefSwitch from "@/components/prefs/pref-switch";
 import VoiceSearchButton from "@/components/voice-search-button";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useSmartSearch } from "@/hooks/use-smart-search";
@@ -396,6 +397,10 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <p className="text-xs font-bold text-fg-muted">{t("language.label")}</p>
                     <LanguageSwitcher align="start" className="w-full justify-between" />
+                  </div>
+                  <div className="space-y-2">
+                    <PrefSwitch pref="frOnly" />
+                    <PrefSwitch pref="dataSaver" />
                   </div>
                 </section>
               </div>
