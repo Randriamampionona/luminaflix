@@ -79,7 +79,7 @@ export default function StreamPlayer({
   const groups = PLAYER_CONFIG[kind];
   const isEpisode = kind !== "movie";
 
-  /** Tab picked by the user; null = the tab of the server that worked last time, else the first. */
+  /** Tab picked by the user; null = the first tab (French). */
   const [groupKey, setGroupKey] = useState<ProviderGroup["key"] | null>(null);
   // Server health: the server that worked last time for this title comes first,
   // then servers ranked by visitors' reports (lib/server-health-client.ts).
@@ -124,8 +124,8 @@ export default function StreamPlayer({
   }, [downloadHint]);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const rememberedGroup = groups.find((g) => g.providers.some((p) => p.id === remembered))?.key;
-  const activeGroup = groups.find((g) => g.key === (groupKey ?? rememberedGroup)) ?? groups[0];
+  // Always open on the French tab (VIDZY first); the user can switch tabs.
+  const activeGroup = groups.find((g) => g.key === groupKey) ?? groups[0];
 
   // French tab: check silently which French player has this title / episode —
   // VIDZY first (one server per language it has: VF, VOSTFR), then Frembed —
@@ -141,7 +141,13 @@ export default function StreamPlayer({
         )
       : activeGroup.providers
   )
-    .map((p, index) => ({ p, index, rank: (p.id === remembered ? 100 : 0) + health.rank(p.id) }))
+    // VIDZY always stays on top of the French tab; the other servers are ranked by
+    // the one that worked last time, then by visitors' reports.
+    .map((p, index) => ({
+      p,
+      index,
+      rank: (isFrenchTab && p.id.startsWith("vidzy_") ? 1000 : 0) + (p.id === remembered ? 100 : 0) + health.rank(p.id),
+    }))
     .sort((a, b) => b.rank - a.rank || a.index - b.index)
     .map(({ p }) => p);
   const firstOf = (prefix: string) => providers.find((p) => p.id.startsWith(prefix))?.id;
@@ -152,9 +158,19 @@ export default function StreamPlayer({
     (isFrenchTab && availability.status === "unavailable" && (firstOf("frembed") ?? providers[0]?.id)) ||
     providers[0]?.id ||
     activeGroup.providers[0].id;
-  // A manual pick that's no longer listed (e.g. VOSTFR not available) falls back to the automatic choice.
+  // Which server plays, in order:
+  //  1. the one the user picked (if still listed — e.g. VOSTFR may not exist);
+  //  2. VIDZY whenever it has the title (the language used last time if VIDZY has it, else its first);
+  //  3. while the check is running, VIDZY stays selected (no jump to another server);
+  //  4. the server that worked last time, then the automatic choice (Frembed, then English).
+  const vidzyHasIt = isFrenchTab && availability.provider === "vidzy" && availability.langs.length > 0;
   const activeSource: Provider =
     providers.find((p) => p.id === sourceId) ??
+    (vidzyHasIt
+      ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
+        providers.find((p) => p.id === `vidzy_${availability.langs[0]}`))
+      : undefined) ??
+    (isFrenchTab && availability.status === "checking" ? providers.find((p) => p.id.startsWith("vidzy_")) : undefined) ??
     providers.find((p) => p.id === remembered) ??
     providers.find((p) => p.id === autoSourceId) ??
     activeGroup.providers[0];
