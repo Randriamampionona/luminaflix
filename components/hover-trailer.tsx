@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronRight, Film, Loader2, Star } from "lucide-react";
+import { ChevronRight, Film, Loader2, Star, Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -23,7 +23,20 @@ interface PreviewInfo {
   onOpen: () => void;
 }
 
-type State = { status: "loading" | "unavailable" } | { status: "playing"; key: string };
+type State = { status: "loading" | "unavailable" } | { status: "playing"; key: string; startMuted: boolean };
+
+/** Sound: on by default (if the browser allows it), the visitor's last choice is remembered. */
+const MUTE_KEY = "lf_preview_muted";
+function startsMuted() {
+  try {
+    if (localStorage.getItem(MUTE_KEY) === "1") return true;
+  } catch {
+    // ignore
+  }
+  // Browsers only allow sound once the visitor has clicked / tapped on the page.
+  const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  return !activation?.hasBeenActive;
+}
 interface Box {
   left: number;
   top: number;
@@ -59,6 +72,8 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<Box | null>(null);
   const [state, setState] = useState<State>({ status: "loading" });
+  const [muted, setMuted] = useState(true);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
@@ -86,7 +101,9 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
         setState({ status: "loading" });
         setBox(boxFor(card));
         const key = await trailerKey(id, kind);
-        setState(key ? { status: "playing", key } : { status: "unavailable" });
+        const startMuted = startsMuted();
+        setMuted(startMuted);
+        setState(key ? { status: "playing", key, startMuted } : { status: "unavailable" });
       }, delay);
     },
     [id, kind, close],
@@ -99,17 +116,24 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
     closeTimer.current = setTimeout(close, 160);
   }, [close]);
 
-  // Close on scroll / resize (the box would drift) and, after a long press, on any outside tap.
+  // Close when the page or the card's own row scrolls (the box would drift) — not for
+  // other moving parts of the page (e.g. the auto-scrolling members banner on the home
+  // page, which made the preview flicker) — on resize, and after a long press on any outside tap.
   useEffect(() => {
     if (!box) return;
+    const onScroll = (e: Event) => {
+      const target = e.target;
+      if (target === document || target === document.documentElement || target === document.body) return close();
+      if (target instanceof Node && cardRef.current && target.contains(cardRef.current)) close();
+    };
     const onOutside = (e: PointerEvent) => {
       if (touchOpened.current && !(e.target as Element).closest?.("[data-trailer-preview]")) close();
     };
-    window.addEventListener("scroll", close, { passive: true, capture: true });
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     window.addEventListener("resize", close);
     document.addEventListener("pointerdown", onOutside);
     return () => {
-      window.removeEventListener("scroll", close, { capture: true });
+      window.removeEventListener("scroll", onScroll, { capture: true });
       window.removeEventListener("resize", close);
       document.removeEventListener("pointerdown", onOutside);
     };
@@ -144,6 +168,26 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
         longPressed.current = false;
       }
     },
+  };
+
+  /** Mute / unmute the trailer through the YouTube player API (no reload). */
+  const toggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !muted;
+    setMuted(next);
+    try {
+      localStorage.setItem(MUTE_KEY, next ? "1" : "0");
+    } catch {
+      // ignore
+    }
+    const send = (func: string, args: unknown[] = []) =>
+      iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+    if (next) send("mute");
+    else {
+      send("unMute");
+      send("setVolume", [80]);
+      send("playVideo");
+    }
   };
 
   const backdrop = info.backdrop ? `https://image.tmdb.org/t/p/w780${info.backdrop}` : null;
@@ -188,13 +232,25 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
                 </span>
               )}
               {state.status === "playing" && (
-                <iframe
-                  title={t("label", { title: info.title })}
-                  src={`https://www.youtube-nocookie.com/embed/${state.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${state.key}&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3&disablekb=1`}
-                  allow="autoplay; encrypted-media"
-                  tabIndex={-1}
-                  className="pointer-events-none absolute inset-0 h-full w-full border-0"
-                />
+                <>
+                  <iframe
+                    ref={iframeRef}
+                    title={t("label", { title: info.title })}
+                    src={`https://www.youtube-nocookie.com/embed/${state.key}?autoplay=1&mute=${state.startMuted ? 1 : 0}&controls=0&loop=1&playlist=${state.key}&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3&disablekb=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
+                    allow="autoplay; encrypted-media"
+                    tabIndex={-1}
+                    className="pointer-events-none absolute inset-0 h-full w-full border-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleSound}
+                    aria-label={muted ? t("unmute") : t("mute")}
+                    title={muted ? t("unmute") : t("mute")}
+                    className="absolute right-3 bottom-3 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/30 bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-cyan-500 hover:text-black"
+                  >
+                    {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
+                  </button>
+                </>
               )}
             </div>
             <div className="flex items-center gap-3 px-4 py-3">

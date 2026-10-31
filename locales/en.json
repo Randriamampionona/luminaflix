@@ -1188,6 +1188,8 @@
     "loading": "Loading the trailer…",
     "unavailable": "Trailer not available",
     "label": "Trailer of {title}",
-    "moreInfo": "Click for details"
+    "moreInfo": "Click for details",
+    "mute": "Mute",
+    "unmute": "Turn the sound on"
   }
 }

@@ -1188,6 +1188,8 @@
     "loading": "Chargement de la bande-annonce…",
     "unavailable": "Bande-annonce indisponible",
     "label": "Bande-annonce de {title}",
-    "moreInfo": "Cliquez pour les détails"
+    "moreInfo": "Cliquez pour les détails",
+    "mute": "Couper le son",
+    "unmute": "Activer le son"
   }
 }
