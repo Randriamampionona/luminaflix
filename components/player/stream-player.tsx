@@ -159,7 +159,11 @@ export default function StreamPlayer({
     providers.find((p) => p.id === autoSourceId) ??
     activeGroup.providers[0];
 
-  const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
+  // VIDZY sometimes files a series season as one "movie" entry: then its own link is used.
+  const embedUrl =
+    activeSource.id.startsWith("vidzy_") && availability.embed
+      ? `${availability.embed}/${activeSource.id.slice(6)}`
+      : activeSource.url({ mediaId, imdbId, season, episode });
 
   useEffect(() => {
     if (!isPlaying) return;
