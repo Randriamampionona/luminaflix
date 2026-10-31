@@ -1,6 +1,13 @@
 import "server-only";
 import { getLocale } from "next-intl/server";
-import { COLLECTIONS, findCollection, loc, matchCollections, type CollectionDef } from "@/lib/collections";
+import {
+  COLLECTIONS,
+  findCollection,
+  loc,
+  matchCollections,
+  type CollectionDef,
+  type CollectionGroup,
+} from "@/lib/collections";
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 import type { Movie, TMDBResponse } from "@/typing";
 
@@ -27,25 +34,31 @@ interface TmdbCollection {
 
 const byRelease = (a: Movie, b: Movie) => (a.release_date || "9999").localeCompare(b.release_date || "9999");
 
-async function itemsOf(def: CollectionDef): Promise<{ items: Movie[]; backdrop: string | null }> {
+async function itemsOf(
+  def: CollectionDef,
+  pageCount = 2,
+): Promise<{ items: Movie[]; backdrop: string | null; total: number }> {
   const src = def.source;
   if (src.type === "collection") {
     const c = await tmdb<TmdbCollection>(`/collection/${src.id}`, {}, { revalidate: REVALIDATE.long });
-    return { items: [...(c?.parts ?? [])].filter((m) => m.poster_path).sort(byRelease), backdrop: c?.backdrop_path ?? null };
+    const items = [...(c?.parts ?? [])].filter((m) => m.poster_path).sort(byRelease);
+    return { items, backdrop: c?.backdrop_path ?? null, total: items.length };
   }
   const media = src.type === "company" ? "movie" : src.media;
   const params =
-    src.type === "company"
-      ? { with_companies: src.id, sort_by: src.sort, "vote_count.gte": 20 }
-      : src.params;
+    src.type === "company" ? { with_companies: src.id, sort_by: src.sort, "vote_count.gte": 20 } : src.params;
   const pages = await Promise.all(
-    [1, 2].map((page) => tmdb<TMDBResponse>(`/discover/${media}`, { ...params, page }, { revalidate: REVALIDATE.long })),
+    Array.from({ length: pageCount }, (_, i) => i + 1).map((page) =>
+      tmdb<TMDBResponse>(`/discover/${media}`, { ...params, page }, { revalidate: REVALIDATE.long }),
+    ),
   );
   const items = pages
     .flatMap((p) => p?.results ?? [])
     .filter((m) => m.poster_path)
     .map((m) => ({ ...m, media_type: m.media_type ?? media }));
-  return { items, backdrop: items.find((m) => m.backdrop_path)?.backdrop_path ?? null };
+  // A collection page lists 2 pages (40 titles) at most.
+  const total = Math.min(pages[0]?.total_results ?? items.length, 40);
+  return { items, backdrop: items.find((m) => m.backdrop_path)?.backdrop_path ?? null, total };
 }
 
 /** A curated collection by slug, or any TMDB collection as "c-<id>". */
@@ -81,6 +94,7 @@ export async function getCollection(slug: string): Promise<CollectionView | null
 
 export interface CollectionCardData {
   href: string;
+  group?: CollectionGroup;
   emoji: string;
   title: string;
   tagline: string;
@@ -88,43 +102,45 @@ export interface CollectionCardData {
   count: number;
 }
 
-/** Cards for the curated collections (home row, /collections). */
-export async function getCollectionCards(limit = COLLECTIONS.length): Promise<CollectionCardData[]> {
+async function cardFor(def: CollectionDef, locale: string): Promise<CollectionCardData> {
+  const { backdrop, total } = await itemsOf(def, 1).catch(() => ({ backdrop: null, total: 0 }));
+  return {
+    href: `/collections/${def.slug}`,
+    group: def.group,
+    emoji: def.emoji,
+    title: loc(def.title, locale),
+    tagline: loc(def.tagline, locale),
+    backdrop,
+    count: total,
+  };
+}
+
+/**
+ * Cards for the curated collections (home row, /collections), without the
+ * empty ones. TMDB is called 8 collections at a time (cached a day).
+ */
+export async function getCollectionCards(defs: CollectionDef[] = COLLECTIONS): Promise<CollectionCardData[]> {
   const locale = await getLocale();
-  return Promise.all(
-    COLLECTIONS.slice(0, limit).map(async (def) => {
-      const { items, backdrop } = await itemsOf(def).catch(() => ({ items: [], backdrop: null }));
-      return {
-        href: `/collections/${def.slug}`,
-        emoji: def.emoji,
-        title: loc(def.title, locale),
-        tagline: loc(def.tagline, locale),
-        backdrop,
-        count: items.length,
-      };
-    }),
-  );
+  const cards: CollectionCardData[] = [];
+  for (let i = 0; i < defs.length; i += 8) {
+    cards.push(...(await Promise.all(defs.slice(i, i + 8).map((def) => cardFor(def, locale)))));
+  }
+  return cards.filter((c) => c.count > 0);
 }
 
 /** Collections matching a search: curated ones + TMDB franchises (e.g. "Shrek" → Shrek collection). */
 export async function searchCollections(query: string): Promise<CollectionCardData[]> {
   const locale = await getLocale();
   const curated = matchCollections(query);
-  const found = await tmdb<{ results: TmdbCollection[] }>(`/search/collection`, { query, page: 1 }, {
-    revalidate: REVALIDATE.default,
-  });
-  const curatedCards = await Promise.all(
-    curated.slice(0, 3).map(async (def) => {
-      const { items, backdrop } = await itemsOf(def).catch(() => ({ items: [], backdrop: null }));
-      return {
-        href: `/collections/${def.slug}`,
-        emoji: def.emoji,
-        title: loc(def.title, locale),
-        tagline: loc(def.tagline, locale),
-        backdrop,
-        count: items.length,
-      };
-    }),
+  const found = await tmdb<{ results: TmdbCollection[] }>(
+    `/search/collection`,
+    { query, page: 1 },
+    {
+      revalidate: REVALIDATE.default,
+    },
+  );
+  const curatedCards = (await Promise.all(curated.slice(0, 4).map((def) => cardFor(def, locale)))).filter(
+    (c) => c.count > 0,
   );
   const tmdbCards = (found?.results ?? [])
     .filter((c) => c.backdrop_path || c.poster_path)

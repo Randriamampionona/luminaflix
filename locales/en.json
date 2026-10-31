@@ -1085,7 +1085,14 @@
     "all": "All collections",
     "count": "{count, plural, one {# title} other {# titles}}",
     "inOrder": "In release order",
-    "inSearch": "Collections"
+    "inSearch": "Collections",
+    "groups": {
+      "best": "Best of",
+      "sagas": "Sagas & franchises",
+      "studios": "Studios",
+      "world": "Around the world",
+      "moods": "Moods & occasions"
+    }
   },
   "comingSoon": {
     "eyebrow": "Calendar",
@@ -1176,5 +1183,11 @@
     "trailerDescription": "Watch the trailer of {title}, then stream it on LuminaFlix.",
     "seriesTitle": "{title}{year} – all episodes",
     "seriesDescription": "All the seasons and episodes of {title} on LuminaFlix."
+  },
+  "preview": {
+    "loading": "Loading the trailer…",
+    "unavailable": "Trailer not available",
+    "label": "Trailer of {title}",
+    "moreInfo": "Click for details"
   }
 }

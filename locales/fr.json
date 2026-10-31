@@ -1085,7 +1085,14 @@
     "all": "Toutes les collections",
     "count": "{count, plural, one {# titre} other {# titres}}",
     "inOrder": "Dans l'ordre de sortie",
-    "inSearch": "Collections"
+    "inSearch": "Collections",
+    "groups": {
+      "best": "Le meilleur",
+      "sagas": "Sagas & franchises",
+      "studios": "Studios",
+      "world": "Autour du monde",
+      "moods": "Ambiances & occasions"
+    }
   },
   "comingSoon": {
     "eyebrow": "Calendrier",
@@ -1176,5 +1183,11 @@
     "trailerDescription": "Regardez la bande-annonce de {title}, puis le film en streaming sur LuminaFlix.",
     "seriesTitle": "{title}{year} – tous les épisodes en streaming",
     "seriesDescription": "Toutes les saisons et tous les épisodes de {title} sur LuminaFlix."
+  },
+  "preview": {
+    "loading": "Chargement de la bande-annonce…",
+    "unavailable": "Bande-annonce indisponible",
+    "label": "Bande-annonce de {title}",
+    "moreInfo": "Cliquez pour les détails"
   }
 }

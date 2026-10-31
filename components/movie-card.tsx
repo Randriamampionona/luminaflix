@@ -32,9 +32,15 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
   // "VF / VOSTFR only": hide titles without a French version, badge the others.
   const frOnly = usePref("frOnly");
   const frStatus = useFrStatus(type, movie.id, frOnly);
-  const preview = useHoverTrailer(movie.id, type);
-
   const open = useCallback(() => openDetails(movie, type), [openDetails, movie, type]);
+  // Trailer preview box over the card (hover / long press).
+  const { cardRef, handlers: previewHandlers, popover } = useHoverTrailer(movie.id, type, {
+    title,
+    year,
+    rating: movie.vote_average,
+    backdrop: movie.backdrop_path,
+    onOpen: open,
+  });
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -59,7 +65,8 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
       aria-label={t("openDetails", { title })}
       onClick={open}
       onKeyDown={onKeyDown}
-      {...preview.handlers}
+      ref={cardRef}
+      {...previewHandlers}
       className="group relative w-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       <div className="relative aspect-2/3 overflow-hidden rounded-md border border-line bg-elevated shadow-lg">
@@ -78,7 +85,6 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
           </div>
         )}
 
-        {preview.overlay}
         {frBadge && (
           <span className="absolute bottom-2 left-2 z-10 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-black tracking-wider text-white ring-1 ring-cyan-400/60 backdrop-blur-sm">
             {frBadge}
@@ -109,6 +115,7 @@ function MovieCard({ movie, type = "movie", priority = false, sizes = POSTER_SIZ
           <span className="text-foreground/60">{(movie.vote_average ?? 0).toFixed(1)}</span>
         </p>
       </div>
+      {popover}
     </div>
   );
 }
