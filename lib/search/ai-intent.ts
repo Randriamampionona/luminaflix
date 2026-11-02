@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { OpenAIError, getModel, isOpenAIConfigured, openaiRequest, resetModels } from "@/lib/ai/openai";
 
-export type SearchScope = "all" | "anime" | "kdrama" | "tv";
+export type SearchScope = "all" | "movie" | "anime" | "kdrama" | "tv";
 
 export interface SearchIntent {
   detectedLanguage: "fr" | "en" | "mg" | "other";
@@ -16,6 +16,7 @@ const MAX_QUERY_LENGTH = 300;
 
 const SCOPE_HINT: Record<SearchScope, string> = {
   all: "movies and TV series of any country",
+  movie: "movies (feature films) of any country, not TV series",
   anime: "Japanese anime series (TV)",
   kdrama: "Korean dramas (K-dramas, TV series)",
   tv: "TV series of any country (not movies, not anime)",

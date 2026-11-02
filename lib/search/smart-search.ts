@@ -4,6 +4,7 @@ import { getSearchKDramas } from "@/action/get-search-kdrama.action";
 import { getSearchResults } from "@/action/get-search-results.action";
 import { getSearchTVShows } from "@/action/get-search-tv.action";
 import { isOpenAIConfigured } from "@/lib/ai/openai";
+import { searchMoviesOnly } from "@/lib/search/tmdb-search";
 import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 import type { Movie, TMDBResponse } from "@/typing";
 import { looksDescriptive, resolveSearchIntent, type SearchIntent, type SearchScope } from "./ai-intent";
@@ -23,6 +24,7 @@ export interface SmartSearchResult {
 
 const searchers: Record<SearchScope, (query: string, page: number) => Promise<TMDBResponse>> = {
   all: (q, p) => getSearchResults(q, p),
+  movie: (q, p) => searchMoviesOnly(q, p),
   anime: (q, p) => getSearchAnime(q, p),
   kdrama: (q, p) => getSearchKDramas(q, p),
   tv: (q, p) => getSearchTVShows(q, p),
@@ -31,6 +33,7 @@ const searchers: Record<SearchScope, (query: string, page: number) => Promise<TM
 /** AI-inferred titles are precise: one TMDB page per title is enough. */
 const titleSearchers: Record<SearchScope, (title: string) => Promise<TMDBResponse>> = {
   all: (t) => getSearchResults(t, 1),
+  movie: (t) => searchMoviesOnly(t, 1),
   anime: (t) => getSearchAnime(t, 1, 1),
   kdrama: (t) => getSearchKDramas(t, 1, 1),
   tv: (t) => getSearchTVShows(t, 1, 1),

@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Clapperboard,
   Download,
-  Loader2,
   Menu,
   Search,
   ShieldCheck,
@@ -15,7 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { memo, useCallback, useState } from "react";
 import AccountCard from "@/components/auth/account-card";
@@ -24,9 +23,7 @@ import LanguageSwitcher from "@/components/i18n/language-switcher";
 import { Container } from "@/components/layout/container";
 import ThemeToggle from "@/components/theme-toggle";
 import PrefSwitch from "@/components/prefs/pref-switch";
-import VoiceSearchButton from "@/components/voice-search-button";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { useSmartSearch } from "@/hooks/use-smart-search";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,29 +101,15 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
  */
 export default function Navbar() {
   const t = useTranslations();
-  const router = useRouter();
   const pathname = usePathname();
   const isScrolled = useScrolled(20);
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const { searchHref } = useSmartSearch();
   const isAdmin = useIsAdmin();
 
   // Keep the item highlighted on nested pages (e.g. /movies/123).
   const isActive = useCallback((href: string) => pathname === href || pathname.startsWith(`${href}/`), [pathname]);
   const isMoreActive = overflowItems.some((item) => isActive(item.href));
 
-  const handleMobileSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const query = searchQuery.trim();
-    if (!query || isSearching) return;
-    setIsSearching(true);
-    router.push(searchHref("/search", query));
-    setIsOpen(false);
-    setIsSearching(false);
-    setSearchQuery("");
-  };
 
   return (
     <nav
@@ -226,6 +209,15 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-3">
           <NavbarActions />
 
+          {/* Phones & tablets: search icon → /search (the bar has the full search box from lg up) */}
+          <Link
+            href="/search"
+            aria-label={t("search.trigger")}
+            className="rounded-xl border border-cyan-500/40 bg-elevated/50 p-3 text-brand-bright outline-none transition-colors hover:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-500 lg:hidden"
+          >
+            <Search className="h-5 w-5" aria-hidden />
+          </Link>
+
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <MenuButton />
@@ -279,43 +271,26 @@ export default function Navbar() {
                   </SignedOut>
                 </section>
 
-                {/* Search (the bar has its own search from lg up) */}
-                <form onSubmit={handleMobileSearch} role="search" className="group relative shrink-0 lg:hidden">
-                  <div
+                {/* Search (the bar has its own search from lg up): opens the full /search page */}
+                <Link
+                  href="/search"
+                  onClick={() => setIsOpen(false)}
+                  className="group relative block shrink-0 lg:hidden"
+                >
+                  <span
                     aria-hidden
-                    className={cn(
-                      "absolute -inset-0.5 rounded-2xl bg-linear-to-r from-cyan-500 to-blue-600 blur transition duration-1000",
-                      searchQuery ? "opacity-40" : "opacity-10",
-                    )}
+                    className="absolute -inset-0.5 rounded-2xl bg-linear-to-r from-cyan-500 to-blue-600 opacity-20 blur transition duration-500 group-hover:opacity-40"
                   />
-                  <div className="relative flex items-center overflow-hidden rounded-2xl border border-line-strong bg-surface">
-                    <Search className={cn("ml-4 h-5 w-5", searchQuery ? "text-brand-bright" : "text-fg-subtle")} />
-                    <input
-                      type="search"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t("search.mobilePlaceholder")}
-                      aria-label={t("search.placeholder")}
-                      className="w-full border-none bg-transparent px-4 py-4 text-sm font-bold uppercase tracking-widest text-foreground outline-none placeholder:text-fg-faint"
-                    />
-                    <VoiceSearchButton
-                      size="md"
-                      className="mr-2"
-                      onTranscript={(text) => {
-                        setIsOpen(false);
-                        setSearchQuery("");
-                        router.push(searchHref("/search", text));
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      aria-label={t("search.submit")}
-                      className="mr-2 rounded-xl bg-inverse p-3 text-inverse-fg"
-                    >
-                      {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </form>
+                  <span className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-line-strong bg-surface py-2 pr-2 pl-4">
+                    <Search className="h-5 w-5 text-brand-bright" aria-hidden />
+                    <span className="flex-1 truncate py-2 text-sm font-bold uppercase tracking-widest text-fg-faint">
+                      {t("search.mobilePlaceholder")}
+                    </span>
+                    <span className="rounded-xl bg-inverse p-3 text-inverse-fg">
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </span>
+                  </span>
+                </Link>
 
                 {/* Navigation */}
                 <section className="space-y-4">

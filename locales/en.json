@@ -135,9 +135,35 @@
       "example2": "un homme qui voyage dans le temps avec une voiture",
       "example3": "Korean drama about a pilot who lands in North Korea",
       "enterHint": "to search",
-      "toggleHint": "open / close"
+      "toggleHint": "open / close",
+      "instant": "Instant results",
+      "searching": "Searching…",
+      "noInstant": "No title found yet — press Enter for a full search (AI included).",
+      "seeAll": "See all results for “{query}”",
+      "trending": "Trending today",
+      "collections": "Collections",
+      "allCollections": "All collections",
+      "removeRecent": "Remove “{query}”",
+      "arrowsHint": "to choose"
     },
-    "tvPlaceholder": "Search TV shows…"
+    "tvPlaceholder": "Search TV shows…",
+    "pageTitle": "Search",
+    "editQuery": "Edit the search",
+    "cancelEdit": "Cancel",
+    "scopes": {
+      "label": "Search in",
+      "all": "All",
+      "movie": "Movies",
+      "tv": "Series",
+      "kdrama": "K-drama",
+      "anime": "Anime"
+    },
+    "kinds": {
+      "movie": "Movie",
+      "tv": "Series",
+      "kdrama": "K-drama",
+      "anime": "Anime"
+    }
   },
   "footer": {
     "tagline": "Movies, series, anime and K-dramas in one place. Pick a title, press play, and share it with the people you watch with.",

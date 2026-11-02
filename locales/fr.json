@@ -135,9 +135,35 @@
       "example2": "un homme qui voyage dans le temps avec une voiture",
       "example3": "une héritière coréenne qui atterrit en Corée du Nord en parapente",
       "enterHint": "pour rechercher",
-      "toggleHint": "ouvrir / fermer"
+      "toggleHint": "ouvrir / fermer",
+      "instant": "Résultats instantanés",
+      "searching": "Recherche…",
+      "noInstant": "Aucun titre trouvé pour l'instant — appuyez sur Entrée pour une recherche complète (IA incluse).",
+      "seeAll": "Voir tous les résultats pour « {query} »",
+      "trending": "Tendances du jour",
+      "collections": "Collections",
+      "allCollections": "Toutes les collections",
+      "removeRecent": "Retirer « {query} »",
+      "arrowsHint": "pour choisir"
     },
-    "tvPlaceholder": "Rechercher une série…"
+    "tvPlaceholder": "Rechercher une série…",
+    "pageTitle": "Rechercher",
+    "editQuery": "Modifier la recherche",
+    "cancelEdit": "Annuler",
+    "scopes": {
+      "label": "Rechercher dans",
+      "all": "Tout",
+      "movie": "Films",
+      "tv": "Séries",
+      "kdrama": "K-drama",
+      "anime": "Anime"
+    },
+    "kinds": {
+      "movie": "Film",
+      "tv": "Série",
+      "kdrama": "K-drama",
+      "anime": "Anime"
+    }
   },
   "footer": {
     "tagline": "Films, séries, anime et K-dramas réunis au même endroit. Choisissez un titre, lancez la lecture et partagez-le avec vos proches.",

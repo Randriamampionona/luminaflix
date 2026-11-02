@@ -40,6 +40,17 @@ export async function searchMoviesAndSeries(query: string, page: number): Promis
   };
 }
 
+/** Movies only (/search/movie), for the "Movies" filter of the search page. */
+export async function searchMoviesOnly(query: string, page: number): Promise<TMDBResponse> {
+  const data = await tmdb<TMDBResponse>("/search/movie", { query, page, include_adult: true }, options);
+  if (!data) return EMPTY_PAGE;
+  return {
+    ...data,
+    results: data.results.map((item) => ({ ...item, media_type: "movie" as const })),
+    total_pages: Math.min(data.total_pages, MAX_TMDB_PAGES),
+  };
+}
+
 /**
  * Filtered TV search (anime, K-drama). Each app page reads `chunk` TMDB pages
  * (pages (N-1)·chunk+1 … N·chunk) and keeps the matching shows, so a page is
