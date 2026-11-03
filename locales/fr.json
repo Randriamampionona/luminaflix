@@ -1217,5 +1217,16 @@
     "moreInfo": "Cliquez pour les détails",
     "mute": "Couper le son",
     "unmute": "Activer le son"
+  },
+  "moved": {
+    "title": "LuminaFlix a une nouvelle adresse 🎉",
+    "body": "Nous sommes maintenant sur <b>lumina-flix.live</b>. Les anciens liens fonctionnent toujours et vous amènent ici — pensez à mettre à jour vos favoris.",
+    "signIn": "Reconnectez-vous une fois : votre compte, vos favoris et vos badges sont toujours là.",
+    "reinstall": "Vous utilisiez l'application installée : installez la nouvelle version (même appli, nouvelle adresse), puis supprimez l'ancienne de votre écran d'accueil.",
+    "notifications": "Si vous aviez activé les notifications, autorisez-les à nouveau sur la nouvelle adresse.",
+    "install": "Installer la nouvelle appli",
+    "signInCta": "Se connecter",
+    "ok": "J'ai compris",
+    "close": "Fermer"
   }
 }

@@ -66,18 +66,60 @@ const clerkHandler = clerkMiddleware(
 );
 
 /**
- * Clerk production on *.vercel.app: there is no clerk.<domain> DNS record
- * possible, so Clerk's Frontend API is proxied through this site at /__clerk
- * (https://clerk.com/docs/guides/dashboard/dns-domains/proxy-fapi).
- *
- * Active only when NEXT_PUBLIC_CLERK_PROXY_URL is set (Vercel → Production:
- * https://lumina-flix.vercel.app/__clerk). Never set it with development keys
- * (localhost, previews): proxying doesn't work for development instances.
+ * Optional Clerk Frontend API proxy at /__clerk (only needed when Clerk can't
+ * have a clerk.<domain> DNS record, e.g. on *.vercel.app). Active only when
+ * NEXT_PUBLIC_CLERK_PROXY_URL is set. Since the move to lumina-flix.live Clerk
+ * uses clerk.lumina-flix.live directly: leave NEXT_PUBLIC_CLERK_PROXY_URL unset.
+ * (https://clerk.com/docs/guides/dashboard/dns-domains/proxy-fapi)
  */
 const CLERK_PROXY_URL = process.env.NEXT_PUBLIC_CLERK_PROXY_URL?.replace(/\/+$/, "");
 const CLERK_FRONTEND_API = "https://frontend-api.clerk.dev";
 
+/**
+ * Old addresses of the site (default: lumina-flix.vercel.app). Every request
+ * on them is sent to the same page on the main address (NEXT_PUBLIC_DOMAIN,
+ * e.g. https://www.lumina-flix.live) with a permanent 308 redirect — shared
+ * links, short links, bookmarks and the old installed app keep working.
+ * Pages get `?moved=1` (`moved=pwa` from the old installed app) so the new
+ * site can explain the move once (components/app-moved-notice.tsx).
+ * Preview deployments and localhost are never redirected. Override with
+ * LEGACY_HOSTS=host1,host2 if needed.
+ */
+const CANONICAL = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_DOMAIN ? new URL(process.env.NEXT_PUBLIC_DOMAIN) : null;
+  } catch {
+    return null;
+  }
+})();
+const LEGACY_HOSTS = (process.env.LEGACY_HOSTS ?? "lumina-flix.vercel.app")
+  .split(",")
+  .map((host) => host.trim().toLowerCase())
+  .filter(Boolean);
+
+function legacyRedirect(req: NextRequest) {
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(",")[0].trim().toLowerCase();
+  if (!CANONICAL || !LEGACY_HOSTS.includes(host) || host === CANONICAL.host) return null;
+
+  const { pathname, searchParams } = req.nextUrl;
+  const fromApp = pathname === "/launch" || searchParams.get("source") === "pwa";
+  let target: URL;
+  if (pathname === "/launch") {
+    // Old installed app: skip the splash screen, go straight to its first page.
+    const to = searchParams.get("to");
+    target = new URL(to && to.startsWith("/") && !to.startsWith("//") ? to : "/", CANONICAL.origin);
+    target.searchParams.set("source", "pwa");
+  } else {
+    target = new URL(pathname + req.nextUrl.search, CANONICAL.origin);
+  }
+  // Only pages show the notice; API calls (webhooks, crons) are just forwarded.
+  if (req.method === "GET" && !pathname.startsWith("/api/")) target.searchParams.set("moved", fromApp ? "pwa" : "1");
+  return NextResponse.redirect(target, 308);
+}
+
 export default function proxy(req: NextRequest, event: NextFetchEvent) {
+  const moved = legacyRedirect(req);
+  if (moved) return moved;
   if (CLERK_PROXY_URL && req.nextUrl.pathname.startsWith("/__clerk")) {
     const headers = new Headers(req.headers);
     headers.set("Clerk-Proxy-Url", CLERK_PROXY_URL);

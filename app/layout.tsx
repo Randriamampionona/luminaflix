@@ -19,6 +19,7 @@ import LiveVisitorChat from "@/components/live-visitor-chat";
 import SeasonalLayer from "@/components/seasonal/seasonal-layer";
 import PrefsScript from "@/components/prefs/prefs-script";
 import EngagementTracker from "@/components/engagement-tracker";
+import AppMovedNotice from "@/components/app-moved-notice";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -127,6 +128,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <PrefsScript />
               {/* Visits (good moments for the app / account offers) + daily streak for badges */}
               <EngagementTracker />
+              {/* Once, for visitors coming from the old address (lumina-flix.vercel.app) */}
+              <AppMovedNotice />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />

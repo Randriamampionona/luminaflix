@@ -5,6 +5,7 @@ import en from "@/locales/en.json";
 import fr from "@/locales/fr.json";
 import { checkFrAvailability } from "@/lib/fr-availability";
 import { getDb, getMessaging, logFirebaseError } from "@/lib/firebase-admin";
+import { SITE_URL } from "@/lib/site-url";
 
 /**
  * "Notify me" alerts (/coming-soon): NOTIFY_WATCH/{movie_<id>} holds the push
@@ -17,7 +18,7 @@ const MESSAGES = { en, fr } as const;
 type Locale = keyof typeof MESSAGES;
 const MAX_AGE_MS = 180 * 24 * 3600 * 1000;
 
-const domain = () => process.env.NEXT_PUBLIC_DOMAIN || "https://lumina-flix.vercel.app";
+const domain = () => SITE_URL;
 
 export async function addWatcher(input: { id: string; title: string; posterPath: string | null; token: string; locale: string }) {
   const locale: Locale = input.locale.startsWith("fr") ? "fr" : "en";

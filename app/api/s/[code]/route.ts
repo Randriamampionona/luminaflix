@@ -9,7 +9,7 @@ import { clickSource, recordShortLinkClick, resolveShortCode } from "@/lib/short
 type Params = Promise<{ code: string }>;
 
 /**
- * Short link redirect. Visitors open https://lumina-flix.vercel.app/Ab3xK9q;
+ * Short link redirect. Visitors open https://www.lumina-flix.live/Ab3xK9q;
  * proxy.ts rewrites that to this route, which sends them to the movie page,
  * trailer or poster. The click is recorded after the redirect is sent —
  * only for visitors who passed the bot filter (Madagascar, or a valid

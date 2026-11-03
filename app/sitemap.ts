@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { COLLECTIONS } from "@/lib/collections";
+import { SITE_URL } from "@/lib/site-url";
 import { isKoreanSeries } from "@/lib/media";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, TMDBResponse } from "@/typing";
@@ -11,7 +12,7 @@ import type { Movie, TMDBResponse } from "@/typing";
  */
 export const revalidate = 86400;
 
-const DOMAIN = (process.env.NEXT_PUBLIC_DOMAIN || "https://lumina-flix.vercel.app").replace(/\/+$/, "");
+const DOMAIN = SITE_URL;
 
 async function pages(path: string, params: Record<string, string | number>, count: number): Promise<Movie[]> {
   const results = await Promise.all(

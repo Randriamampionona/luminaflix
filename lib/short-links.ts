@@ -1,5 +1,5 @@
 /**
- * LuminaFlix short links (https://lumina-flix.vercel.app/Ab3xK9q) — shared types.
+ * LuminaFlix short links (https://www.lumina-flix.live/Ab3xK9q) — shared types.
  * Server side: lib/short-links-server.ts · action: action/short-links.action.ts ·
  * redirect: proxy.ts → app/api/s/[code]/route.ts · stats: /analytics.
  */

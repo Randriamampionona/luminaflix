@@ -45,7 +45,7 @@ interface DailyPicksEmailInput {
   /** Same picks, localised per language (TMDB title / overview). */
   content: DailyPicksContent;
   firstName?: string;
-  /** Absolute site URL, e.g. https://luminaflix.app */
+  /** Absolute site URL, e.g. https://www.lumina-flix.live */
   domain: string;
   /** Hosted copy of this email in a given language (used as the Gmail/Outlook fallback). */
   webVersionUrl: (locale: Locale) => string;

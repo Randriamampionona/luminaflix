@@ -22,7 +22,7 @@ The filter is off until both reCAPTCHA keys are set. `NEXT_PUBLIC_…` is built 
 1. Open https://www.google.com/recaptcha/admin/create (sign in with your Google account).
 2. **Label**: `LuminaFlix`.
 3. **reCAPTCHA type**: **Challenge (v2)** → **"I'm not a robot" Checkbox**.
-4. **Domains**: `lumina-flix.vercel.app` (and `localhost` to test on your PC).
+4. **Domains**: `lumina-flix.live` (covers `www.`) and `localhost` to test on your PC.
 5. Accept the terms → **Submit**.
 6. Copy **Site key** → `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, **Secret key** → `RECAPTCHA_SECRET_KEY`
    (`.env.local` and Vercel → Settings → Environment Variables), then redeploy.
