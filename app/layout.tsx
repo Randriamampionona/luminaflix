@@ -27,6 +27,7 @@ import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
 import { PWA_CAPTURE_SCRIPT } from "@/hooks/use-pwa-install";
 import { localeMeta, type Locale } from "@/i18n/config";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -94,6 +95,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     >
       {/* No hard-coded "dark": next-themes sets the class before first paint. */}
       <html lang={locale} suppressHydrationWarning>
+        <head>
+          {/* Monetag Multi-Tag */}
+          <Script
+            src="https://quge5.com/88/tag.min.js"
+            data-zone="305653"
+            strategy="afterInteractive"
+            data-cfasync="false"
+          />
+        </head>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
           <script dangerouslySetInnerHTML={{ __html: PWA_CAPTURE_SCRIPT }} />
