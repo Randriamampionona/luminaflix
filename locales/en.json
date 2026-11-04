@@ -224,7 +224,11 @@
       "label": "Newest members"
     },
     "installApp": "Install the app",
-    "becauseYouWatched": "Because you watched {title}"
+    "becauseYouWatched": "Because you watched {title}",
+    "heroRank": "Trending #{rank}",
+    "heroMovie": "Movie",
+    "watch": "Watch",
+    "trailer": "Trailer"
   },
   "media": {
     "movie": "Movie",

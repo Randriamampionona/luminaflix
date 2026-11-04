@@ -224,7 +224,11 @@
       "label": "Nouveaux membres"
     },
     "installApp": "Installer l'App",
-    "becauseYouWatched": "Parce que vous avez regardé {title}"
+    "becauseYouWatched": "Parce que vous avez regardé {title}",
+    "heroRank": "Tendance #{rank}",
+    "heroMovie": "Film",
+    "watch": "Regarder",
+    "trailer": "Bande-annonce"
   },
   "media": {
     "movie": "Film",

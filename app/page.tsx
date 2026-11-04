@@ -1,3 +1,4 @@
+import QuickAccess from "@/components/home/quick-access";
 import { Suspense } from "react";
 import AdWrapper from "@/components/ads/ad-wrapper";
 import NativeBannerAd from "@/components/ads/native-banner-ad";
@@ -30,6 +31,9 @@ export default async function HomePage() {
     <main className="relative min-h-screen bg-background">
       <Suspense fallback={<HeroSkeleton />}>
         <HeroSection />
+
+        {/* The app's sections at a glance, right under the hero */}
+        <QuickAccess />
       </Suspense>
 
       {/* Shown for 7 days after the latest sign-up: welcome the newest members. */}

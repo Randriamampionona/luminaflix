@@ -6,7 +6,8 @@
   ],
   "ignore": [
     "components/ui/**",
-    "public/firebase-messaging-sw.js"
+    "public/firebase-messaging-sw.js",
+    "public/sw.js"
   ],
   "ignoreDependencies": [
     "postcss",
