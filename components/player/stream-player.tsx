@@ -19,6 +19,7 @@ import { tmdbImage } from "@/lib/media";
 import type { MediaInteraction } from "@/lib/media-interactions";
 import PlayerActions from "./actions/player-actions";
 import AdsNoticeModal from "./ads-notice-modal";
+import FrNotifyStrip from "./fr-notify-strip";
 import FrUnavailableBanner from "./fr-unavailable-banner";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
@@ -59,6 +60,9 @@ function getOrientation(): LockableOrientation | undefined {
  */
 /** Route section of each player kind (share links). */
 const SECTION: Record<PlayerKind, string> = { movie: "movies", anime: "anime", drama: "k-drama", tv: "tv-shows" };
+
+/** Player kind → kind used by "Notify me" (lib/notify-watch-server.ts). */
+const NOTIFY_KIND = { movie: "movie", tv: "tv", drama: "kdrama", anime: "anime" } as const;
 
 export default function StreamPlayer({
   kind,
@@ -131,7 +135,9 @@ export default function StreamPlayer({
   // VIDZY first (one server per language it has: VF, VOSTFR), then Frembed —
   // otherwise offer (then switch to) an English server.
   const isFrenchTab = activeGroup.key === "fr" || activeGroup.key === "vf";
-  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: isFrenchTab });
+  // Checked on every tab (the French-only parts below are gated on isFrenchTab), so
+  // "Notify me" stays visible after switching to English.
+  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: true });
   const checked = availability.status === "available" || availability.status === "unavailable";
   // Once checked, only the VIDZY languages that exist are listed (VF, VOSTFR or both).
   const providers = (
@@ -388,6 +394,14 @@ export default function StreamPlayer({
               <FrUnavailableBanner
                 key={contentKey}
                 kind={kind}
+                notify={{
+                  kind: NOTIFY_KIND[kind],
+                  id: mediaId,
+                  season: isEpisode ? (season ?? 1) : undefined,
+                  episode: isEpisode ? (episode ?? 1) : undefined,
+                  title: title || "",
+                  posterPath: posterPath ?? null,
+                }}
                 onSwitch={switchToEnglish}
                 onDismiss={() => setDismissedFor(contentKey)}
               />
@@ -421,6 +435,19 @@ export default function StreamPlayer({
             interaction={interaction}
           />
         </div>
+
+        {/* Not in French yet: "Notify me" (e-mail + push when it arrives in VF / VOSTFR) */}
+        {availability.status === "unavailable" && (
+          <FrNotifyStrip
+            key={contentKey}
+            kind={NOTIFY_KIND[kind]}
+            id={mediaId}
+            season={isEpisode ? (season ?? 1) : undefined}
+            episode={isEpisode ? (episode ?? 1) : undefined}
+            title={title || ""}
+            posterPath={posterPath ?? null}
+          />
+        )}
 
         <div
           role="radiogroup"

@@ -1134,13 +1134,6 @@
     "upcoming": "Upcoming",
     "checking": "Checking VF / VOSTFR…",
     "available": "Available in {langs}",
-    "notify": "Notify me",
-    "notifying": "Notification on",
-    "on": "We'll notify you when “{title}” is available in VF or VOSTFR.",
-    "off": "Notification removed for “{title}”.",
-    "failed": "Couldn't save the notification. Please try again.",
-    "denied": "Notifications are blocked in your browser settings.",
-    "unsupported": "This browser can't receive notifications.",
     "push": {
       "title": "🎉 {title} is now available in {langs}",
       "body": "Tap to watch it on LuminaFlix."
@@ -1232,5 +1225,19 @@
     "signInCta": "Sign in",
     "ok": "Got it",
     "close": "Close"
+  },
+  "notify": {
+    "notify": "Notify me",
+    "notifying": "Notification on",
+    "hint": "Get an e-mail (and a notification) when it's available in French",
+    "cancelHint": "Click to cancel the notification",
+    "onTitle": "Notification on ✓",
+    "onEmail": "We'll e-mail you as soon as “{title}” is available in VF or VOSTFR.",
+    "onPushAndEmail": "We'll notify you (notification + e-mail) as soon as “{title}” is available in VF or VOSTFR.",
+    "off": "Notification cancelled for “{title}”.",
+    "failed": "Couldn't save the notification. Please try again.",
+    "stripTitle": "Not available in French yet",
+    "stripTitleEpisode": "Episode S{season}E{episode} isn't available in French yet",
+    "stripHint": "Tap “Notify me”: you'll get an e-mail and a notification as soon as it's out in VF or VOSTFR."
   }
 }

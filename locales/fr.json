@@ -1134,13 +1134,6 @@
     "upcoming": "À venir",
     "checking": "Vérification VF / VOSTFR…",
     "available": "Disponible en {langs}",
-    "notify": "Me prévenir",
-    "notifying": "Notification activée",
-    "on": "On vous prévient dès que « {title} » est disponible en VF ou VOSTFR.",
-    "off": "Notification retirée pour « {title} ».",
-    "failed": "Impossible d'enregistrer la notification. Réessayez.",
-    "denied": "Les notifications sont bloquées dans les réglages du navigateur.",
-    "unsupported": "Ce navigateur ne peut pas recevoir de notifications.",
     "push": {
       "title": "🎉 {title} est disponible en {langs}",
       "body": "Touchez pour le regarder sur LuminaFlix."
@@ -1232,5 +1225,19 @@
     "signInCta": "Se connecter",
     "ok": "J'ai compris",
     "close": "Fermer"
+  },
+  "notify": {
+    "notify": "Me prévenir",
+    "notifying": "Notification activée",
+    "hint": "Recevez un e-mail (et une notification) dès sa sortie en français",
+    "cancelHint": "Cliquez pour annuler la notification",
+    "onTitle": "Notification activée ✓",
+    "onEmail": "On vous envoie un e-mail dès que « {title} » est disponible en VF ou VOSTFR.",
+    "onPushAndEmail": "On vous prévient (notification + e-mail) dès que « {title} » est disponible en VF ou VOSTFR.",
+    "off": "Notification annulée pour « {title} ».",
+    "failed": "Impossible d'enregistrer la notification. Réessayez.",
+    "stripTitle": "Pas encore disponible en français",
+    "stripTitleEpisode": "L'épisode S{season}E{episode} n'est pas encore disponible en français",
+    "stripHint": "Touchez « Me prévenir » : vous recevrez un e-mail et une notification dès sa sortie en VF ou VOSTFR."
   }
 }

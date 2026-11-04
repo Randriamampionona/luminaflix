@@ -3,6 +3,7 @@
 import { ArrowRight, Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import NotifyButton, { type NotifyKind } from "@/components/notify/notify-button";
 import type { PlayerKind } from "./providers";
 
 /** Seconds before switching to the English server on its own. */
@@ -15,10 +16,20 @@ const COUNTDOWN_SECONDS = 10;
  */
 export default function FrUnavailableBanner({
   kind,
+  notify,
   onSwitch,
   onDismiss,
 }: {
   kind: PlayerKind;
+  /** "Notify me" for this title / episode. */
+  notify: {
+    kind: NotifyKind;
+    id: string;
+    season?: number;
+    episode?: number;
+    title: string;
+    posterPath: string | null;
+  };
   onSwitch: () => void;
   onDismiss: () => void;
 }) {
@@ -87,6 +98,7 @@ export default function FrUnavailableBanner({
             {t("stay")}
           </button>
         </div>
+        <NotifyButton {...notify} size="sm" className="mt-2 w-full" />
       </div>
     </div>
   );

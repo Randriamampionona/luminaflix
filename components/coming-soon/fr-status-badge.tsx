@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useFrStatus } from "@/lib/fr-status-client";
 import { cn } from "@/lib/utils";
-import NotifyButton from "./notify-button";
+import NotifyButton from "@/components/notify/notify-button";
 
 /** VF / VOSTFR availability of a movie, with "Notify me" while it isn't available. */
 export default function FrStatusBadge({ id, title, posterPath }: { id: number; title: string; posterPath: string | null }) {
@@ -25,5 +25,5 @@ export default function FrStatusBadge({ id, title, posterPath }: { id: number; t
       </span>
     );
   }
-  return <NotifyButton id={id} title={title} posterPath={posterPath} />;
+  return <NotifyButton kind="movie" id={id} title={title} posterPath={posterPath} size="sm" />;
 }
