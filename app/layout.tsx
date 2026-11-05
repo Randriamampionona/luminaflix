@@ -63,11 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
-    // juicyads-site-verification: JuicyAds site ownership check (<meta> in <head> on every page).
-    other: {
-      "apple-mobile-web-app-capable": "yes",
-      "juicyads-site-verification": "70f2207e032cd273cf1c00257aaf3f8e",
-    },
+    other: { "apple-mobile-web-app-capable": "yes" },
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
@@ -152,6 +148,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>
+          {/* Adsterra Social Bar — last element of <body>, loaded once for the whole site */}
+          <Script
+            id="adsterra-social-bar"
+            src="https://brijmohan.org/14/9815009fd118e1e29cc5fc20b6d580e6"
+            strategy="afterInteractive"
+            data-cfasync="false"
+          />
         </body>
       </html>
       <SpeedInsights />
