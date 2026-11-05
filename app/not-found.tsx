@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/layout/container";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata.pages");
@@ -42,6 +43,7 @@ export default async function NotFound() {
           {t("cta")}
         </Link>
       </Container>
+      <PageAd />
     </main>
   );
 }

@@ -20,6 +20,12 @@ export default function AdsterraNativeBanner() {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
+    // Safety net: Adsterra's container id is unique, so only the first slot of a page is used.
+    const containers = document.querySelectorAll(`[id="container-${AD_KEY}"]`);
+    if (containers.length > 1 && !host.contains(containers[0])) {
+      host.style.display = "none";
+      return;
+    }
     const script = document.createElement("script");
     script.async = true;
     script.src = SCRIPT_SRC;

@@ -5,6 +5,7 @@ import { CollectionCard } from "@/components/collections/collection-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { COLLECTION_GROUPS } from "@/lib/collections";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("collections");
@@ -46,6 +47,8 @@ export default async function CollectionsPage() {
           </section>
         );
       })}
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

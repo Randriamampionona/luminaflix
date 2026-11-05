@@ -8,6 +8,7 @@ import FrStatusBadge from "@/components/coming-soon/fr-status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { tmdbImage } from "@/lib/media";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("comingSoon");
@@ -83,6 +84,8 @@ export default async function ComingSoonPage() {
           </section>
         ))}
       </div>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

@@ -6,6 +6,7 @@ import { PageHeader, SectionHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import PageAd from "@/components/ads/page-ad";
 
 type Category = { title: string; items: { q: string; a: string }[] };
 type Device = { title: string; body: string };
@@ -73,6 +74,8 @@ export default async function HelpPage() {
           {t("contactCta")}
         </Link>
       </section>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

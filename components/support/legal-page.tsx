@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import PageAd from "@/components/ads/page-ad";
 
 /** Bump when the legal text changes. */
 const LAST_UPDATED = new Date("2026-09-25T00:00:00Z");
@@ -60,6 +61,8 @@ export default async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
           {t("contactCta")}
         </Link>
       </p>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

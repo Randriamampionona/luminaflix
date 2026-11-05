@@ -9,6 +9,7 @@ import { createContactChallenge } from "@/lib/contact-captcha";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { type } from "@/lib/typography";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata.pages");
@@ -70,6 +71,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           />
         </div>
       </div>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

@@ -233,43 +233,44 @@ export default function HeroSlider({ trendingMovies }: { trendingMovies: HeroMov
             </div>
           </Container>
 
-          {/* Slide picker with thumbnails (large screens) */}
-          <div className="absolute right-8 bottom-10 z-30 hidden gap-3 lg:flex xl:right-12">
-            {slides.map((movie, i) => {
-              const isActive = activeIndex === i;
-              const thumb = tmdbImage(movie.backdrop_path);
-              return (
-                <button
-                  key={movie.id}
-                  type="button"
-                  onClick={() => setActiveIndex(i)}
-                  aria-label={t("slide", { index: i + 1 })}
-                  aria-current={isActive}
-                  className={cn(
-                    "group relative h-20 w-36 cursor-pointer overflow-hidden rounded-xl border-2 transition-all duration-300",
-                    isActive
-                      ? "border-cyan-400 shadow-[0_0_24px_rgba(6,182,212,0.5)]"
-                      : "border-white/10 opacity-60 hover:opacity-100",
-                  )}
-                >
-                  {thumb && <Image src={thumb} alt="" fill sizes="144px" className="object-cover" />}
-                  <span className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent" />
-                  <span className="absolute inset-x-2 bottom-1.5 truncate text-left text-[11px] font-bold text-white">
-                    {getDisplayTitle(movie)}
-                  </span>
-                  {isActive && (
-                    <span
-                      key={`${activeIndex}-${paused}`}
-                      className={cn(
-                        "absolute bottom-0 left-0 h-0.5 w-full origin-left bg-cyan-400",
-                        !paused && !reducedMotion && "animate-[hero-progress_8s_linear_forwards]",
-                      )}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          {/* Slide picker (large screens): a compact thumbnail strip at the bottom left,
+              under the text, instead of big cards on the right */}
+          <Container className="pointer-events-none absolute inset-x-0 bottom-8 z-30 hidden lg:block">
+            <div className="pointer-events-auto inline-flex items-center gap-1.5 rounded-2xl border border-white/10 bg-black/35 p-1.5 backdrop-blur-md">
+              {slides.map((movie, i) => {
+                const isActive = activeIndex === i;
+                const thumb = tmdbImage(movie.backdrop_path);
+                const name = getDisplayTitle(movie);
+                return (
+                  <button
+                    key={movie.id}
+                    type="button"
+                    onClick={() => setActiveIndex(i)}
+                    aria-label={`${t("slide", { index: i + 1 })} — ${name}`}
+                    aria-current={isActive}
+                    title={name}
+                    className={cn(
+                      "relative h-12 cursor-pointer overflow-hidden rounded-xl transition-all duration-300",
+                      isActive
+                        ? "w-24 ring-2 ring-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.45)]"
+                        : "w-16 opacity-55 hover:opacity-100",
+                    )}
+                  >
+                    {thumb && <Image src={thumb} alt="" fill sizes="96px" className="object-cover" />}
+                    {isActive && (
+                      <span
+                        key={`${activeIndex}-${paused}`}
+                        className={cn(
+                          "absolute bottom-0 left-0 h-0.5 w-full origin-left bg-cyan-400",
+                          !paused && !reducedMotion && "animate-[hero-progress_8s_linear_forwards]",
+                        )}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </Container>
         </>
       )}
 

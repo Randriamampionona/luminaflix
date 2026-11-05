@@ -15,6 +15,7 @@ import AnimatedLogo from "@/components/brand/animated-logo";
 import InstallCta from "@/components/download-app/install-cta";
 import PlatformGuide from "@/components/download-app/platform-guide";
 import { PageShell } from "@/components/layout/page-shell";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("downloadApp");
@@ -174,6 +175,8 @@ export default async function DownloadAppPage() {
           <InstallCta size="md" />
         </div>
       </section>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

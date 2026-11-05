@@ -14,6 +14,7 @@ import { isLocale, localeMeta, locales, type Locale } from "@/i18n/config";
 import { getWatchHref, tmdbImage, type MediaKind } from "@/lib/media";
 import { type as typo } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import PageAd from "@/components/ads/page-ad";
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ type?: string; fallback?: string; lang?: string }>;
@@ -333,6 +334,8 @@ export default async function TrailerPage({ params, searchParams }: { params: Pa
           )}
         </aside>
       </div>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

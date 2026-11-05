@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import PageAd from "@/components/ads/page-ad";
 
 const PLANS = ["free", "plus", "family"] as const;
 
@@ -113,6 +114,8 @@ export default async function PremiumPage() {
           ))}
         </div>
       </section>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import SignInLink from "@/components/auth/sign-in-link";
 import { getLeaderboard, getUserStats } from "@/lib/user-stats-server";
+import PageAd from "@/components/ads/page-ad";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("badges");
@@ -118,6 +119,8 @@ export default async function UserRankPage() {
         )}
         <p className="text-[11px] text-fg-subtle">{t("privacyNote")}</p>
       </section>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }

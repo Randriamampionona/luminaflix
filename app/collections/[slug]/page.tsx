@@ -9,6 +9,7 @@ import { MediaGrid } from "@/components/layout/media-grid";
 import { PageShell } from "@/components/layout/page-shell";
 import MovieCard from "@/components/movie-card";
 import { inferMediaKind, tmdbImage } from "@/lib/media";
+import PageAd from "@/components/ads/page-ad";
 
 type Params = Promise<{ slug: string }>;
 
@@ -77,6 +78,8 @@ export default async function CollectionPage({ params }: { params: Params }) {
           </div>
         ))}
       </MediaGrid>
+      {/* Ad */}
+      <PageAd />
     </PageShell>
   );
 }
