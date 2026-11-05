@@ -1,9 +1,7 @@
 import React from "react";
-import ExoClickAd from "./exoclick-ad";
 
 interface AdWrapperProps {
-  /** Ad to show; defaults to the ExoClick slot. */
-  children?: React.ReactNode;
+  children: React.ReactNode;
   className?: string;
 }
 
@@ -32,7 +30,7 @@ const AdWrapper = ({ children, className = "" }: AdWrapperProps) => {
         <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-[#06b6d4]/30 group-hover:border-[#06b6d4] transition-colors"></div>
 
         <div className="bg-tint-soft border border-line-strong rounded-xl overflow-hidden backdrop-blur-sm min-h-25 flex items-center justify-center p-4 transition-all hover:border-line-stronger">
-          {children ?? <ExoClickAd />}
+          {children}
         </div>
       </div>
 

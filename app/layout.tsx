@@ -63,7 +63,11 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
-    other: { "apple-mobile-web-app-capable": "yes" },
+    // juicyads-site-verification: JuicyAds site ownership check (<meta> in <head> on every page).
+    other: {
+      "apple-mobile-web-app-capable": "yes",
+      "juicyads-site-verification": "70f2207e032cd273cf1c00257aaf3f8e",
+    },
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
