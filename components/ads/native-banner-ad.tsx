@@ -1,12 +1,12 @@
 "use client";
 
-const NativeBannerAd = () => {
+import ExoClickAd from "./exoclick-ad";
 
+/** The ad shown inside <AdWrapper> on every page: the ExoClick slot. */
+const NativeBannerAd = () => {
   return (
-    <div
-      className="w-full min-h-25 flex justify-center items-center overflow-hidden text-muted-foreground"
-    >
-      Ad has been removed to fulfill user&apos;s request.
+    <div className="flex w-full min-h-25 items-center justify-center overflow-hidden">
+      <ExoClickAd />
     </div>
   );
 };

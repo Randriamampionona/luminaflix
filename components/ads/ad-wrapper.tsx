@@ -1,42 +1,13 @@
-"use client";
-
-import React, { useEffect, useRef } from "react";
-
-// Add global declaration for window.AdProvider
-declare global {
-  interface Window {
-    AdProvider?: Array<Record<string, unknown>>;
-  }
-}
+import React from "react";
+import ExoClickAd from "./exoclick-ad";
 
 interface AdWrapperProps {
+  /** Ad to show; defaults to the ExoClick slot. */
+  children?: React.ReactNode;
   className?: string;
 }
 
-const AdWrapper = ({ className = "" }: AdWrapperProps) => {
-  const adContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (adContainerRef.current) {
-      // Check if script is already injected in this wrapper instance
-      const existingScript = adContainerRef.current.querySelector("script[src*='magsrv.com']");
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.async = true;
-        script.type = "application/javascript";
-        script.src = "https://a.magsrv.com/ad-provider.js";
-        adContainerRef.current.appendChild(script);
-      }
-
-      try {
-        window.AdProvider = window.AdProvider || [];
-        window.AdProvider.push({ serve: {} });
-      } catch (e) {
-        console.error("ExoClick banner initialization error:", e);
-      }
-    }
-  }, []);
-
+const AdWrapper = ({ children, className = "" }: AdWrapperProps) => {
   return (
     <div className={`my-12 w-full max-w-5xl mx-auto px-4 ${className}`}>
       {/* HEADER BAR */}
@@ -60,16 +31,8 @@ const AdWrapper = ({ className = "" }: AdWrapperProps) => {
         <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-[#06b6d4]/30 group-hover:border-[#06b6d4] transition-colors"></div>
         <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-[#06b6d4]/30 group-hover:border-[#06b6d4] transition-colors"></div>
 
-        <div 
-          ref={adContainerRef}
-          className="bg-tint-soft border border-line-strong rounded-xl overflow-hidden backdrop-blur-sm min-h-25 flex items-center justify-center p-4 transition-all hover:border-line-stronger"
-        >
-          {/* ExoClick Ins Element Tag */}
-          <ins 
-            className="eas6a97888e37" 
-            data-zoneid="6075838" 
-            data-ex-av="name"
-          />
+        <div className="bg-tint-soft border border-line-strong rounded-xl overflow-hidden backdrop-blur-sm min-h-25 flex items-center justify-center p-4 transition-all hover:border-line-stronger">
+          {children ?? <ExoClickAd />}
         </div>
       </div>
 
