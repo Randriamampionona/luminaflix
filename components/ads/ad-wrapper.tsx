@@ -2,6 +2,13 @@
 
 import React, { useEffect, useRef } from "react";
 
+// Add global declaration for window.AdProvider
+declare global {
+  interface Window {
+    AdProvider?: Array<Record<string, unknown>>;
+  }
+}
+
 interface AdWrapperProps {
   className?: string;
 }
@@ -10,12 +17,10 @@ const AdWrapper = ({ className = "" }: AdWrapperProps) => {
   const adContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Ensure script executes client-side and avoids duplicate injections on re-renders
     if (adContainerRef.current) {
       // Check if script is already injected in this wrapper instance
       const existingScript = adContainerRef.current.querySelector("script[src*='magsrv.com']");
       if (!existingScript) {
-        // 1. Create and append the ExoClick provider script
         const script = document.createElement("script");
         script.async = true;
         script.type = "application/javascript";
@@ -23,7 +28,6 @@ const AdWrapper = ({ className = "" }: AdWrapperProps) => {
         adContainerRef.current.appendChild(script);
       }
 
-      // 2. Trigger the global ad server push safely
       try {
         window.AdProvider = window.AdProvider || [];
         window.AdProvider.push({ serve: {} });
