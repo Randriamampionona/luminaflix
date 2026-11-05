@@ -75,6 +75,7 @@ export default function JuicyAd() {
           <div
             key={zone.id}
             className="shrink-0"
+            
             style={{ width: zone.width, height: zone.height, transform: `scale(${scale})`, transformOrigin: "top center" }}
           >
             <ins id={String(zone.id)} data-width={zone.width} data-height={zone.height} />
