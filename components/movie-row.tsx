@@ -61,7 +61,7 @@ function MovieRow({ title, movies, type, priority = false }: MovieRowProps) {
 
         <div
           ref={rowRef}
-          className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-4 scrollbar-hide"
+          className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-1 pb-4 scrollbar-hide"
         >
           {movies.map((movie, index) => (
             <div key={movie.id} className="w-37.5 shrink-0 snap-start empty:hidden md:w-50">

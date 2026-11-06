@@ -57,7 +57,7 @@ export function CollectionCard({
 /** Horizontal, swipeable list of collection cards (home page, search results). */
 export function CollectionStrip({ cards, countLabel }: { cards: CollectionCardData[]; countLabel: (n: number) => string }) {
   return (
-    <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-3 scrollbar-hide">
+    <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-1 pb-3 scrollbar-hide">
       {cards.map((card) => (
         <CollectionCard
           key={card.href}

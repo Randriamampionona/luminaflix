@@ -74,6 +74,7 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
   const [state, setState] = useState<State>({ status: "loading" });
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
@@ -139,6 +140,25 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
     };
   }, [box, close]);
 
+  // Wheel / trackpad over the box: close it and pass the scroll on. A sideways
+  // trackpad swipe over a box that can't scroll was taken by the browser as
+  // "go back" (swipe navigation) — it now scrolls the card's row instead.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!box || !el) return;
+    const onWheel = (e: WheelEvent) => {
+      close();
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+        let row = cardRef.current?.parentElement ?? null;
+        while (row && row.scrollWidth <= row.clientWidth) row = row.parentElement;
+        row?.scrollBy({ left: e.deltaX });
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [box, close]);
+
   useEffect(
     () => () => {
       if (openTimer.current) clearTimeout(openTimer.current);
@@ -195,6 +215,7 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
     box && typeof document !== "undefined"
       ? createPortal(
           <div
+            ref={boxRef}
             data-trailer-preview
             role="button"
             tabIndex={-1}
@@ -206,7 +227,7 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
               info.onOpen();
             }}
             style={{ left: box.left, top: box.top, width: box.width }}
-            className="fixed z-[70] cursor-pointer overflow-hidden rounded-2xl border border-line-strong bg-elevated shadow-[0_30px_80px_-10px_rgba(0,0,0,0.75)] ring-1 ring-cyan-500/20 animate-in fade-in zoom-in-95 duration-200"
+            className="fixed z-[70] cursor-pointer overflow-hidden overscroll-contain rounded-2xl border border-line-strong bg-elevated shadow-[0_30px_80px_-10px_rgba(0,0,0,0.75)] ring-1 ring-cyan-500/20 animate-in fade-in zoom-in-95 duration-200"
           >
             <div className="relative aspect-video w-full overflow-hidden bg-black">
               {backdrop && state.status !== "playing" && (

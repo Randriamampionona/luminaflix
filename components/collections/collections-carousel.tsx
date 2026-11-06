@@ -56,7 +56,7 @@ export default function CollectionsCarousel({
           </div>
         }
       />
-      <div ref={rowRef} className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-3 scrollbar-hide">
+      <div ref={rowRef} className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-1 pb-3 scrollbar-hide">
         {cards.map((card) => (
           <CollectionCard
             key={card.href}

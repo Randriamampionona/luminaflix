@@ -4,11 +4,30 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { handleMediaReaction, toggleFavorite } from "@/action/stream-actions";
 import { useAuthGate } from "@/hooks/use-auth-gate";
-import { applyReaction, type MediaInteraction, type MediaRef } from "@/lib/media-interactions";
+import {
+  applyReaction,
+  type FavoriteResult,
+  type MediaInteraction,
+  type MediaRef,
+  type ReactionResult,
+} from "@/lib/media-interactions";
 
 type PendingAction = "like" | "dislike" | "favorite" | null;
+
+/**
+ * Calls go through API routes (app/api/media/*), not server actions: a server
+ * action that refreshes a cache also re-renders the page, which restarted the
+ * stream being watched in the player.
+ */
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return (await res.json()) as T;
+}
 
 /**
  * State + handlers for the player's Like / Dislike / Favorite buttons.
@@ -42,7 +61,7 @@ export function useMediaActions(mediaRef: MediaRef, initial: MediaInteraction) {
     setPending(action);
 
     try {
-      const result = await handleMediaReaction({ ...mediaRef, action });
+      const result = await post<ReactionResult>("/api/media/reaction", { ...mediaRef, action });
       if (result.success) {
         setState((current) => ({ ...current, ...result.interaction }));
       } else {
@@ -67,7 +86,7 @@ export function useMediaActions(mediaRef: MediaRef, initial: MediaInteraction) {
     setPending("favorite");
 
     try {
-      const result = await toggleFavorite(mediaRef);
+      const result = await post<FavoriteResult>("/api/media/favorite", mediaRef);
       if (result.success) {
         setState((current) => ({ ...current, isFavorite: result.added }));
         if (result.added) {

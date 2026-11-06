@@ -151,13 +151,11 @@ function SuggestionRow({
   item,
   active,
   onPick,
-  onHover,
   kindLabel,
 }: {
   item: SearchSuggestion;
   active: boolean;
   onPick: () => void;
-  onHover: () => void;
   kindLabel: string;
 }) {
   return (
@@ -166,7 +164,6 @@ function SuggestionRow({
       role="option"
       aria-selected={active}
       onClick={onPick}
-      onMouseEnter={onHover}
       className={cn(
         "flex w-full cursor-pointer items-center gap-3 rounded-2xl p-2 text-left transition-colors",
         active ? "bg-cyan-500/10 ring-1 ring-cyan-500/40" : "hover:bg-tint",
@@ -327,7 +324,11 @@ export default function SearchPanel({
             type="search"
             enterKeyHint="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              // Typing again cancels a ↑ ↓ selection: Enter searches the typed text.
+              setActive(-1);
+            }}
             onKeyDown={onKeyDown}
             placeholder={aiEnabled ? t("search.hub.placeholderAi") : t("search.placeholder")}
             aria-label={t("search.placeholder")}
@@ -413,7 +414,6 @@ export default function SearchPanel({
                     item={item}
                     active={index === active}
                     onPick={() => openTitle(item)}
-                    onHover={() => setActive(index)}
                     kindLabel={kindLabel(item.kind)}
                   />
                 ))}
