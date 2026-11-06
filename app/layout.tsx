@@ -20,6 +20,7 @@ import SeasonalLayer from "@/components/seasonal/seasonal-layer";
 import PrefsScript from "@/components/prefs/prefs-script";
 import EngagementTracker from "@/components/engagement-tracker";
 import AppMovedNotice from "@/components/app-moved-notice";
+import SmartlinkInterceptor from "@/components/ads/smartlink-interceptor";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
@@ -140,6 +141,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <EngagementTracker />
               {/* Once, for visitors coming from the old address (lumina-flix.vercel.app) */}
               <AppMovedNotice />
+              {/* Monetag Smartlinks on links & buttons (first 1–2 clicks of a cycle, new tab) */}
+              <SmartlinkInterceptor />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}
               <AnalyticsTracker />
               <ServiceWorkerRegistrar />
