@@ -4,8 +4,9 @@
  * A "cycle" starts at the first eligible click: the first 1 or 2 clicks of the
  * cycle open a Smartlink in a new tab (and do nothing else), the following
  * clicks work normally. When the cycle's time is up, the next click starts a
- * new one. Clicks captured per cycle and cycle lengths alternate:
- *   cycle 1: 2 clicks, 1 min · cycle 2: 1 click, 5 min · cycle 3: 2 clicks, 1 min …
+ * new one. Clicks captured per cycle alternate (2, 1, 2, 1…) and each cycle
+ * lasts 5 s longer than the previous one:
+ *   cycle 1: 2 clicks, 10 s · cycle 2: 1 click, 15 s · cycle 3: 2 clicks, 20 s · cycle 4: 1 click, 25 s …
  * State lives in sessionStorage (per tab; a new tab / visit starts over).
  * Each link or button always gets the same Smartlink (chosen from its target
  * or label), the 7 Smartlinks being spread across the app.
@@ -22,8 +23,9 @@ const SMARTLINKS = [
 
 /** Clicks opening a Smartlink per cycle (alternating). Max 2. */
 const CAPTURES_PER_CYCLE = [2, 1];
-/** Cycle lengths (alternating): 1 minute, then 5 minutes. */
-const CYCLE_MS = [60_000, 5 * 60_000];
+/** First cycle length, then +5 s per cycle (10 s, 15 s, 20 s, 25 s…). */
+const FIRST_CYCLE_MS = 10_000;
+const CYCLE_STEP_MS = 5_000;
 const STORAGE_KEY = "lf_smartlink_cycle";
 
 interface Cycle {
@@ -60,7 +62,7 @@ export function takeSmartlinkClick(now = Date.now()): boolean {
     cycle = {
       round,
       remaining: CAPTURES_PER_CYCLE[round % CAPTURES_PER_CYCLE.length],
-      endsAt: now + CYCLE_MS[round % CYCLE_MS.length],
+      endsAt: now + FIRST_CYCLE_MS + round * CYCLE_STEP_MS,
     };
   }
   if (cycle.remaining <= 0) {
