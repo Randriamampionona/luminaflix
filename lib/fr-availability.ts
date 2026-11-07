@@ -14,16 +14,15 @@
  */
 import "server-only";
 import { unstable_cache } from "next/cache";
+import { readVidzy, VIDZY_BASE, type FrLang, type VidzyCheck, type VidzyResponse } from "@/lib/vidzy";
 
 const clean = (url: string) => url.replace(/\/+$/, "");
-const VIDZY = clean(process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org");
+const VIDZY = VIDZY_BASE;
 const FREMBED_API = `${clean(process.env.NEXT_PUBLIC_FREMBED_BASE_URL || process.env.FREMBED_BASE_URL || "https://frembed.bar")}/api/public/v1`;
 const CACHE_SECONDS = 600;
-const FR_LANGS = ["vf", "vostfr"] as const;
 
 export type FrKind = "movie" | "anime" | "drama" | "tv";
 type Kind = FrKind;
-type FrLang = (typeof FR_LANGS)[number];
 type Check = { available: boolean | null; version: string | null };
 type FrAvailabilityResult = Check & {
   provider: "vidzy" | "frembed" | null;
@@ -35,6 +34,12 @@ type FrAvailabilityResult = Check & {
    * embed https://vidzy.org/movie/80752). The player adds /vf or /vostfr.
    */
   embed: string | null;
+  /**
+   * VIDZY's own answer, even when Frembed has the title: true / false, or null
+   * when VIDZY couldn't be reached from the server — the player then still
+   * offers VIDZY (and the browser asks VIDZY itself).
+   */
+  vidzy: boolean | null;
 };
 
 const HEADERS = {
@@ -71,49 +76,10 @@ async function getJson<T>(url: string): Promise<T | "not-found" | null> {
 
 // ------------------------------------------------------------------ VIDZY --
 
-interface VidzyResponse {
-  available?: boolean;
-  detectedType?: string;
-  title?: string;
-  embed?: string;
-  languages?: unknown;
-  seasons?: { season?: number; episodes?: number[] }[];
-}
-
-async function checkVidzy(
-  kind: Kind,
-  id: string,
-  season: number,
-  episode: number,
-): Promise<{ available: boolean | null; langs: FrLang[]; embed: string | null }> {
+async function checkVidzy(kind: Kind, id: string, season: number, episode: number): Promise<VidzyCheck> {
   const data = await getJson<VidzyResponse>(`${VIDZY}/api/${id}`);
   if (data === null) return { available: null, langs: [], embed: null };
-  if (data === "not-found" || data.available !== true) return { available: false, langs: [], embed: null };
-
-  // Same id can be a movie on TMDB and a series: only accept the right type —
-  // except a series season that VIDZY files as a "movie" ("See - Saison 1"):
-  // that one is played with VIDZY's own embed link, for the season it names.
-  let embed: string | null = null;
-  if (data.detectedType && data.detectedType !== (kind === "movie" ? "movie" : "tv")) {
-    const seasonMatch = /(?:saison|season)\s*(\d+)/i.exec(data.title ?? "");
-    const ownEmbed = typeof data.embed === "string" && data.embed.startsWith(`${VIDZY}/`) ? data.embed : null;
-    if (kind === "movie" || data.detectedType !== "movie" || !seasonMatch || !ownEmbed) {
-      return { available: false, langs: [], embed: null };
-    }
-    if (Number(seasonMatch[1]) !== season) return { available: false, langs: [], embed: null };
-    embed = ownEmbed.replace(/\/+$/, "");
-  }
-  // Every French language, in VIDZY's own order (["vf", "vostfr"] → VF first, then VOSTFR).
-  const languages = Array.isArray(data.languages) ? data.languages.map((l) => String(l).toLowerCase()) : [];
-  const langs = FR_LANGS.filter((l) => languages.includes(l)).sort(
-    (a, b) => languages.indexOf(a) - languages.indexOf(b),
-  );
-  if (!langs.length) return { available: false, langs: [], embed: null };
-  if (kind !== "movie" && !embed && Array.isArray(data.seasons)) {
-    const s = data.seasons.find((x) => x.season === season);
-    if (!s?.episodes?.includes(episode)) return { available: false, langs: [], embed: null };
-  }
-  return { available: true, langs, embed };
+  return readVidzy(data, kind === "movie", season, episode);
 }
 
 // ---------------------------------------------------------------- FREMBED --
@@ -206,16 +172,25 @@ async function checkNow(
       lang: vidzy.langs[0],
       version: vidzy.langs.map((l) => l.toUpperCase()).join(" + "),
       embed: vidzy.embed,
+      vidzy: true,
     };
   }
   if (frembedCheck.available) {
-    return { available: true, provider: "frembed", langs: [], lang: null, version: frembedCheck.version, embed: null };
+    return {
+      available: true,
+      provider: "frembed",
+      langs: [],
+      lang: null,
+      version: frembedCheck.version,
+      embed: null,
+      vidzy: vidzy.available,
+    };
   }
   if (vidzy.available === false && frembedCheck.available === false) {
-    return { available: false, provider: null, langs: [], lang: null, version: null, embed: null };
+    return { available: false, provider: null, langs: [], lang: null, version: null, embed: null, vidzy: false };
   }
   // One of the two couldn't be reached: don't claim "not available in French".
-  return { available: null, provider: null, langs: [], lang: null, version: null, embed: null };
+  return { available: null, provider: null, langs: [], lang: null, version: null, embed: null, vidzy: vidzy.available };
 }
 
 export const FR_CACHE_SECONDS = CACHE_SECONDS;

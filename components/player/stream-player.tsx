@@ -143,7 +143,13 @@ export default function StreamPlayer({
   const providers = (
     isFrenchTab && checked
       ? activeGroup.providers.filter(
-          (p) => !p.id.startsWith("vidzy_") || availability.langs.includes(p.id.slice(6) as "vf" | "vostfr"),
+          // VIDZY servers: only its languages when VIDZY answered, both when VIDZY
+          // couldn't be asked (never hidden because of a failed check), none if VIDZY said no.
+          (p) =>
+            !p.id.startsWith("vidzy_") ||
+            (availability.vidzy === null
+              ? true
+              : availability.vidzy && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr")),
         )
       : activeGroup.providers
   )
@@ -176,7 +182,11 @@ export default function StreamPlayer({
       ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
         providers.find((p) => p.id === `vidzy_${availability.langs[0]}`))
       : undefined) ??
-    (isFrenchTab && availability.status === "checking" ? providers.find((p) => p.id.startsWith("vidzy_")) : undefined) ??
+    // While checking, and whenever VIDZY couldn't be asked: VIDZY stays selected.
+    (isFrenchTab && (availability.status === "checking" || availability.vidzy === null)
+      ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
+        providers.find((p) => p.id.startsWith("vidzy_")))
+      : undefined) ??
     providers.find((p) => p.id === remembered) ??
     providers.find((p) => p.id === autoSourceId) ??
     activeGroup.providers[0];
