@@ -6,11 +6,11 @@ import { checkFrAvailability, type FrKind } from "@/lib/fr-availability";
  * → { results: { "movie:123": "vf" | "vostfr" | "both" | "fr" | "none" | "unknown" } }
  *
  * For the "VF / VOSTFR only" listing filter and the availability badges.
- * Series are checked on S1E1. Each title is cached 6 h (unknown answers aren't).
+ * Series are checked on S1E1. Each title is cached 10 min (unknown answers aren't).
  */
 type Status = "vf" | "vostfr" | "both" | "fr" | "none" | "unknown";
 const KIND: Record<string, FrKind> = { movie: "movie", tv: "tv", kdrama: "drama", anime: "anime" };
-const CACHE_SECONDS = 6 * 3600;
+const CACHE_SECONDS = 600; // 10 min (a provider outage must not hide titles for hours)
 const CONCURRENCY = 8;
 
 class Unknown extends Error {}
@@ -26,7 +26,7 @@ function statusFor(kind: FrKind, id: string): Promise<Status> {
       }
       return /vostfr/i.test(r.version ?? "") ? "vostfr" : "fr";
     },
-    ["fr-status-v1", kind, id],
+    ["fr-status-v2", kind, id],
     { revalidate: CACHE_SECONDS },
   )().catch(() => "unknown" as const);
 }

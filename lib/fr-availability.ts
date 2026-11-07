@@ -3,8 +3,17 @@
  * Frembed. Used by the player (app/api/player/availability), the "French
  * only" listing filter (app/api/fr-availability) and the "Notify me" alerts.
  * VIDZY: https://vidzy.org/api/{tmdbId} (languages, seasons) · Frembed: public JSON API.
+ *
+ * Reliability rules (a short VIDZY outage once made every title look
+ * "not available in French" for a while):
+ *  - every request is made fresh (no fetch cache) with a 6 s timeout and one
+ *    retry, and an error / timeout counts as "unknown", never as "not available";
+ *  - only POSITIVE answers are cached (10 min, server side); "not available"
+ *    is checked again on every request, so a title shows up as soon as the
+ *    provider has it (or is back up).
  */
 import "server-only";
+import { unstable_cache } from "next/cache";
 
 const clean = (url: string) => url.replace(/\/+$/, "");
 const VIDZY = clean(process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org");
@@ -28,19 +37,36 @@ type FrAvailabilityResult = Check & {
   embed: string | null;
 };
 
-async function getJson<T>(url: string): Promise<T | "not-found" | null> {
+const HEADERS = {
+  Accept: "application/json",
+  // Some providers' firewalls reject requests without a browser-like user agent.
+  "User-Agent": "Mozilla/5.0 (compatible; LuminaFlix/1.0; +https://www.lumina-flix.live)",
+};
+
+async function getJsonOnce<T>(url: string): Promise<T | "not-found" | null> {
   try {
-    const res = await fetch(url, {
-      next: { revalidate: CACHE_SECONDS },
-      signal: AbortSignal.timeout(4000),
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(6000), headers: HEADERS });
     if (res.status === 404) return "not-found";
-    if (!res.ok) return null;
-    return (await res.json()) as T;
+    if (!res.ok) return null; // 403 / 429 / 5xx: provider unreachable → "unknown"
+    const text = await res.text();
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return null; // HTML error / challenge page → "unknown"
+    }
   } catch {
-    return null;
+    return null; // timeout / network error → "unknown"
   }
+}
+
+/** One retry (after 400 ms) when the answer is an error or "not found". */
+async function getJson<T>(url: string): Promise<T | "not-found" | null> {
+  const first = await getJsonOnce<T>(url);
+  if (first !== null && first !== "not-found") return first;
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  const second = await getJsonOnce<T>(url);
+  // Keep the more informative answer: data > "not-found" > unknown.
+  return second !== null ? second : first;
 }
 
 // ------------------------------------------------------------------ VIDZY --
@@ -130,8 +156,40 @@ async function checkFrembed(kind: Kind, id: string, imdb: string, season: number
   return toCheck(await frembed(`/tv/${id}${query}`));
 }
 
-/** Availability of a movie / episode (s, e ignored for movies). */
+/** Thrown inside the cache so that only positive answers are stored. */
+class NotPositive extends Error {
+  constructor(readonly result: FrAvailabilityResult) {
+    super("not available");
+  }
+}
+
+/**
+ * Availability of a movie / episode (s, e ignored for movies). Positive
+ * answers are cached 10 min; negative / unknown ones are always re-checked.
+ */
 export async function checkFrAvailability(
+  kind: FrKind,
+  id: string,
+  options: { imdb?: string; season?: number; episode?: number } = {},
+): Promise<FrAvailabilityResult> {
+  const { imdb = "", season = 1, episode = 1 } = options;
+  try {
+    return await unstable_cache(
+      async () => {
+        const result = await checkNow(kind, id, { imdb, season, episode });
+        if (result.available !== true) throw new NotPositive(result);
+        return result;
+      },
+      ["fr-availability-v2", kind, id, imdb, String(season), String(episode)],
+      { revalidate: CACHE_SECONDS },
+    )();
+  } catch (error) {
+    if (error instanceof NotPositive) return error.result;
+    return checkNow(kind, id, { imdb, season, episode });
+  }
+}
+
+async function checkNow(
   kind: FrKind,
   id: string,
   { imdb = "", season = 1, episode = 1 }: { imdb?: string; season?: number; episode?: number } = {},

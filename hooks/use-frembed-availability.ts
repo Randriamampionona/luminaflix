@@ -34,8 +34,8 @@ function check(url: string) {
         embed: typeof body.embed === "string" && /^https:\/\//.test(body.embed) ? body.embed : null,
       }))
       .catch(() => UNKNOWN) as Promise<FrAvailability>;
-    // Don't keep "unknown" (network hiccup): ask again next time.
-    void pending.then((r) => r.status === "unknown" && cache.delete(url));
+    // Only "available" is kept for the visit: "unavailable" / "unknown" are asked again next time.
+    void pending.then((r) => r.status !== "available" && cache.delete(url));
     cache.set(url, pending);
   }
   return pending;

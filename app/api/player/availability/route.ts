@@ -23,10 +23,10 @@ export async function GET(request: Request) {
   const result = await checkFrAvailability(kind, id, { imdb, season, episode });
   return Response.json(result, {
     headers: {
+      // Only positive answers are cached by the CDN: "not available" / "unknown"
+      // are re-checked on every visit (a provider outage must not stick).
       "Cache-Control":
-        result.available === null
-          ? "no-store"
-          : `public, s-maxage=${FR_CACHE_SECONDS}, stale-while-revalidate=${FR_CACHE_SECONDS * 6}`,
+        result.available === true ? `public, s-maxage=${FR_CACHE_SECONDS}, stale-while-revalidate=60` : "no-store",
     },
   });
 }
