@@ -22,6 +22,7 @@ import SignInLink from "@/components/auth/sign-in-link";
 import LanguageSwitcher from "@/components/i18n/language-switcher";
 import { Container } from "@/components/layout/container";
 import ThemeToggle from "@/components/theme-toggle";
+import BackButton from "@/components/nav/back-button";
 import PrefSwitch from "@/components/prefs/pref-switch";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import {
@@ -124,7 +125,12 @@ export default function Navbar() {
       {/* UI STANDARD: same container as every page and the footer. */}
       <Container className="flex items-center justify-between gap-6">
         <div className="flex min-w-0 items-center gap-10">
-          <Logo />
+          {/* Back + logo: the back button sits just left of the logo (small on phones);
+              on very wide screens it moves to the far left edge of the bar. */}
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <BackButton className="2xl:absolute 2xl:top-1/2 2xl:left-8 2xl:-translate-y-1/2" />
+            <Logo />
+          </div>
 
           <div className="hidden items-center gap-8 xl:flex">
             {inlineItems.map((item) => (

@@ -63,7 +63,8 @@
     "admin": "Admin",
     "collections": "Collections",
     "comingSoon": "Coming soon",
-    "userRank": "Top fans"
+    "userRank": "Top fans",
+    "goBack": "Go back"
   },
   "auth": {
     "signIn": "Sign in",
@@ -1239,5 +1240,12 @@
     "stripTitle": "Not available in French yet",
     "stripTitleEpisode": "Episode S{season}E{episode} isn't available in French yet",
     "stripHint": "Tap “Notify me”: you'll get an e-mail and a notification as soon as it's out in VF or VOSTFR."
+  },
+  "pullToReload": {
+    "label": "Hold and pull down to reload the app",
+    "hint": "Hold and pull down to reload the app",
+    "pull": "Pull to reload",
+    "release": "Release to reload",
+    "reloading": "Reloading…"
   }
 }

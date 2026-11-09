@@ -63,7 +63,8 @@
     "admin": "Admin",
     "collections": "Collections",
     "comingSoon": "Bientôt",
-    "userRank": "Top fans"
+    "userRank": "Top fans",
+    "goBack": "Retour"
   },
   "auth": {
     "signIn": "Connexion",
@@ -1239,5 +1240,12 @@
     "stripTitle": "Pas encore disponible en français",
     "stripTitleEpisode": "L'épisode S{season}E{episode} n'est pas encore disponible en français",
     "stripHint": "Touchez « Me prévenir » : vous recevrez un e-mail et une notification dès sa sortie en VF ou VOSTFR."
+  },
+  "pullToReload": {
+    "label": "Maintenez et tirez vers le bas pour recharger l'app",
+    "hint": "Maintenez et tirez vers le bas pour recharger l'app",
+    "pull": "Tirez pour recharger",
+    "release": "Relâchez pour recharger",
+    "reloading": "Rechargement…"
   }
 }
