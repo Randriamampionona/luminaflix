@@ -26,7 +26,9 @@ export async function GET(request: Request) {
       // Only positive answers are cached by the CDN: "not available" / "unknown"
       // are re-checked on every visit (a provider outage must not stick).
       "Cache-Control":
-        result.available === true ? `public, s-maxage=${FR_CACHE_SECONDS}, stale-while-revalidate=60` : "no-store",
+        result.available === true && result.vidzy !== null
+          ? `public, s-maxage=${FR_CACHE_SECONDS}, stale-while-revalidate=60`
+          : "no-store",
     },
   });
 }

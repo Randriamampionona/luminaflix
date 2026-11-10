@@ -173,7 +173,8 @@ export default function StreamPlayer({
   // Which server plays, in order:
   //  1. the one the user picked (if still listed — e.g. VOSTFR may not exist);
   //  2. VIDZY whenever it has the title (the language used last time if VIDZY has it, else its first);
-  //  3. while the check is running, VIDZY stays selected (no jump to another server);
+  //  3. while the check is running — and while VIDZY's answer is unknown, unless
+  //     Frembed is confirmed (a confirmed server beats an unconfirmed one) — VIDZY stays selected;
   //  4. the server that worked last time, then the automatic choice (Frembed, then English).
   const vidzyHasIt = isFrenchTab && availability.provider === "vidzy" && availability.langs.length > 0;
   const activeSource: Provider =
@@ -182,14 +183,23 @@ export default function StreamPlayer({
       ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
         providers.find((p) => p.id === `vidzy_${availability.langs[0]}`))
       : undefined) ??
-    // While checking, and whenever VIDZY couldn't be asked: VIDZY stays selected.
-    (isFrenchTab && (availability.status === "checking" || availability.vidzy === null)
+    // While checking, and while VIDZY's answer is unknown (re-checked a few times)
+    // with no confirmed Frembed: VIDZY stays selected.
+    (isFrenchTab &&
+    (availability.status === "checking" || (availability.vidzy === null && availability.provider !== "frembed"))
       ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
         providers.find((p) => p.id.startsWith("vidzy_")))
       : undefined) ??
     providers.find((p) => p.id === remembered) ??
     providers.find((p) => p.id === autoSourceId) ??
     activeGroup.providers[0];
+
+  // Pressing play freezes the server: a later availability answer never swaps the
+  // video being watched (unless that server disappears from the list).
+  const startPlaying = () => {
+    setSourceId((id) => id ?? activeSource.id);
+    setIsPlaying(true);
+  };
 
   // VIDZY sometimes files a series season as one "movie" entry: then its own link is used.
   const embedUrl =
@@ -372,7 +382,7 @@ export default function StreamPlayer({
                   )}
                   <button
                     type="button"
-                    onClick={() => setIsPlaying(true)}
+                    onClick={startPlaying}
                     className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
                   >
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/10 sm:h-8 sm:w-8">
@@ -534,7 +544,7 @@ export default function StreamPlayer({
           // VIDZY has its own download button: offer it before 1DM.
           directDownload={activeSource.id.startsWith("vidzy_")}
           onDirectDownload={() => {
-            setIsPlaying(true);
+            startPlaying();
             setDownloadHint(true);
             playerBoxRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
           }}

@@ -10,8 +10,11 @@ import { checkFrAvailability, type FrKind } from "@/lib/fr-availability";
  */
 type Status = "vf" | "vostfr" | "both" | "fr" | "none" | "unknown";
 const KIND: Record<string, FrKind> = { movie: "movie", tv: "tv", kdrama: "drama", anime: "anime" };
-const CACHE_SECONDS = 600; // 10 min (a provider outage must not hide titles for hours)
-const CONCURRENCY = 8;
+// 30 min. Outages are never cached ("unknown" isn't), only real answers.
+const CACHE_SECONDS = 1800;
+// Few simultaneous requests: a burst of listing checks made VIDZY slow down /
+// refuse the server's requests, including the player's own check.
+const CONCURRENCY = 3;
 
 class Unknown extends Error {}
 

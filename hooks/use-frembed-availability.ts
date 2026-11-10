@@ -18,6 +18,9 @@ interface FrAvailability {
   vidzy: boolean | null;
 }
 
+/** Re-checks (ms) while VIDZY's answer is unknown: ~1.5 s, 4 s, 8 s, 15 s after the first. */
+const RETRY_DELAYS = [1500, 2500, 4000, 7000];
+
 const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [], embed: null, vidzy: null };
 const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [], embed: null, vidzy: null };
 
@@ -41,10 +44,11 @@ async function askVidzyFromBrowser(kind: PlayerKind, id: string, season: number,
 /** Same title asked twice in a visit (switching tabs/episodes back and forth): one request. */
 const cache = new Map<string, Promise<FrAvailability>>();
 
-function check(url: string, kind: PlayerKind, id: string, season: number, episode: number) {
-  let pending = cache.get(url);
+function check(url: string, kind: PlayerKind, id: string, season: number, episode: number, fresh = false) {
+  let pending = fresh ? undefined : cache.get(url);
   if (!pending) {
-    pending = fetch(url)
+    // `fresh`: a new request that skips every cache (CDN included).
+    pending = fetch(fresh ? `${url}&fresh=${Date.now()}` : url, fresh ? { cache: "no-store" } : undefined)
       .then((res) => (res.ok ? res.json() : { available: null }))
       .then(
         (body: {
@@ -72,8 +76,8 @@ function check(url: string, kind: PlayerKind, id: string, season: number, episod
         if (browser && server.vidzy === null) return { ...server, vidzy: false };
         return server;
       });
-    // Only "available" is kept for the visit: "unavailable" / "unknown" are asked again next time.
-    void pending.then((r) => r.status !== "available" && cache.delete(url));
+    // Only complete answers are kept for the visit (available, with VIDZY's own answer known).
+    void pending.then((r) => (r.status !== "available" || r.vidzy === null) && cache.delete(url));
     cache.set(url, pending);
   }
   return pending;
@@ -111,11 +115,21 @@ export function useFrembedAvailability({
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    void check(url, kind, mediaId, season ?? 1, episode ?? 1).then((value) => {
-      if (active) setResult({ url, value });
-    });
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const run = (fresh: boolean, attempt: number) =>
+      check(url, kind, mediaId, season ?? 1, episode ?? 1, fresh).then((value) => {
+        if (!active) return;
+        setResult({ url, value });
+        // VIDZY's answer still unknown (server and browser couldn't reach it):
+        // ask again a few times instead of guessing.
+        if (value.vidzy === null && attempt < RETRY_DELAYS.length) {
+          timers.push(setTimeout(() => void run(true, attempt + 1), RETRY_DELAYS[attempt]));
+        }
+      });
+    void run(false, 0);
     return () => {
       active = false;
+      timers.forEach(clearTimeout);
     };
   }, [url, enabled, kind, mediaId, season, episode]);
 

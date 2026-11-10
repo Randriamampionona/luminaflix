@@ -48,10 +48,18 @@ const HEADERS = {
   "User-Agent": "Mozilla/5.0 (compatible; LuminaFlix/1.0; +https://www.lumina-flix.live)",
 };
 
+/** Wait asked by the provider (HTTP 429 Retry-After), capped. */
+let retryAfterMs = 0;
+
 async function getJsonOnce<T>(url: string): Promise<T | "not-found" | null> {
   try {
     const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(6000), headers: HEADERS });
     if (res.status === 404) return "not-found";
+    if (res.status === 429) {
+      // Too many requests: wait as asked (max 2 s) before the retry.
+      retryAfterMs = Math.min(2000, Math.max(500, Number(res.headers.get("retry-after")) * 1000 || 1000));
+      return null;
+    }
     if (!res.ok) return null; // 403 / 429 / 5xx: provider unreachable → "unknown"
     const text = await res.text();
     try {
@@ -68,7 +76,9 @@ async function getJsonOnce<T>(url: string): Promise<T | "not-found" | null> {
 async function getJson<T>(url: string): Promise<T | "not-found" | null> {
   const first = await getJsonOnce<T>(url);
   if (first !== null && first !== "not-found") return first;
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  const wait = retryAfterMs || 400;
+  retryAfterMs = 0;
+  await new Promise((resolve) => setTimeout(resolve, wait));
   const second = await getJsonOnce<T>(url);
   // Keep the more informative answer: data > "not-found" > unknown.
   return second !== null ? second : first;
@@ -143,10 +153,12 @@ export async function checkFrAvailability(
     return await unstable_cache(
       async () => {
         const result = await checkNow(kind, id, { imdb, season, episode });
-        if (result.available !== true) throw new NotPositive(result);
+        // Only complete positive answers are kept: available AND VIDZY's own
+        // answer known (a "Frembed yes, VIDZY unreachable" answer is re-checked).
+        if (result.available !== true || result.vidzy === null) throw new NotPositive(result);
         return result;
       },
-      ["fr-availability-v2", kind, id, imdb, String(season), String(episode)],
+      ["fr-availability-v3", kind, id, imdb, String(season), String(episode)],
       { revalidate: CACHE_SECONDS },
     )();
   } catch (error) {
