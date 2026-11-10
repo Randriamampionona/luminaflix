@@ -6,14 +6,14 @@ import { checkFrAvailability, type FrKind } from "@/lib/fr-availability";
  * → { results: { "movie:123": "vf" | "vostfr" | "both" | "fr" | "none" | "unknown" } }
  *
  * For the "VF / VOSTFR only" listing filter and the availability badges.
- * Series are checked on S1E1. Each title is cached 10 min (unknown answers aren't).
+ * Series are checked on S1E1. Each title is cached 2 min (unknown answers aren't).
  */
 type Status = "vf" | "vostfr" | "both" | "fr" | "none" | "unknown";
 const KIND: Record<string, FrKind> = { movie: "movie", tv: "tv", kdrama: "drama", anime: "anime" };
-// 30 min. Outages are never cached ("unknown" isn't), only real answers.
-const CACHE_SECONDS = 1800;
-// Few simultaneous requests: a burst of listing checks made VIDZY slow down /
-// refuse the server's requests, including the player's own check.
+// 2 min — the providers' own API cache (Frembed: 2 min per title). Card badges
+// and the "VF / VOSTFR only" filter; the player always asks live.
+const CACHE_SECONDS = 120;
+// Few simultaneous requests to the providers.
 const CONCURRENCY = 3;
 
 class Unknown extends Error {}
@@ -29,7 +29,7 @@ function statusFor(kind: FrKind, id: string): Promise<Status> {
       }
       return /vostfr/i.test(r.version ?? "") ? "vostfr" : "fr";
     },
-    ["fr-status-v2", kind, id],
+    ["fr-status-v3", kind, id],
     { revalidate: CACHE_SECONDS },
   )().catch(() => "unknown" as const);
 }

@@ -5,15 +5,13 @@
  *
  * VIDZY: official API only (lib/vidzy.ts). Frembed: official API only
  * (lib/frembed.ts). Each server is offered only when its own API confirms the title.
- * Errors / timeouts count as "unknown", never as "not available". Only
- * positive answers where every API answered are cached (10 min, server side).
+ * Errors / timeouts count as "unknown", never as "not available".
+ * Nothing is cached: every check asks both APIs live.
  */
 import "server-only";
-import { unstable_cache } from "next/cache";
 import { checkFrembed } from "@/lib/frembed";
 import { checkVidzy, type FrLang } from "@/lib/vidzy";
 
-const CACHE_SECONDS = 600;
 
 export type FrKind = "movie" | "anime" | "drama" | "tv";
 type Check = { available: boolean | null; version: string | null };
@@ -33,16 +31,10 @@ type FrAvailabilityResult = Check & {
   frembedImdb: boolean | null;
 };
 
-/** Thrown inside the cache so that only positive answers are stored. */
-class NotPositive extends Error {
-  constructor(readonly result: FrAvailabilityResult) {
-    super("not available");
-  }
-}
-
 /**
- * Availability of a movie / episode (s, e ignored for movies). Positive
- * answers are cached 10 min; negative / unknown ones are always re-checked.
+ * Availability of a movie / episode (s, e ignored for movies), asked LIVE to
+ * VIDZY's and Frembed's APIs on every call — no cache anywhere (server, CDN,
+ * browser): what the app shows is always what the APIs answer right now.
  */
 export async function checkFrAvailability(
   kind: FrKind,
@@ -50,29 +42,7 @@ export async function checkFrAvailability(
   options: { imdb?: string; season?: number; episode?: number } = {},
 ): Promise<FrAvailabilityResult> {
   const { imdb = "", season = 1, episode = 1 } = options;
-  try {
-    return await unstable_cache(
-      async () => {
-        const result = await checkNow(kind, id, { imdb, season, episode });
-        // Only complete positive answers are kept: available AND every API answered
-        // (an answer with an unreachable provider is checked again next time).
-        if (
-          result.available !== true ||
-          result.vidzy === null ||
-          result.frembed === null ||
-          (kind === "movie" && result.frembedImdb === null)
-        ) {
-          throw new NotPositive(result);
-        }
-        return result;
-      },
-      ["fr-availability-v5", kind, id, imdb, String(season), String(episode)],
-      { revalidate: CACHE_SECONDS },
-    )();
-  } catch (error) {
-    if (error instanceof NotPositive) return error.result;
-    return checkNow(kind, id, { imdb, season, episode });
-  }
+  return checkNow(kind, id, { imdb, season, episode });
 }
 
 async function checkNow(
@@ -105,4 +75,3 @@ async function checkNow(
   return { available: null, provider: null, langs: [], lang: null, version: null, ...both };
 }
 
-export const FR_CACHE_SECONDS = CACHE_SECONDS;

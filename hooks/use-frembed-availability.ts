@@ -24,13 +24,16 @@ const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [], 
 const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [], ...NONE };
 const bool = (v: unknown) => (v === true ? true : v === false ? false : null);
 
-/** One check per player page and visit (complete answers only; others are asked again next time). */
-const cache = new Map<string, Promise<FrAvailability>>();
+/**
+ * Requests in flight (two components asking at the same moment share one).
+ * Nothing is kept afterwards: every time a player opens, the APIs are asked again.
+ */
+const inFlight = new Map<string, Promise<FrAvailability>>();
 
 function check(url: string) {
-  let pending = cache.get(url);
+  let pending = inFlight.get(url);
   if (!pending) {
-    pending = fetch(url)
+    pending = fetch(url, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : { available: null }))
       .then(
         (body: {
@@ -50,10 +53,8 @@ function check(url: string) {
         }),
       )
       .catch(() => UNKNOWN) as Promise<FrAvailability>;
-    void pending.then(
-      (r) => (r.status !== "available" || r.vidzy === null || r.frembed === null) && cache.delete(url),
-    );
-    cache.set(url, pending);
+    void pending.finally(() => inFlight.delete(url));
+    inFlight.set(url, pending);
   }
   return pending;
 }
