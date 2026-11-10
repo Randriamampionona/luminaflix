@@ -3,21 +3,19 @@
  * Frembed. Used by the player (app/api/player/availability), the "French
  * only" listing filter (app/api/fr-availability) and the "Notify me" alerts.
  *
- * VIDZY: official API only (lib/vidzy.ts) — offered only when its API answers
- * "available": true. Frembed: its public JSON API.
+ * VIDZY: official API only (lib/vidzy.ts). Frembed: official API only
+ * (lib/frembed.ts). Each server is offered only when its own API confirms the title.
  * Errors / timeouts count as "unknown", never as "not available". Only
- * positive answers with VIDZY's answer known are cached (10 min, server side).
+ * positive answers where every API answered are cached (10 min, server side).
  */
 import "server-only";
 import { unstable_cache } from "next/cache";
+import { checkFrembed } from "@/lib/frembed";
 import { checkVidzy, type FrLang } from "@/lib/vidzy";
 
-const clean = (url: string) => url.replace(/\/+$/, "");
-const FREMBED_API = `${clean(process.env.NEXT_PUBLIC_FREMBED_BASE_URL || process.env.FREMBED_BASE_URL || "https://frembed.bar")}/api/public/v1`;
 const CACHE_SECONDS = 600;
 
 export type FrKind = "movie" | "anime" | "drama" | "tv";
-type Kind = FrKind;
 type Check = { available: boolean | null; version: string | null };
 type FrAvailabilityResult = Check & {
   /** French player that has the title: VIDZY (confirmed by its API) first, then Frembed. */
@@ -27,92 +25,13 @@ type FrAvailabilityResult = Check & {
   lang: FrLang | null;
   /** VIDZY's API answer: true / false, or null when it gave no valid answer (VIDZY then not offered). */
   vidzy: boolean | null;
+  /**
+   * Frembed's API answers (null = no valid answer → not offered):
+   * series → `frembed`; movies → `frembed` (by TMDB id) and `frembedImdb` (by IMDb id).
+   */
+  frembed: boolean | null;
+  frembedImdb: boolean | null;
 };
-
-const HEADERS = {
-  Accept: "application/json",
-  // Some providers' firewalls reject requests without a browser-like user agent.
-  "User-Agent": "Mozilla/5.0 (compatible; LuminaFlix/1.0; +https://www.lumina-flix.live)",
-};
-
-/** Wait asked by the provider (HTTP 429 Retry-After), capped. */
-let retryAfterMs = 0;
-
-async function getJsonOnce<T>(url: string): Promise<T | "not-found" | null> {
-  try {
-    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(6000), headers: HEADERS });
-    if (res.status === 404) return "not-found";
-    if (res.status === 429) {
-      // Too many requests: wait as asked (max 2 s) before the retry.
-      retryAfterMs = Math.min(2000, Math.max(500, Number(res.headers.get("retry-after")) * 1000 || 1000));
-      return null;
-    }
-    if (!res.ok) return null; // 403 / 429 / 5xx: provider unreachable → "unknown"
-    const text = await res.text();
-    try {
-      return JSON.parse(text) as T;
-    } catch {
-      return null; // HTML error / challenge page → "unknown"
-    }
-  } catch {
-    return null; // timeout / network error → "unknown"
-  }
-}
-
-/** One retry (after 400 ms) when the answer is an error or "not found". */
-async function getJson<T>(url: string): Promise<T | "not-found" | null> {
-  const first = await getJsonOnce<T>(url);
-  if (first !== null && first !== "not-found") return first;
-  const wait = retryAfterMs || 400;
-  retryAfterMs = 0;
-  await new Promise((resolve) => setTimeout(resolve, wait));
-  const second = await getJsonOnce<T>(url);
-  // Keep the more informative answer: data > "not-found" > unknown.
-  return second !== null ? second : first;
-}
-
-// ------------------------------------------------------------------ VIDZY --
-// Official API only — see lib/vidzy.ts.
-
-// ---------------------------------------------------------------- FREMBED --
-
-interface FrembedResponse {
-  status?: number;
-  result?: { total?: number; totalItems?: number; items?: { version?: string | null }[] };
-}
-
-const frembed = (path: string) => getJson<FrembedResponse>(`${FREMBED_API}${path}`);
-
-function toCheck(data: FrembedResponse | "not-found" | null): Check {
-  if (data === null) return { available: null, version: null };
-  if (data === "not-found") return { available: false, version: null };
-  const count = data.result?.total ?? data.result?.totalItems ?? 0;
-  return { available: count > 0, version: data.result?.items?.[0]?.version ?? null };
-}
-
-/** First positive answer wins; "unknown" only if nothing could be checked. */
-function combine(...checks: Check[]): Check {
-  return (
-    checks.find((c) => c.available === true) ??
-    checks.find((c) => c.available === false) ?? { available: null, version: null }
-  );
-}
-
-async function checkFrembed(kind: Kind, id: string, imdb: string, season: number, episode: number): Promise<Check> {
-  if (kind === "movie") {
-    // Frembed has two FR players for movies (TMDB and IMDb ids): available if either id is known.
-    const byTmdb = toCheck(await frembed(`/movies/${id}`));
-    return byTmdb.available !== true && /^tt\d{5,10}$/.test(imdb)
-      ? combine(byTmdb, toCheck(await frembed(`/movies/${imdb}`)))
-      : byTmdb;
-  }
-  const query = `?sa=${season}&epi=${episode}`;
-  if (kind === "anime") {
-    const asAnime = toCheck(await frembed(`/anime/${id}${query}`));
-    return asAnime.available === true ? asAnime : combine(asAnime, toCheck(await frembed(`/tv/${id}${query}`)));
-  }
-  return toCheck(await frembed(`/tv/${id}${query}`));
-}
 
 /** Thrown inside the cache so that only positive answers are stored. */
 class NotPositive extends Error {
@@ -135,12 +54,19 @@ export async function checkFrAvailability(
     return await unstable_cache(
       async () => {
         const result = await checkNow(kind, id, { imdb, season, episode });
-        // Only complete positive answers are kept: available AND VIDZY's own
-        // answer known (a "Frembed yes, VIDZY unreachable" answer is re-checked).
-        if (result.available !== true || result.vidzy === null) throw new NotPositive(result);
+        // Only complete positive answers are kept: available AND every API answered
+        // (an answer with an unreachable provider is checked again next time).
+        if (
+          result.available !== true ||
+          result.vidzy === null ||
+          result.frembed === null ||
+          (kind === "movie" && result.frembedImdb === null)
+        ) {
+          throw new NotPositive(result);
+        }
         return result;
       },
-      ["fr-availability-v4", kind, id, imdb, String(season), String(episode)],
+      ["fr-availability-v5", kind, id, imdb, String(season), String(episode)],
       { revalidate: CACHE_SECONDS },
     )();
   } catch (error) {
@@ -154,10 +80,11 @@ async function checkNow(
   id: string,
   { imdb = "", season = 1, episode = 1 }: { imdb?: string; season?: number; episode?: number } = {},
 ): Promise<FrAvailabilityResult> {
-  const [vidzy, frembedCheck] = await Promise.all([
+  const [vidzy, frembed] = await Promise.all([
     checkVidzy(id, kind === "movie"),
-    checkFrembed(kind, id, imdb, season, episode),
+    checkFrembed(kind, id, { imdb, season, episode }),
   ]);
+  const both = { vidzy: vidzy.available, frembed: frembed.tmdb, frembedImdb: frembed.imdb };
   if (vidzy.available) {
     return {
       available: true,
@@ -165,24 +92,17 @@ async function checkNow(
       langs: vidzy.langs,
       lang: vidzy.langs[0],
       version: vidzy.langs.map((l) => l.toUpperCase()).join(" + "),
-      vidzy: true,
+      ...both,
     };
   }
-  if (frembedCheck.available) {
-    return {
-      available: true,
-      provider: "frembed",
-      langs: [],
-      lang: null,
-      version: frembedCheck.version,
-      vidzy: vidzy.available,
-    };
+  if (frembed.available) {
+    return { available: true, provider: "frembed", langs: [], lang: null, version: frembed.version, ...both };
   }
-  if (vidzy.available === false && frembedCheck.available === false) {
-    return { available: false, provider: null, langs: [], lang: null, version: null, vidzy: false };
+  if (vidzy.available === false && frembed.available === false) {
+    return { available: false, provider: null, langs: [], lang: null, version: null, ...both };
   }
-  // One of the two couldn't be reached: don't claim "not available in French".
-  return { available: null, provider: null, langs: [], lang: null, version: null, vidzy: vidzy.available };
+  // One of the two gave no valid answer: don't claim "not available in French".
+  return { available: null, provider: null, langs: [], lang: null, version: null, ...both };
 }
 
 export const FR_CACHE_SECONDS = CACHE_SECONDS;

@@ -138,17 +138,19 @@ export default function StreamPlayer({
   // Checked on every tab (the French-only parts below are gated on isFrenchTab), so
   // "Notify me" stays visible after switching to English.
   const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: true });
-  // VIDZY servers are listed only when VIDZY's API confirmed the title, and only
-  // for its languages (VF, VOSTFR or both). While the check runs they're shown
-  // (but Play waits for the answer).
+  // VIDZY and Frembed servers are listed only when their own API confirmed the
+  // title: VIDZY for its languages (VF, VOSTFR or both); Frembed TMDB / IMDb each
+  // for its own id. While the check runs they're shown (but Play waits).
+  const confirmed = (p: Provider) => {
+    if (p.id.startsWith("vidzy_")) {
+      return availability.vidzy === true && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr");
+    }
+    if (p.id === "frembed_surf_IMDB") return availability.frembedImdb === true && !!imdbId;
+    if (p.id.startsWith("frembed")) return availability.frembed === true;
+    return true;
+  };
   const providers = (
-    isFrenchTab && availability.status !== "checking"
-      ? activeGroup.providers.filter(
-          (p) =>
-            !p.id.startsWith("vidzy_") ||
-            (availability.vidzy === true && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr")),
-        )
-      : activeGroup.providers
+    isFrenchTab && availability.status !== "checking" ? activeGroup.providers.filter(confirmed) : activeGroup.providers
   )
     // VIDZY always stays on top of the French tab; the other servers are ranked by
     // the one that worked last time, then by visitors' reports.
@@ -160,6 +162,8 @@ export default function StreamPlayer({
     .sort((a, b) => b.rank - a.rank || a.index - b.index)
     .map(({ p }) => p);
   const firstOf = (prefix: string) => providers.find((p) => p.id.startsWith(prefix))?.id;
+  // No French server confirmed by its API: nothing to play in French.
+  const frenchEmpty = isFrenchTab && availability.status !== "checking" && providers.length === 0;
   const autoSourceId =
     (isFrenchTab && availability.provider === "vidzy" && availability.langs[0] && `vidzy_${availability.langs[0]}`) ||
     (isFrenchTab && availability.provider === "frembed" && firstOf("frembed")) ||
@@ -192,7 +196,8 @@ export default function StreamPlayer({
   // Play waits for the French check: the server is then the right one.
   const waitingForCheck = isFrenchTab && availability.status === "checking";
   const startPlaying = () => {
-    if (waitingForCheck) return;
+    // Nothing confirmed in French: the notice above offers the English servers.
+    if (waitingForCheck || frenchEmpty) return;
     setSourceId((id) => id ?? activeSource.id);
     setIsPlaying(true);
   };
@@ -271,8 +276,10 @@ export default function StreamPlayer({
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const englishGroup = groups.find((g) => g.key === "en" || g.key === "vo");
   const contentKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
+  // No French server confirmed (both APIs said no, or nothing left in the list).
+  const frUnavailable = availability.status === "unavailable" || frenchEmpty;
   const showFrUnavailable =
-    onFrenchPlayer && availability.status === "unavailable" && !!englishGroup && dismissedFor !== contentKey;
+    (onFrenchPlayer || frenchEmpty) && frUnavailable && !!englishGroup && dismissedFor !== contentKey;
 
   const switchToEnglish = useCallback(() => {
     if (!englishGroup) return;
@@ -376,7 +383,7 @@ export default function StreamPlayer({
                   <button
                     type="button"
                     onClick={startPlaying}
-                    disabled={waitingForCheck}
+                    disabled={waitingForCheck || frenchEmpty}
                     aria-busy={waitingForCheck}
                     className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 disabled:cursor-wait disabled:opacity-80 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
                   >
@@ -387,7 +394,13 @@ export default function StreamPlayer({
                         <Play className="h-4 w-4 fill-black text-black transition-transform duration-300 group-hover/btn:scale-110" />
                       )}
                     </span>
-                    {waitingForCheck ? t("checkingSources") : isEpisode ? t("playEpisode") : t("play")}
+                    {waitingForCheck
+                      ? t("checkingSources")
+                      : frenchEmpty
+                        ? t("noFrenchServer")
+                        : isEpisode
+                          ? t("playEpisode")
+                          : t("play")}
                   </button>
                 </div>
               </div>
@@ -456,7 +469,7 @@ export default function StreamPlayer({
         </div>
 
         {/* Not in French yet: "Notify me" (e-mail + push when it arrives in VF / VOSTFR) */}
-        {availability.status === "unavailable" && (
+        {frUnavailable && (
           <FrNotifyStrip
             key={contentKey}
             kind={NOTIFY_KIND[kind]}

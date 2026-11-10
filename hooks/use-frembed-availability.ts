@@ -14,10 +14,15 @@ interface FrAvailability {
   langs: FrLang[];
   /** VIDZY's API answer: true / false, or null when it gave no valid answer. VIDZY is offered only when true. */
   vidzy: boolean | null;
+  /** Frembed's API answers (by TMDB id; and by IMDb id for movies). Each Frembed server only when true. */
+  frembed: boolean | null;
+  frembedImdb: boolean | null;
 }
 
-const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [], vidzy: null };
-const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [], vidzy: null };
+const NONE = { vidzy: null, frembed: null, frembedImdb: null };
+const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [], ...NONE };
+const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [], ...NONE };
+const bool = (v: unknown) => (v === true ? true : v === false ? false : null);
 
 /** One check per player page and visit (complete answers only; others are asked again next time). */
 const cache = new Map<string, Promise<FrAvailability>>();
@@ -28,15 +33,26 @@ function check(url: string) {
     pending = fetch(url)
       .then((res) => (res.ok ? res.json() : { available: null }))
       .then(
-        (body: { available?: boolean | null; provider?: string | null; langs?: unknown; vidzy?: boolean | null }) => ({
+        (body: {
+          available?: boolean | null;
+          provider?: string | null;
+          langs?: unknown;
+          vidzy?: unknown;
+          frembed?: unknown;
+          frembedImdb?: unknown;
+        }) => ({
           status: body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
           provider: body.provider === "vidzy" || body.provider === "frembed" ? body.provider : null,
           langs: Array.isArray(body.langs) ? body.langs.filter((l): l is FrLang => l === "vf" || l === "vostfr") : [],
-          vidzy: body.vidzy === true ? true : body.vidzy === false ? false : null,
+          vidzy: bool(body.vidzy),
+          frembed: bool(body.frembed),
+          frembedImdb: bool(body.frembedImdb),
         }),
       )
       .catch(() => UNKNOWN) as Promise<FrAvailability>;
-    void pending.then((r) => (r.status !== "available" || r.vidzy === null) && cache.delete(url));
+    void pending.then(
+      (r) => (r.status !== "available" || r.vidzy === null || r.frembed === null) && cache.delete(url),
+    );
     cache.set(url, pending);
   }
   return pending;
@@ -44,7 +60,7 @@ function check(url: string) {
 
 /**
  * Checks which French player has this movie / episode
- * (app/api/player/availability → VIDZY's official API, then Frembed).
+ * (app/api/player/availability → VIDZY's and Frembed's official APIs).
  */
 export function useFrembedAvailability({
   kind,

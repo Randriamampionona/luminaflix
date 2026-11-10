@@ -53,7 +53,10 @@ export type PlayerKind = "movie" | "anime" | "drama" | "tv";
  * NEXT_PUBLIC_ so it also reaches the browser, where the player runs;
  * fixed at build time, so redeploy after changing it.
  */
-const FREMBED = (process.env.NEXT_PUBLIC_FREMBED_BASE_URL || "https://frembed.bar").replace(/\/+$/, "");
+// Frembed's current domain (see https://frembed.uno/api-docs → "Domaine actuel").
+const FREMBED = (process.env.NEXT_PUBLIC_FREMBED_BASE_URL || "https://frembed.uno")
+  .replace(/\/+$/, "")
+  .replace(/frembed\.bar$/i, "frembed.uno");
 
 /** VIDZY's domain (TMDB ids only). NEXT_PUBLIC_ for the same reason; redeploy after changing it. */
 const VIDZY = (process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org").replace(/\/+$/, "");
@@ -87,8 +90,8 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
       providers: [
         { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/movie/${t.mediaId}/vf` },
         { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/movie/${t.mediaId}/vostfr` },
-        { name: "Lumina frembed.bar TMBD", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `${FREMBED}/embed/movie/${t.mediaId}` },
-        { name: "Lumina frembed.bar IMDB", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
+        { name: "Lumina Frembed (TMDB)", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `${FREMBED}/embed/movie/${t.mediaId}` },
+        { name: "Lumina Frembed (IMDb)", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
       ],
     },
     {

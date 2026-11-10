@@ -450,7 +450,8 @@
     "reportSwitched": "Passage à {server}.",
     "healthGood": "Fonctionne bien pour ce titre",
     "healthBad": "Signalé comme ne fonctionnant pas pour ce titre",
-    "checkingSources": "Vérification des serveurs…"
+    "checkingSources": "Vérification des serveurs…",
+    "noFrenchServer": "Pas disponible en français"
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",
