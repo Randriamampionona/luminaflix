@@ -5,6 +5,12 @@ import { getAnimeDetails, getAnimeSeasonEpisodes } from "@/action/get-anime-deta
 import { getMediaInteraction } from "@/action/stream-actions";
 import EpisodePlayView, { parseEpisodeParams } from "@/components/media/episode-play-view";
 
+// Player page: never cached anywhere — rendered fresh on every request, with
+// fresh data (no Next.js data cache), and sent with no-store headers (next.config.ts).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ s?: string; e?: string }>;
 

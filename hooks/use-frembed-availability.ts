@@ -59,6 +59,7 @@ export function useFrembedAvailability({
   season,
   episode,
   enabled,
+  round = 0,
 }: {
   kind: PlayerKind;
   mediaId: string;
@@ -66,6 +67,8 @@ export function useFrembedAvailability({
   season?: number;
   episode?: number;
   enabled: boolean;
+  /** Changing it asks the APIs again (fresh check). */
+  round?: number;
 }): FrAvailability {
   const params = new URLSearchParams({ kind, id: mediaId });
   if (imdbId) params.set("imdb", imdbId);
@@ -74,19 +77,20 @@ export function useFrembedAvailability({
     params.set("e", String(episode ?? 1));
   }
   const url = `/api/player/availability?${params}`;
-  const [result, setResult] = useState<{ url: string; value: FrAvailability } | null>(null);
+  const key = `${url}#${round}`;
+  const [result, setResult] = useState<{ key: string; value: FrAvailability } | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     let active = true;
     void check(url).then((value) => {
-      if (active) setResult({ url, value });
+      if (active) setResult({ key, value });
     });
     return () => {
       active = false;
     };
-  }, [url, enabled]);
+  }, [url, key, enabled]);
 
   if (!enabled) return UNKNOWN;
-  return result?.url === url ? result.value : CHECKING;
+  return result?.key === key ? result.value : CHECKING;
 }

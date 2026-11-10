@@ -21,6 +21,7 @@ import PrefsScript from "@/components/prefs/prefs-script";
 import EngagementTracker from "@/components/engagement-tracker";
 import AppMovedNotice from "@/components/app-moved-notice";
 import SmartlinkInterceptor from "@/components/ads/smartlink-interceptor";
+import AppVersionGuard from "@/components/app-version-guard";
 import PullToReload from "@/components/nav/pull-to-reload";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
@@ -144,6 +145,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <AppMovedNotice />
               {/* Monetag Smartlinks on links & buttons (first 1–2 clicks of a cycle, new tab) */}
               <SmartlinkInterceptor />
+              {/* Tabs left open on an old version load the new one (page change / idle player) */}
+              <AppVersionGuard />
               {/* Grab handle at the top center: pull down to reload the app */}
               <PullToReload />
               {/* Page-view tracking → ANALYTICS collection (admin dashboard at /analytics) */}

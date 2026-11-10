@@ -18,6 +18,12 @@ import { getReleaseYear, tmdbImage } from "@/lib/media";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
 
+// Player page: never cached anywhere — rendered fresh on every request, with
+// fresh data (no Next.js data cache), and sent with no-store headers (next.config.ts).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ fallback?: string }>;
 

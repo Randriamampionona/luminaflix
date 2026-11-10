@@ -137,7 +137,34 @@ export default function StreamPlayer({
   const isFrenchTab = activeGroup.key === "fr" || activeGroup.key === "vf";
   // Checked on every tab (the French-only parts below are gated on isFrenchTab), so
   // "Notify me" stays visible after switching to English.
-  const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: true });
+  // Asked again when the visitor comes back to a tab left in the background for
+  // a while (and nothing is playing): the answer must be the APIs' current one.
+  const [checkRound, setCheckRound] = useState(0);
+  const isPlayingRef = useRef(false);
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+  useEffect(() => {
+    let hiddenAt = 0;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        hiddenAt = Date.now();
+      } else if (hiddenAt && Date.now() - hiddenAt > 30_000 && !isPlayingRef.current) {
+        setCheckRound((n) => n + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+  const availability = useFrembedAvailability({
+    kind,
+    mediaId,
+    imdbId,
+    season,
+    episode,
+    enabled: true,
+    round: checkRound,
+  });
   // VIDZY and Frembed servers are listed only when their own API confirmed the
   // title: VIDZY for its languages (VF, VOSTFR or both); Frembed TMDB / IMDb each
   // for its own id. While the check runs they're shown (but Play waits).
@@ -495,10 +522,14 @@ export default function StreamPlayer({
                 type="button"
                 role="radio"
                 aria-checked={isActive}
+                // While the server checks availability: servers can't be switched.
+                disabled={waitingForCheck}
+                aria-disabled={waitingForCheck}
                 onClick={() => selectSource(provider.id)}
                 className={cn(
                   "relative flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition-all duration-500 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-5",
                   isActive ? "border-inverse bg-inverse" : "border-line bg-elevated/40 hover:border-line-stronger",
+                  waitingForCheck && "cursor-not-allowed opacity-50 grayscale hover:border-line",
                 )}
               >
                 <span

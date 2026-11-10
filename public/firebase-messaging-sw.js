@@ -6,8 +6,9 @@
  * Caching strategies
  * - /launch (the installed app's start page): served from the cache instantly,
  *   refreshed in the background — so the animated logo appears right away.
- * - Page navigations: network first, cached copy if the network fails or takes
- *   longer than 6 s, then the /offline page.
+ * - Page navigations: network first; the cached copy is used ONLY when there's
+ *   no network at all (an old copy could load an old version of the app), then
+ *   the /offline page. Player pages are never stored.
  * - Next.js build files (/_next/static, hashed, immutable) and app icons: cache first.
  * - Everything else (API, auth, analytics, React Server Component requests,
  *   video players, TMDB images…) goes straight to the network.
@@ -17,16 +18,17 @@
  * this worker builds the notification itself (image, icon, badge, buttons).
  */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4"; // v4: drops pages stored by older versions
 const STATIC_CACHE = `lf-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `lf-pages-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 const LAUNCH_URL = "/launch";
 const PRECACHE = [OFFLINE_URL, LAUNCH_URL, "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
 const MAX_CACHED_PAGES = 40;
-const NETWORK_TIMEOUT_MS = 6000;
 // Personal or private pages are never stored.
-const NO_CACHE_PAGES = /^\/(favorites|analytics|media-infos|bot-filter|sign-in|sign-up|api)(\/|$)/;
+// Player pages too: they must always be fresh.
+const NO_CACHE_PAGES =
+  /^\/(favorites|analytics|media-infos|bot-filter|sign-in|sign-up|api|movies\/[^/]+|k-drama\/play|tv-shows\/play|anime\/play)(\/|$)/;
 // `?dev=1` (added by `yarn dev`): no caching at all, push only.
 const CACHING = !new URL(self.location.href).searchParams.has("dev");
 
@@ -68,9 +70,6 @@ async function trimCache(name, max) {
   await Promise.all(keys.slice(0, Math.max(0, keys.length - max)).map((key) => cache.delete(key)));
 }
 
-function timeout(ms) {
-  return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
-}
 
 async function networkFirstPage(event) {
   const request = event.request;
@@ -89,10 +88,10 @@ async function networkFirstPage(event) {
   })();
 
   try {
-    // Only race the clock when there is a cached copy to fall back on.
-    return cached ? await Promise.race([network, timeout(NETWORK_TIMEOUT_MS)]) : await network;
+    // Always the network (no clock race): a slow network must not load an old copy.
+    return await network;
   } catch {
-    if (cached) return cached;
+    if (cached && !NO_CACHE_PAGES.test(url.pathname)) return cached;
     const offline = await caches.match(OFFLINE_URL);
     return offline || new Response("You are offline.", { status: 503, headers: { "Content-Type": "text/plain" } });
   }
