@@ -33,7 +33,7 @@ const subscribe = (cb: () => void) => {
 };
 
 /**
- * Discreet "Go back" button at the left of the navbar: back to the previous
+ * Discreet "Go back" button at the left of the navbar (not on phones): back to the previous
  * page of the visit, or home when the visit started on this page. Hidden on
  * the home page when there's nothing to go back to. It's a normal button, so
  * the Smartlinks (components/ads/smartlink-interceptor.tsx) apply to it too.
@@ -69,7 +69,8 @@ export default function BackButton({ className }: { className?: string }) {
       aria-label={t("goBack")}
       title={t("goBack")}
       className={cn(
-        "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-elevated/60 text-fg-muted backdrop-blur-md transition-colors hover:border-cyan-500/60 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 sm:h-9 sm:w-9",
+        // Hidden on phones (not enough room in the bar); from 640 px wide.
+        "hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-elevated/60 text-fg-muted backdrop-blur-md transition-colors hover:border-cyan-500/60 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 sm:flex",
         className,
       )}
     >
