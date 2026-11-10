@@ -1,37 +1,32 @@
-import { unstable_cache } from "next/cache";
 import { checkFrAvailability, type FrKind } from "@/lib/fr-availability";
+
+export const dynamic = "force-dynamic";
 
 /**
  * POST /api/fr-availability  { items: [{ kind: "movie"|"tv"|"kdrama"|"anime", id }] }  (max 40)
  * → { results: { "movie:123": "vf" | "vostfr" | "both" | "fr" | "none" | "unknown" } }
  *
  * For the "VF / VOSTFR only" listing filter and the availability badges.
- * Series are checked on S1E1. Each title is cached 2 min (unknown answers aren't).
+ * Series are checked on S1E1. No cache: every request asks the providers live.
  */
 type Status = "vf" | "vostfr" | "both" | "fr" | "none" | "unknown";
 const KIND: Record<string, FrKind> = { movie: "movie", tv: "tv", kdrama: "drama", anime: "anime" };
-// 2 min — the providers' own API cache (Frembed: 2 min per title). Card badges
-// and the "VF / VOSTFR only" filter; the player always asks live.
-const CACHE_SECONDS = 120;
 // Few simultaneous requests to the providers.
 const CONCURRENCY = 3;
 
-class Unknown extends Error {}
-
-function statusFor(kind: FrKind, id: string): Promise<Status> {
-  return unstable_cache(
-    async (): Promise<Status> => {
-      const r = await checkFrAvailability(kind, id);
-      if (r.available === null) throw new Unknown();
-      if (!r.available) return "none";
-      if (r.provider === "vidzy") {
-        return r.langs.includes("vf") && r.langs.includes("vostfr") ? "both" : r.langs.includes("vf") ? "vf" : "vostfr";
-      }
-      return /vostfr/i.test(r.version ?? "") ? "vostfr" : "fr";
-    },
-    ["fr-status-v3", kind, id],
-    { revalidate: CACHE_SECONDS },
-  )().catch(() => "unknown" as const);
+/** Live, no cache: 2 attempts per provider for the cards (the player uses 4). */
+async function statusFor(kind: FrKind, id: string): Promise<Status> {
+  try {
+    const r = await checkFrAvailability(kind, id, { attempts: 2 });
+    if (r.available === null) return "unknown";
+    if (!r.available) return "none";
+    if (r.provider === "vidzy") {
+      return r.langs.includes("vf") && r.langs.includes("vostfr") ? "both" : r.langs.includes("vf") ? "vf" : "vostfr";
+    }
+    return /vostfr/i.test(r.version ?? "") ? "vostfr" : "fr";
+  } catch {
+    return "unknown";
+  }
 }
 
 export async function POST(request: Request) {
@@ -49,5 +44,8 @@ export async function POST(request: Request) {
       }),
     );
   }
-  return Response.json({ results }, { headers: { "Cache-Control": "no-store" } });
+  return Response.json(
+    { results },
+    { headers: { "Cache-Control": "no-store, max-age=0", "CDN-Cache-Control": "no-store", "Netlify-CDN-Cache-Control": "no-store" } },
+  );
 }

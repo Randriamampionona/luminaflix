@@ -24,39 +24,28 @@ const UNKNOWN: FrAvailability = { status: "unknown", provider: null, langs: [], 
 const CHECKING: FrAvailability = { status: "checking", provider: null, langs: [], ...NONE };
 const bool = (v: unknown) => (v === true ? true : v === false ? false : null);
 
-/**
- * Requests in flight (two components asking at the same moment share one).
- * Nothing is kept afterwards: every time a player opens, the APIs are asked again.
- */
-const inFlight = new Map<string, Promise<FrAvailability>>();
-
-function check(url: string) {
-  let pending = inFlight.get(url);
-  if (!pending) {
-    pending = fetch(url, { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : { available: null }))
-      .then(
-        (body: {
-          available?: boolean | null;
-          provider?: string | null;
-          langs?: unknown;
-          vidzy?: unknown;
-          frembed?: unknown;
-          frembedImdb?: unknown;
-        }) => ({
-          status: body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
-          provider: body.provider === "vidzy" || body.provider === "frembed" ? body.provider : null,
-          langs: Array.isArray(body.langs) ? body.langs.filter((l): l is FrLang => l === "vf" || l === "vostfr") : [],
-          vidzy: bool(body.vidzy),
-          frembed: bool(body.frembed),
-          frembedImdb: bool(body.frembedImdb),
-        }),
-      )
-      .catch(() => UNKNOWN) as Promise<FrAvailability>;
-    void pending.finally(() => inFlight.delete(url));
-    inFlight.set(url, pending);
-  }
-  return pending;
+/** One live request every time a player shows a title (no cache, nothing shared or kept). */
+function check(url: string): Promise<FrAvailability> {
+  return fetch(`${url}&_=${Date.now()}`, { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : { available: null }))
+    .then(
+      (body: {
+        available?: boolean | null;
+        provider?: string | null;
+        langs?: unknown;
+        vidzy?: unknown;
+        frembed?: unknown;
+        frembedImdb?: unknown;
+      }): FrAvailability => ({
+        status: body.available === true ? "available" : body.available === false ? "unavailable" : "unknown",
+        provider: body.provider === "vidzy" || body.provider === "frembed" ? body.provider : null,
+        langs: Array.isArray(body.langs) ? body.langs.filter((l): l is FrLang => l === "vf" || l === "vostfr") : [],
+        vidzy: bool(body.vidzy),
+        frembed: bool(body.frembed),
+        frembedImdb: bool(body.frembedImdb),
+      }),
+    )
+    .catch(() => UNKNOWN);
 }
 
 /**

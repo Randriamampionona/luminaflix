@@ -6,7 +6,7 @@
  * VIDZY: official API only (lib/vidzy.ts). Frembed: official API only
  * (lib/frembed.ts). Each server is offered only when its own API confirms the title.
  * Errors / timeouts count as "unknown", never as "not available".
- * Nothing is cached: every check asks both APIs live.
+ * Zero cache: every check asks both APIs live, up to 4 times before "not available".
  */
 import "server-only";
 import { checkFrembed } from "@/lib/frembed";
@@ -39,20 +39,26 @@ type FrAvailabilityResult = Check & {
 export async function checkFrAvailability(
   kind: FrKind,
   id: string,
-  options: { imdb?: string; season?: number; episode?: number } = {},
+  options: { imdb?: string; season?: number; episode?: number; attempts?: number } = {},
 ): Promise<FrAvailabilityResult> {
-  const { imdb = "", season = 1, episode = 1 } = options;
-  return checkNow(kind, id, { imdb, season, episode });
+  const { imdb = "", season = 1, episode = 1, attempts = 4 } = options;
+  return checkNow(kind, id, { imdb, season, episode, attempts });
 }
 
 async function checkNow(
   kind: FrKind,
   id: string,
-  { imdb = "", season = 1, episode = 1 }: { imdb?: string; season?: number; episode?: number } = {},
+  {
+    imdb = "",
+    season = 1,
+    episode = 1,
+    attempts = 4,
+  }: { imdb?: string; season?: number; episode?: number; attempts?: number } = {},
 ): Promise<FrAvailabilityResult> {
+  // Both APIs asked live and in parallel; each retries before saying "no".
   const [vidzy, frembed] = await Promise.all([
-    checkVidzy(id, kind === "movie"),
-    checkFrembed(kind, id, { imdb, season, episode }),
+    checkVidzy(id, kind === "movie", attempts),
+    checkFrembed(kind, id, { imdb, season, episode, attempts }),
   ]);
   const both = { vidzy: vidzy.available, frembed: frembed.tmdb, frembedImdb: frembed.imdb };
   if (vidzy.available) {
