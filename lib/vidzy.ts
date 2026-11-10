@@ -1,61 +1,74 @@
+import "server-only";
+
 /**
- * Reading VIDZY's API answer (https://vidzy.org/api/{tmdbId}) — shared by the
- * server check (lib/fr-availability.ts) and the browser check
- * (hooks/use-frembed-availability.ts).
+ * VIDZY availability — official API only (https://api.vidzy.org):
+ *
+ *   GET https://vidzy.org/api/{tmdbId}
+ *   → { "available": true, "detectedType": "movie", "title": "…", "year": 2006,
+ *       "languages": ["vf", "vostfr"], "embed": "https://vidzy.org/movie/…" }
+ *   → { "available": false, "tmdb_id": 964284 }
+ *
+ * Rules (nothing else, no guessing):
+ *  - VIDZY has the title only if the API answers "available": true,
+ *    with the right type (movie for a movie, a series type for a series)
+ *    and at least one French language (vf / vostfr);
+ *  - "available": false (or 404) → VIDZY doesn't have it;
+ *  - no valid answer (timeout, error, not JSON) → unknown; VIDZY is then
+ *    NOT offered (only a confirmed "available": true shows VIDZY).
  */
 export type FrLang = "vf" | "vostfr";
-const FR_LANGS: FrLang[] = ["vf", "vostfr"];
-
-export const VIDZY_BASE = (process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org").replace(/\/+$/, "");
-
-export interface VidzyResponse {
-  available?: boolean;
-  detectedType?: string;
-  title?: string;
-  embed?: string;
-  languages?: unknown;
-  seasons?: { season?: number; episodes?: number[] }[];
-}
-
-export interface VidzyCheck {
-  /** true = VIDZY has it · false = VIDZY says no · null = couldn't ask VIDZY. */
+interface VidzyAnswer {
+  /** true = VIDZY has it · false = it doesn't · null = no valid answer from the API. */
   available: boolean | null;
+  /** French languages VIDZY has, in VIDZY's order. */
   langs: FrLang[];
-  /** VIDZY link to use instead of the usual one (series season filed as a "movie"). */
-  embed: string | null;
 }
 
-const NO: VidzyCheck = { available: false, langs: [], embed: null };
+const BASE = (process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org").replace(/\/+$/, "");
+const FR: FrLang[] = ["vf", "vostfr"];
+const HEADERS = {
+  Accept: "application/json",
+  "User-Agent": "Mozilla/5.0 (compatible; LuminaFlix/1.0; +https://www.lumina-flix.live)",
+};
 
-/** `kind`: "movie" or a series kind. Season / episode are ignored for movies. */
-export function readVidzy(
-  data: VidzyResponse | "not-found",
-  isMovie: boolean,
-  season: number,
-  episode: number,
-): VidzyCheck {
-  if (data === "not-found" || data.available !== true) return NO;
+interface ApiAnswer {
+  available?: unknown;
+  detectedType?: unknown;
+  languages?: unknown;
+}
 
-  // Same id can be a movie on TMDB and a series: only accept the right type —
-  // except a series season that VIDZY files as a "movie" ("See - Saison 1"):
-  // that one is played with VIDZY's own embed link, for the season it names.
-  let embed: string | null = null;
-  if (data.detectedType && data.detectedType !== (isMovie ? "movie" : "tv")) {
-    const seasonMatch = /(?:saison|season)\s*(\d+)/i.exec(data.title ?? "");
-    const ownEmbed = typeof data.embed === "string" && data.embed.startsWith(`${VIDZY_BASE}/`) ? data.embed : null;
-    if (isMovie || data.detectedType !== "movie" || !seasonMatch || !ownEmbed) return NO;
-    if (Number(seasonMatch[1]) !== season) return NO;
-    embed = ownEmbed.replace(/\/+$/, "");
+/** One request; null when there's no valid JSON answer. */
+async function request(tmdbId: string): Promise<ApiAnswer | "not-found" | null> {
+  try {
+    const res = await fetch(`${BASE}/api/${encodeURIComponent(tmdbId)}`, {
+      cache: "no-store",
+      headers: HEADERS,
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.status === 404) return "not-found";
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    return data && typeof data === "object" ? (data as ApiAnswer) : null;
+  } catch {
+    return null;
   }
-  // Every French language, in VIDZY's own order (["vf", "vostfr"] → VF first, then VOSTFR).
+}
+
+export async function checkVidzy(tmdbId: string, isMovie: boolean): Promise<VidzyAnswer> {
+  let data = await request(tmdbId);
+  if (data === null) {
+    // No valid answer: one more try after a short pause.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    data = await request(tmdbId);
+  }
+  if (data === null) return { available: null, langs: [] };
+  if (data === "not-found" || data.available !== true) return { available: false, langs: [] };
+
+  const type = typeof data.detectedType === "string" ? data.detectedType.toLowerCase() : "";
+  // A TMDB id can be a movie and a series at the same time: the type must match.
+  if (type && (isMovie ? type !== "movie" : type === "movie")) return { available: false, langs: [] };
+
   const languages = Array.isArray(data.languages) ? data.languages.map((l) => String(l).toLowerCase()) : [];
-  const langs = FR_LANGS.filter((l) => languages.includes(l)).sort(
-    (a, b) => languages.indexOf(a) - languages.indexOf(b),
-  );
-  if (!langs.length) return NO;
-  if (!isMovie && !embed && Array.isArray(data.seasons)) {
-    const s = data.seasons.find((x) => x.season === season);
-    if (!s?.episodes?.includes(episode)) return NO;
-  }
-  return { available: true, langs, embed };
+  const langs = FR.filter((l) => languages.includes(l)).sort((a, b) => languages.indexOf(a) - languages.indexOf(b));
+  return langs.length ? { available: true, langs } : { available: false, langs: [] };
 }

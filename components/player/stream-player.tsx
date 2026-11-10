@@ -10,7 +10,7 @@ import { rememberServer, useRememberedServer, useServerHealth } from "@/lib/serv
 import { toast } from "sonner";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play } from "lucide-react";
+import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play, Loader2 } from "lucide-react";
 import DirectLuminaLinker from "@/components/direct-lumina-linker";
 import ShareCard from "@/components/share/share-card";
 import GuardProtocol from "@/components/guard-protocol";
@@ -138,18 +138,15 @@ export default function StreamPlayer({
   // Checked on every tab (the French-only parts below are gated on isFrenchTab), so
   // "Notify me" stays visible after switching to English.
   const availability = useFrembedAvailability({ kind, mediaId, imdbId, season, episode, enabled: true });
-  const checked = availability.status === "available" || availability.status === "unavailable";
-  // Once checked, only the VIDZY languages that exist are listed (VF, VOSTFR or both).
+  // VIDZY servers are listed only when VIDZY's API confirmed the title, and only
+  // for its languages (VF, VOSTFR or both). While the check runs they're shown
+  // (but Play waits for the answer).
   const providers = (
-    isFrenchTab && checked
+    isFrenchTab && availability.status !== "checking"
       ? activeGroup.providers.filter(
-          // VIDZY servers: only its languages when VIDZY answered, both when VIDZY
-          // couldn't be asked (never hidden because of a failed check), none if VIDZY said no.
           (p) =>
             !p.id.startsWith("vidzy_") ||
-            (availability.vidzy === null
-              ? true
-              : availability.vidzy && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr")),
+            (availability.vidzy === true && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr")),
         )
       : activeGroup.providers
   )
@@ -173,8 +170,7 @@ export default function StreamPlayer({
   // Which server plays, in order:
   //  1. the one the user picked (if still listed — e.g. VOSTFR may not exist);
   //  2. VIDZY whenever it has the title (the language used last time if VIDZY has it, else its first);
-  //  3. while the check is running — and while VIDZY's answer is unknown, unless
-  //     Frembed is confirmed (a confirmed server beats an unconfirmed one) — VIDZY stays selected;
+  //  3. while the check is running, VIDZY is shown selected (Play waits for the answer);
   //  4. the server that worked last time, then the automatic choice (Frembed, then English).
   const vidzyHasIt = isFrenchTab && availability.provider === "vidzy" && availability.langs.length > 0;
   const activeSource: Provider =
@@ -183,10 +179,7 @@ export default function StreamPlayer({
       ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
         providers.find((p) => p.id === `vidzy_${availability.langs[0]}`))
       : undefined) ??
-    // While checking, and while VIDZY's answer is unknown (re-checked a few times)
-    // with no confirmed Frembed: VIDZY stays selected.
-    (isFrenchTab &&
-    (availability.status === "checking" || (availability.vidzy === null && availability.provider !== "frembed"))
+    (isFrenchTab && availability.status === "checking"
       ? (providers.find((p) => p.id === remembered && p.id.startsWith("vidzy_")) ??
         providers.find((p) => p.id.startsWith("vidzy_")))
       : undefined) ??
@@ -196,16 +189,16 @@ export default function StreamPlayer({
 
   // Pressing play freezes the server: a later availability answer never swaps the
   // video being watched (unless that server disappears from the list).
+  // Play waits for the French check: the server is then the right one.
+  const waitingForCheck = isFrenchTab && availability.status === "checking";
   const startPlaying = () => {
+    if (waitingForCheck) return;
     setSourceId((id) => id ?? activeSource.id);
     setIsPlaying(true);
   };
 
   // VIDZY sometimes files a series season as one "movie" entry: then its own link is used.
-  const embedUrl =
-    activeSource.id.startsWith("vidzy_") && availability.embed
-      ? `${availability.embed}/${activeSource.id.slice(6)}`
-      : activeSource.url({ mediaId, imdbId, season, episode });
+  const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -383,12 +376,18 @@ export default function StreamPlayer({
                   <button
                     type="button"
                     onClick={startPlaying}
-                    className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
+                    disabled={waitingForCheck}
+                    aria-busy={waitingForCheck}
+                    className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 disabled:cursor-wait disabled:opacity-80 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
                   >
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/10 sm:h-8 sm:w-8">
-                      <Play className="h-4 w-4 fill-black text-black transition-transform duration-300 group-hover/btn:scale-110" />
+                      {waitingForCheck ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-black" aria-hidden />
+                      ) : (
+                        <Play className="h-4 w-4 fill-black text-black transition-transform duration-300 group-hover/btn:scale-110" />
+                      )}
                     </span>
-                    {isEpisode ? t("playEpisode") : t("play")}
+                    {waitingForCheck ? t("checkingSources") : isEpisode ? t("playEpisode") : t("play")}
                   </button>
                 </div>
               </div>

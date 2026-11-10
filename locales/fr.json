@@ -449,7 +449,8 @@
     "reportThanks": "Merci pour le signalement !",
     "reportSwitched": "Passage à {server}.",
     "healthGood": "Fonctionne bien pour ce titre",
-    "healthBad": "Signalé comme ne fonctionnant pas pour ce titre"
+    "healthBad": "Signalé comme ne fonctionnant pas pour ce titre",
+    "checkingSources": "Vérification des serveurs…"
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",
