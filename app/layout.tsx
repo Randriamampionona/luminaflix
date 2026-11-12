@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
@@ -29,7 +28,6 @@ import PWAInstallModal from "@/components/pwa/pwa-install-modal";
 import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
 import { PWA_CAPTURE_SCRIPT } from "@/hooks/use-pwa-install";
 import { localeMeta, type Locale } from "@/i18n/config";
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import Script from "next/script";
 import "./globals.css";
 
@@ -154,7 +152,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <ServiceWorkerRegistrar />
               <PWAInstallModal />
               <OfflineGuard />
-              <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>
           {/* Adsterra Social Bar — last element of <body>, loaded once for the whole site */}
@@ -166,7 +163,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           />
         </body>
       </html>
-      <SpeedInsights />
     </ClerkProvider>
   );
 }

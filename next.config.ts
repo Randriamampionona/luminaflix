@@ -3,8 +3,13 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
-/** This build's id (Netlify commit / deploy) — the app reloads itself when a newer one is live. */
-const BUILD_ID = process.env.COMMIT_REF || process.env.DEPLOY_ID || process.env.VERCEL_GIT_COMMIT_SHA || `${Date.now()}`;
+/** This build's id (git commit) — the app reloads itself when a newer one is live. */
+const BUILD_ID =
+  process.env.GITHUB_SHA || // GitHub Actions (Namecheap deploy)
+  process.env.COMMIT_REF ||
+  process.env.DEPLOY_ID ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  `${Date.now()}`;
 
 /** Player pages: never stored by the browser, Netlify's CDN or any proxy. */
 const NO_STORE = [
@@ -15,6 +20,8 @@ const NO_STORE = [
 const PLAYER_PAGES = ["/movies/:id", "/k-drama/play/:id", "/tv-shows/play/:id", "/anime/play/:id"];
 
 const nextConfig: NextConfig = {
+  // Self-contained server (.next/standalone) for Namecheap's cPanel Node.js App.
+  output: "standalone",
   env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   // Push service worker: always fetch the latest version.
   async headers() {

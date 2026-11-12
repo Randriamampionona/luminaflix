@@ -1,0 +1,10 @@
+# ---- LuminaFlix: paste these lines at the VERY TOP of ~/public_html/.htaccess ----
+# Add them only once https://lumina-flix.live opens with a valid SSL padlock.
+# Keep everything cPanel wrote below (the "DO NOT REMOVE" Passenger block).
+
+RewriteEngine On
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} ^lumina-flix\.live$ [NC]
+RewriteRule ^(.*)$ https://www.lumina-flix.live/$1 [R=301,L]
+
+# ---- end LuminaFlix ----
