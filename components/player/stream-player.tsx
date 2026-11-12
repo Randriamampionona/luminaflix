@@ -10,7 +10,7 @@ import { rememberServer, useRememberedServer, useServerHealth } from "@/lib/serv
 import { toast } from "sonner";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play, Loader2 } from "lucide-react";
+import { Activity, ArrowDown, Cpu, Languages, Maximize, Minimize, Play, Loader2, RotateCw } from "lucide-react";
 import DirectLuminaLinker from "@/components/direct-lumina-linker";
 import ShareCard from "@/components/share/share-card";
 import GuardProtocol from "@/components/guard-protocol";
@@ -167,13 +167,16 @@ export default function StreamPlayer({
   });
   // VIDZY and Frembed servers are listed only when their own API confirmed the
   // title: VIDZY for its languages (VF, VOSTFR or both); Frembed TMDB / IMDb each
-  // for its own id. While the check runs they're shown (but Play waits).
+  // for its own id. While the check runs they're shown, greyed out (Play waits);
+  // Frembed's servers stay greyed while Frembed is still being asked.
+  const isFrembed = (p: Provider) => p.id.startsWith("frembed");
   const confirmed = (p: Provider) => {
     if (p.id.startsWith("vidzy_")) {
       return availability.vidzy === true && availability.langs.includes(p.id.slice(6) as "vf" | "vostfr");
     }
+    if (isFrembed(p) && availability.frembedPending) return true;
     if (p.id === "frembed_surf_IMDB") return availability.frembedImdb === true && !!imdbId;
-    if (p.id.startsWith("frembed")) return availability.frembed === true;
+    if (isFrembed(p)) return availability.frembed === true;
     return true;
   };
   const providers = (
@@ -303,8 +306,10 @@ export default function StreamPlayer({
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const englishGroup = groups.find((g) => g.key === "en" || g.key === "vo");
   const contentKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
-  // No French server confirmed (both APIs said no, or nothing left in the list).
-  const frUnavailable = availability.status === "unavailable" || frenchEmpty;
+  // "Not available in French": only when the APIs really answered "no".
+  const frUnavailable = availability.status === "unavailable";
+  // Nothing confirmed and an API didn't answer in time: offer to check again (not "not available").
+  const cannotCheck = frenchEmpty && availability.status === "unknown";
   const showFrUnavailable =
     (onFrenchPlayer || frenchEmpty) && frUnavailable && !!englishGroup && dismissedFor !== contentKey;
 
@@ -409,21 +414,25 @@ export default function StreamPlayer({
                   )}
                   <button
                     type="button"
-                    onClick={startPlaying}
-                    disabled={waitingForCheck || frenchEmpty}
+                    onClick={cannotCheck ? () => setCheckRound((n) => n + 1) : startPlaying}
+                    disabled={waitingForCheck || (frenchEmpty && !cannotCheck)}
                     aria-busy={waitingForCheck}
                     className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 disabled:cursor-wait disabled:opacity-80 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
                   >
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/10 sm:h-8 sm:w-8">
                       {waitingForCheck ? (
                         <Loader2 className="h-4 w-4 animate-spin text-black" aria-hidden />
+                      ) : cannotCheck ? (
+                        <RotateCw className="h-4 w-4 text-black" aria-hidden />
                       ) : (
                         <Play className="h-4 w-4 fill-black text-black transition-transform duration-300 group-hover/btn:scale-110" />
                       )}
                     </span>
                     {waitingForCheck
                       ? t("checkingSources")
-                      : frenchEmpty
+                      : cannotCheck
+                        ? t("retryCheck")
+                        : frenchEmpty
                         ? t("noFrenchServer")
                         : isEpisode
                           ? t("playEpisode")
@@ -523,13 +532,14 @@ export default function StreamPlayer({
                 role="radio"
                 aria-checked={isActive}
                 // While the server checks availability: servers can't be switched.
-                disabled={waitingForCheck}
-                aria-disabled={waitingForCheck}
+                disabled={waitingForCheck || (isFrembed(provider) && availability.frembedPending)}
+                aria-disabled={waitingForCheck || (isFrembed(provider) && availability.frembedPending)}
                 onClick={() => selectSource(provider.id)}
                 className={cn(
                   "relative flex min-w-0 cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3 transition-all duration-500 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-5",
                   isActive ? "border-inverse bg-inverse" : "border-line bg-elevated/40 hover:border-line-stronger",
-                  waitingForCheck && "cursor-not-allowed opacity-50 grayscale hover:border-line",
+                  (waitingForCheck || (isFrembed(provider) && availability.frembedPending)) &&
+                    "cursor-not-allowed opacity-50 grayscale hover:border-line",
                 )}
               >
                 <span

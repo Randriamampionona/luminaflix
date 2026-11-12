@@ -7,14 +7,14 @@ import "server-only";
  *   → { "available": true, "detectedType": "movie", "languages": ["vf", "vostfr"], … }
  *   → { "available": false, "tmdb_id": 964284 }
  *
- * No cache anywhere: every call asks the API live (no-cache headers, and from the
- * 2nd attempt a unique query parameter so no CDN in between can answer from cache).
- * Before saying "not available", the API is asked up to `attempts` times
- * (default 4): a single "no" or error is never trusted on its own.
+ * Live, no cache. Time budget: the whole check stops after `budgetMs` (default
+ * 8 s) and answers with what it knows. Retries ONLY after a real "no" (to get
+ * past a stale "no" in a cache on the way — with a unique query parameter); a
+ * timeout / error isn't retried (a server that doesn't answer won't answer faster).
  *
- *  - "available": true + right type + vf / vostfr → VIDZY has it (stops at once);
- *  - only "available": false / 404 on every attempt → VIDZY doesn't have it;
- *  - no valid answer at all → unknown (VIDZY is then not offered).
+ *  - "available": true + right type + vf / vostfr → VIDZY has it;
+ *  - "available": false / 404 on every attempt → VIDZY doesn't have it;
+ *  - no valid answer in time → unknown (null): VIDZY is then not offered.
  */
 export type FrLang = "vf" | "vostfr";
 interface VidzyAnswer {
@@ -24,6 +24,7 @@ interface VidzyAnswer {
 
 const BASE = (process.env.NEXT_PUBLIC_VIDZY_BASE_URL || "https://vidzy.org").replace(/\/+$/, "");
 const FR: FrLang[] = ["vf", "vostfr"];
+const ATTEMPT_TIMEOUT_MS = 3000;
 const HEADERS = {
   Accept: "application/json",
   "Cache-Control": "no-cache, no-store",
@@ -38,14 +39,14 @@ interface ApiAnswer {
   languages?: unknown;
 }
 
-/** One live request; null when there's no valid JSON answer. */
-async function request(tmdbId: string, attempt: number): Promise<ApiAnswer | "not-found" | null> {
+/** One live request (≤ 3 s and ≤ the time left); null when there's no valid JSON answer. */
+async function request(tmdbId: string, attempt: number, timeoutMs: number): Promise<ApiAnswer | "not-found" | null> {
   const bust = attempt > 1 ? `?_=${Date.now()}${attempt}` : "";
   try {
     const res = await fetch(`${BASE}/api/${encodeURIComponent(tmdbId)}${bust}`, {
       cache: "no-store",
       headers: HEADERS,
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     if (res.status === 404) return "not-found";
     if (!res.ok) return null;
@@ -66,15 +67,22 @@ function read(data: ApiAnswer | "not-found", isMovie: boolean): VidzyAnswer {
   return langs.length ? { available: true, langs } : { available: false, langs: [] };
 }
 
-export async function checkVidzy(tmdbId: string, isMovie: boolean, attempts = 4): Promise<VidzyAnswer> {
+export async function checkVidzy(
+  tmdbId: string,
+  isMovie: boolean,
+  { attempts = 4, budgetMs = 8000 }: { attempts?: number; budgetMs?: number } = {},
+): Promise<VidzyAnswer> {
+  const deadline = Date.now() + budgetMs;
   let sawNo = false;
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    if (attempt > 1) await pause(300 * (attempt - 1));
-    const data = await request(tmdbId, attempt);
-    if (data === null) continue;
+    if (attempt > 1) await pause(250);
+    const left = deadline - Date.now();
+    if (left < 300) break;
+    const data = await request(tmdbId, attempt, Math.min(ATTEMPT_TIMEOUT_MS, left));
+    if (data === null) break; // timeout / error: no retry
     const answer = read(data, isMovie);
     if (answer.available) return answer;
-    sawNo = true;
+    sawNo = true; // a real "no": ask again, past any cache
   }
   return sawNo ? { available: false, langs: [] } : { available: null, langs: [] };
 }

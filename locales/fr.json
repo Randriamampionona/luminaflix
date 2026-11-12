@@ -451,7 +451,8 @@
     "healthGood": "Fonctionne bien pour ce titre",
     "healthBad": "Signalé comme ne fonctionnant pas pour ce titre",
     "checkingSources": "Vérification des serveurs…",
-    "noFrenchServer": "Pas disponible en français"
+    "noFrenchServer": "Pas disponible en français",
+    "retryCheck": "Vérification impossible — réessayer"
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",

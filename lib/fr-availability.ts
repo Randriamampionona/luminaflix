@@ -5,13 +5,14 @@
  *
  * VIDZY: official API only (lib/vidzy.ts). Frembed: official API only
  * (lib/frembed.ts). Each server is offered only when its own API confirms the title.
- * Errors / timeouts count as "unknown", never as "not available".
- * Zero cache: every check asks both APIs live, up to 4 times before "not available".
+ * Errors / timeouts count as "unknown", never as "not available". Zero cache:
+ * every check asks both APIs live (8 s budget each, retries only after a real
+ * "no"); answers as soon as VIDZY confirms. The player calls the two separately
+ * (app/api/player/availability/vidzy and …/frembed).
  */
 import "server-only";
 import { checkFrembed } from "@/lib/frembed";
 import { checkVidzy, type FrLang } from "@/lib/vidzy";
-
 
 export type FrKind = "movie" | "anime" | "drama" | "tv";
 type Check = { available: boolean | null; version: string | null };
@@ -55,12 +56,12 @@ async function checkNow(
     attempts = 4,
   }: { imdb?: string; season?: number; episode?: number; attempts?: number } = {},
 ): Promise<FrAvailabilityResult> {
-  // Both APIs asked live and in parallel; each retries before saying "no".
-  const [vidzy, frembed] = await Promise.all([
-    checkVidzy(id, kind === "movie", attempts),
-    checkFrembed(kind, id, { imdb, season, episode, attempts }),
-  ]);
-  const both = { vidzy: vidzy.available, frembed: frembed.tmdb, frembedImdb: frembed.imdb };
+  // Both APIs asked live and in parallel, each within an 8 s budget.
+  const vidzyCheck = checkVidzy(id, kind === "movie", { attempts });
+  const frembedCheck = checkFrembed(kind, id, { imdb, season, episode, attempts });
+
+  // VIDZY has priority: as soon as it confirms, answer without waiting for Frembed.
+  const vidzy = await vidzyCheck;
   if (vidzy.available) {
     return {
       available: true,
@@ -68,16 +69,19 @@ async function checkNow(
       langs: vidzy.langs,
       lang: vidzy.langs[0],
       version: vidzy.langs.map((l) => l.toUpperCase()).join(" + "),
-      ...both,
+      vidzy: true,
+      frembed: null,
+      frembedImdb: null,
     };
   }
+  const frembed = await frembedCheck;
+  const both = { vidzy: vidzy.available, frembed: frembed.tmdb, frembedImdb: frembed.imdb };
   if (frembed.available) {
     return { available: true, provider: "frembed", langs: [], lang: null, version: frembed.version, ...both };
   }
   if (vidzy.available === false && frembed.available === false) {
     return { available: false, provider: null, langs: [], lang: null, version: null, ...both };
   }
-  // One of the two gave no valid answer: don't claim "not available in French".
+  // One of the two gave no valid answer in time: don't claim "not available in French".
   return { available: null, provider: null, langs: [], lang: null, version: null, ...both };
 }
-

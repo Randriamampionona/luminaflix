@@ -451,7 +451,8 @@
     "healthGood": "Works well for this title",
     "healthBad": "Reported as not working for this title",
     "checkingSources": "Checking servers…",
-    "noFrenchServer": "Not available in French"
+    "noFrenchServer": "Not available in French",
+    "retryCheck": "Couldn't check — try again"
   },
   "actions": {
     "addFavorite": "Add to favorites",
