@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { type NextFetchEvent, type NextRequest, NextResponse } from "next/server";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, localeFromLegacyParam } from "@/i18n/config";
 import { BOT_FILTER_PATH, HUMAN_COOKIE, needsHumanCheck, verifyHumanToken } from "@/lib/bot-filter";
+import { publicUrl } from "@/lib/public-origin";
 import { SHORT_CODE_RE } from "@/lib/short-links";
 
 // Signed-in only. /analytics and /media-infos additionally check the admin account on the page itself.
@@ -22,8 +23,8 @@ const clerkHandler = clerkMiddleware(
       }) &&
       !(await verifyHumanToken(req.cookies.get(HUMAN_COOKIE)?.value))
     ) {
-      const url = req.nextUrl.clone();
-      url.pathname = BOT_FILTER_PATH;
+      // Public origin (not req.url, which is http://0.0.0.0:3000 on the Node server).
+      const url = publicUrl(BOT_FILTER_PATH, req.headers);
       url.search = `?next=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`;
       return NextResponse.redirect(url, 307);
     }
@@ -41,7 +42,7 @@ const clerkHandler = clerkMiddleware(
     // persist the choice in the locale cookie and redirect to the clean URL.
     const legacy = req.nextUrl.searchParams.get(LEGACY_LOCALE_PARAM);
     if (legacy !== null && req.method === "GET") {
-      const url = req.nextUrl.clone();
+      const url = publicUrl(req.nextUrl.pathname + req.nextUrl.search, req.headers);
       url.searchParams.delete(LEGACY_LOCALE_PARAM);
       const response = NextResponse.redirect(url, 308);
       const locale = localeFromLegacyParam(legacy);

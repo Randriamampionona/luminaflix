@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { sanitizeReturnTo } from "@/lib/auth-redirect";
 import { Container } from "@/components/layout/container";
+import { publicOrigin } from "@/lib/public-origin";
 
 export type AuthSearchParams = Promise<{
   redirect_url?: string | string[];
@@ -17,9 +18,7 @@ const first = (v?: string | string[]) => (Array.isArray(v) ? v[0] : v);
 export async function resolveReturnTo(searchParams: AuthSearchParams): Promise<string> {
   const sp = await searchParams;
   const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  const origin = host ? `${proto}://${host}` : undefined;
+  const origin = publicOrigin(h);
 
   return (
     sanitizeReturnTo(first(sp.redirect_url), origin) ??

@@ -5,6 +5,7 @@ import { clientIpFromHeaders, hashIp } from "@/lib/analytics/ip";
 import { isBot } from "@/lib/analytics/user-agent";
 import { HUMAN_COOKIE, needsHumanCheck, verifyHumanToken } from "@/lib/bot-filter";
 import { clickSource, recordShortLinkClick, resolveShortCode } from "@/lib/short-links-server";
+import { publicUrl } from "@/lib/public-origin";
 
 type Params = Promise<{ code: string }>;
 
@@ -20,7 +21,7 @@ type Params = Promise<{ code: string }>;
 export async function GET(request: Request, { params }: { params: Params }) {
   const { code } = await params;
   const target = await resolveShortCode(code);
-  if (!target) return NextResponse.redirect(new URL("/", request.url), 307);
+  if (!target) return NextResponse.redirect(publicUrl("/", request.headers), 307);
 
   const ua = request.headers.get("user-agent");
   const cookieHeader = request.headers.get("cookie") ?? "";
@@ -41,7 +42,8 @@ export async function GET(request: Request, { params }: { params: Params }) {
     after(() => recordShortLinkClick(code, { ipHash, country, source }));
   }
 
-  const response = NextResponse.redirect(new URL(target, request.url), 307);
+  // Public origin, not request.url (which is http://0.0.0.0:3000 on the Node server).
+  const response = NextResponse.redirect(publicUrl(target, request.headers), 307);
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("X-Robots-Tag", "noindex");
   return response;
