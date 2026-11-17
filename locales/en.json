@@ -452,7 +452,13 @@
     "healthBad": "Reported as not working for this title",
     "checkingSources": "Checking servers…",
     "noFrenchServer": "Not available in French",
-    "retryCheck": "Couldn't check — try again"
+    "retryCheck": "Couldn't check — try again",
+    "preroll": {
+      "label": "Ad",
+      "loading": "Loading ad…",
+      "skipIn": "Skip in {s} s",
+      "skip": "Skip ad"
+    }
   },
   "actions": {
     "addFavorite": "Add to favorites",

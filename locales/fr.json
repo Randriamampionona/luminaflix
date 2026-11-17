@@ -452,7 +452,13 @@
     "healthBad": "Signalé comme ne fonctionnant pas pour ce titre",
     "checkingSources": "Vérification des serveurs…",
     "noFrenchServer": "Pas disponible en français",
-    "retryCheck": "Vérification impossible — réessayer"
+    "retryCheck": "Vérification impossible — réessayer",
+    "preroll": {
+      "label": "Publicité",
+      "loading": "Chargement de la publicité…",
+      "skipIn": "Passer dans {s} s",
+      "skip": "Passer la pub"
+    }
   },
   "actions": {
     "addFavorite": "Ajouter aux favoris",

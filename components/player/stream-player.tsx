@@ -20,9 +20,11 @@ import type { MediaInteraction } from "@/lib/media-interactions";
 import PlayerActions from "./actions/player-actions";
 import AdsNoticeModal from "./ads-notice-modal";
 import FrNotifyStrip from "./fr-notify-strip";
+import PrerollAd from "./preroll-ad";
 import FrUnavailableBanner from "./fr-unavailable-banner";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
+import { loadIma, shouldShowPreroll } from "@/lib/preroll";
 
 interface StreamPlayerProps {
   kind: PlayerKind;
@@ -232,6 +234,30 @@ export default function StreamPlayer({
     setIsPlaying(true);
   };
 
+  // Play button: after the server check (and the Smartlink, which takes the click
+  // before it gets here), a video ad first when one is due (lib/preroll.ts), then
+  // the movie. No ad available / blocked / error → the movie right away.
+  const [prerollFor, setPrerollFor] = useState<string | null>(null);
+  const prerollKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
+  const showingPreroll = prerollFor === prerollKey && !isPlaying;
+  const playWithPreroll = () => {
+    if (waitingForCheck || frenchEmpty) return;
+    if (!shouldShowPreroll()) return startPlaying();
+    setSourceId((id) => id ?? activeSource.id); // the server is chosen now
+    setPrerollFor(prerollKey);
+  };
+  const endPreroll = useCallback(() => {
+    setPrerollFor(null);
+    setIsPlaying(true);
+  }, []);
+  // Get the ad SDK ready while the visitor looks at the page.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (shouldShowPreroll()) void loadIma();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   // VIDZY sometimes files a series season as one "movie" entry: then its own link is used.
   const embedUrl = activeSource.url({ mediaId, imdbId, season, episode });
 
@@ -375,7 +401,9 @@ export default function StreamPlayer({
                 : "relative aspect-video max-h-[73vh] w-full rounded-2xl sm:rounded-3xl md:max-h-[77vh]",
             )}
           >
-            {isPlaying ? (
+            {showingPreroll ? (
+              <PrerollAd key={prerollKey} onDone={endPreroll} />
+            ) : isPlaying ? (
               <iframe
                 key={embedUrl}
                 src={embedUrl}
@@ -414,7 +442,7 @@ export default function StreamPlayer({
                   )}
                   <button
                     type="button"
-                    onClick={cannotCheck ? () => setCheckRound((n) => n + 1) : startPlaying}
+                    onClick={cannotCheck ? () => setCheckRound((n) => n + 1) : playWithPreroll}
                     disabled={waitingForCheck || (frenchEmpty && !cannotCheck)}
                     aria-busy={waitingForCheck}
                     className="group/btn relative flex cursor-pointer items-center gap-3 rounded-2xl bg-cyan-500 px-5 py-3 disabled:cursor-wait disabled:opacity-80 text-[11px] font-black uppercase tracking-widest text-black shadow-[0_0_50px_rgba(6,182,212,0.4)] transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_80px_rgba(6,182,212,0.8)] active:scale-95 sm:gap-4 sm:px-8 sm:py-4 sm:text-xs"
