@@ -64,7 +64,11 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
-    other: { "apple-mobile-web-app-capable": "yes" },
+    other: {
+      "apple-mobile-web-app-capable": "yes",
+      "google-adsense-account": "ca-pub-5906051574535378",
+    },
+
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
@@ -104,15 +108,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             strategy="afterInteractive"
             data-cfasync="false"
           />
-          {/* Google AdSense */}
-          <Script
-            id="google-adsense"
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5906051574535378"
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
