@@ -104,6 +104,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             strategy="afterInteractive"
             data-cfasync="false"
           />
+          {/* Google AdSense */}
+          <Script
+            id="google-adsense"
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5906051574535378"
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
           {/* Catches the browser's install prompt before React loads (see hooks/use-pwa-install.ts). */}
