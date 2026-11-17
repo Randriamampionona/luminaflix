@@ -50,6 +50,9 @@ const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || "http://localhost:3000";
 /** Google AdSense publisher id (AdSense → Sites → lumina-flix.live). */
 const ADSENSE_CLIENT = "ca-pub-5906051574535378";
 
+/** HilltopAds site verification (HilltopAds → Manage Site & Zones → Meta tag). */
+const HILLTOPADS_VERIFICATION = "963987561cc99496659a69215d82f65151893ba4";
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("metadata");
@@ -68,10 +71,14 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
     // google-adsense-account: Google AdSense site ownership (the "Meta tag" method).
+    // HILLTOPADS_VERIFICATION: HilltopAds site ownership (their "Meta tag" method).
     other: {
       "apple-mobile-web-app-capable": "yes",
       "google-adsense-account": ADSENSE_CLIENT,
+      [HILLTOPADS_VERIFICATION]: HILLTOPADS_VERIFICATION,
     },
+    // HilltopAds "Boost your revenue": <meta name="referrer" content="no-referrer-when-downgrade" />
+    referrer: "no-referrer-when-downgrade",
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
