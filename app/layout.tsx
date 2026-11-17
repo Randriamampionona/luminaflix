@@ -47,6 +47,9 @@ export const viewport: Viewport = {
 
 const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || "http://localhost:3000";
 
+/** Google AdSense publisher id (AdSense → Sites → lumina-flix.live). */
+const ADSENSE_CLIENT = "ca-pub-5906051574535378";
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("metadata");
@@ -64,11 +67,11 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: { capable: true, title: "LuminaFlix", statusBarStyle: "black-translucent" },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
     // Next only emits the newer `mobile-web-app-capable`; older iOS versions read this one.
+    // google-adsense-account: Google AdSense site ownership (the "Meta tag" method).
     other: {
       "apple-mobile-web-app-capable": "yes",
-      "google-adsense-account": "ca-pub-5906051574535378",
+      "google-adsense-account": ADSENSE_CLIENT,
     },
-
     openGraph: {
       type: "website",
       locale: localeMeta[locale].og,
@@ -101,6 +104,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       {/* No hard-coded "dark": next-themes sets the class before first paint. */}
       <html lang={locale} suppressHydrationWarning>
         <head>
+          {/* Google AdSense — a plain <script> so it's in the page's HTML <head>, as AdSense's
+              crawler expects (next/script's afterInteractive would only add it in the browser). */}
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+          />
           {/* Monetag Multi-Tag */}
           <Script
             src="https://quge5.com/88/tag.min.js"
