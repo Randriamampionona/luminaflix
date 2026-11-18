@@ -17,8 +17,6 @@ const PREROLL_VAST_URL =
 const IMA_SDK_URL = "https://imasdk.googleapis.com/js/sdkloader/ima3.js";
 const LAST_KEY = "lf_preroll_last";
 const MIN_GAP_MS = 30 * 60_000;
-/** Seconds before "Skip ad" can be clicked. */
-export const PREROLL_SKIP_AFTER_S = 5;
 /** No ad started within this delay (SDK + VAST chain + first frame) → the movie starts. */
 export const PREROLL_TIMEOUT_MS = 12000;
 /** Max time IMA waits for the VAST response (wrappers included). */

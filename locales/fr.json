@@ -455,9 +455,7 @@
     "retryCheck": "Vérification impossible — réessayer",
     "preroll": {
       "label": "Publicité",
-      "loading": "Chargement de la publicité…",
-      "skipIn": "Passer dans {s} s",
-      "skip": "Passer la pub",
+      "loading": "Préparation de votre film…",
       "unmute": "Activer le son",
       "mute": "Couper le son"
     }

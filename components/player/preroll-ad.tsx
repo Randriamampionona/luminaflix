@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -8,7 +8,6 @@ import {
   markPrerollShown,
   prerollLog,
   prerollTagUrl,
-  PREROLL_SKIP_AFTER_S,
   PREROLL_TIMEOUT_MS,
   PREROLL_VAST_TIMEOUT_MS,
   type ImaAdsManager,
@@ -19,8 +18,10 @@ import {
  * The video ad before the movie (VAST through Google's IMA SDK). IMA draws the
  * ad in `slot` — a box inside the player that exists before the click, so the
  * display could be prepared in the Play click itself (`prepared`). This
- * component adds the label, the countdown and the skip / sound buttons, and
- * calls `onDone` once: ad finished, skipped, failed, or nothing started in 12 s.
+ * component adds the label, the remaining time and the sound button — skipping
+ * is only through the ad's own "Skip" button (when the ad allows it, as set by
+ * the advertiser) — and calls `onDone` once: ad finished, skipped, failed, or
+ * nothing started in 12 s.
  * The ad plays in its own box, before the provider's iframe is loaded — the
  * iframe player is never involved.
  */
@@ -35,11 +36,9 @@ export default function PrerollAd({
 }) {
   const t = useTranslations("player.preroll");
   const onDoneRef = useRef(onDone);
-  const finishRef = useRef<() => void>(() => {});
   const managerRef = useRef<ImaAdsManager | null>(null);
   const [started, setStarted] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
-  const [skipIn, setSkipIn] = useState(PREROLL_SKIP_AFTER_S);
   const [muted, setMuted] = useState(!prepared);
 
   useEffect(() => {
@@ -61,7 +60,6 @@ export default function PrerollAd({
       prerollLog(`end → movie (${reason})`);
       onDoneRef.current();
     };
-    finishRef.current = () => finish("skipped by the visitor");
     const timeout = setTimeout(() => finish(`no ad started within ${PREROLL_TIMEOUT_MS / 1000} s`), PREROLL_TIMEOUT_MS);
 
     const run = async () => {
@@ -95,7 +93,7 @@ export default function PrerollAd({
               finish(`ad error: ${String(e?.getError?.() ?? "unknown")}`),
             );
             manager.addEventListener(ima.AdEvent.Type.ALL_ADS_COMPLETED, () => finish("ad finished"));
-            manager.addEventListener(ima.AdEvent.Type.SKIPPED, () => finish("skipped (ad's own button)"));
+            manager.addEventListener(ima.AdEvent.Type.SKIPPED, () => finish("skipped by the visitor"));
             manager.addEventListener(ima.AdEvent.Type.USER_CLOSE, () => finish("closed"));
             manager.addEventListener(ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, () => finish("ad break over"));
             manager.addEventListener(ima.AdEvent.Type.STARTED, () => {
@@ -106,7 +104,6 @@ export default function PrerollAd({
               ticker = setInterval(() => {
                 const left = manager.getRemainingTime();
                 setRemaining(Number.isFinite(left) && left > 0 ? Math.ceil(left) : null);
-                setSkipIn((s) => Math.max(0, s - 1));
               }, 1000);
             });
             try {
@@ -206,22 +203,6 @@ export default function PrerollAd({
               <Volume2 className="h-4 w-4" aria-hidden />
             </button>
           )}
-          <button
-            type="button"
-            data-no-smartlink
-            disabled={skipIn > 0}
-            onClick={() => finishRef.current()}
-            className="pointer-events-auto absolute right-3 bottom-14 flex cursor-pointer items-center gap-2 rounded-xl border border-white/25 bg-black/75 px-4 py-2.5 text-[11px] font-black tracking-wider text-white uppercase backdrop-blur-sm transition-colors hover:bg-white hover:text-black disabled:cursor-default disabled:opacity-80 disabled:hover:bg-black/75 disabled:hover:text-white sm:right-4 sm:bottom-16"
-          >
-            {skipIn > 0 ? (
-              t("skipIn", { s: skipIn })
-            ) : (
-              <>
-                {t("skip")}
-                <SkipForward className="h-4 w-4" aria-hidden />
-              </>
-            )}
-          </button>
         </>
       )}
     </div>

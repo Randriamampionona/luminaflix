@@ -455,9 +455,7 @@
     "retryCheck": "Couldn't check — try again",
     "preroll": {
       "label": "Ad",
-      "loading": "Loading ad…",
-      "skipIn": "Skip in {s} s",
-      "skip": "Skip ad",
+      "loading": "Preparing your stream…",
       "unmute": "Sound on",
       "mute": "Mute"
     }
