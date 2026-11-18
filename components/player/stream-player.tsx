@@ -24,7 +24,7 @@ import PrerollAd from "./preroll-ad";
 import FrUnavailableBanner from "./fr-unavailable-banner";
 import { cn } from "@/lib/utils";
 import { PLAYER_CONFIG, REACTION_TYPE, type PlayerKind, type Provider, type ProviderGroup } from "./providers";
-import { loadIma, shouldShowPreroll } from "@/lib/preroll";
+import { loadIma, prepareAdDisplay, shouldShowPreroll, type PreparedAdDisplay } from "@/lib/preroll";
 
 interface StreamPlayerProps {
   kind: PlayerKind;
@@ -238,22 +238,28 @@ export default function StreamPlayer({
   // before it gets here), a video ad first when one is due (lib/preroll.ts), then
   // the movie. No ad available / blocked / error → the movie right away.
   const [prerollFor, setPrerollFor] = useState<string | null>(null);
+  const [preparedAd, setPreparedAd] = useState<PreparedAdDisplay | null>(null);
+  // The box IMA draws the ad in: always present before Play, so the ad display
+  // can be prepared inside the click itself (required for sound / phones).
+  const [adSlot, setAdSlot] = useState<HTMLDivElement | null>(null);
   const prerollKey = `${kind}-${mediaId}-${season ?? ""}-${episode ?? ""}`;
   const showingPreroll = prerollFor === prerollKey && !isPlaying;
   const playWithPreroll = () => {
     if (waitingForCheck || frenchEmpty) return;
     if (!shouldShowPreroll()) return startPlaying();
     setSourceId((id) => id ?? activeSource.id); // the server is chosen now
+    setPreparedAd(prepareAdDisplay(adSlot)); // in the click (user gesture)
     setPrerollFor(prerollKey);
   };
   const endPreroll = useCallback(() => {
     setPrerollFor(null);
+    setPreparedAd(null);
     setIsPlaying(true);
   }, []);
   // Get the ad SDK ready while the visitor looks at the page.
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (shouldShowPreroll()) void loadIma();
+      if (shouldShowPreroll(false)) void loadIma();
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
@@ -401,9 +407,15 @@ export default function StreamPlayer({
                 : "relative aspect-video max-h-[73vh] w-full rounded-2xl sm:rounded-3xl md:max-h-[77vh]",
             )}
           >
-            {showingPreroll ? (
-              <PrerollAd key={prerollKey} onDone={endPreroll} />
-            ) : isPlaying ? (
+            {/* Video ad box (IMA draws in it); shown only while the ad runs */}
+            {!isPlaying && (
+              <div
+                ref={setAdSlot}
+                className={cn("absolute inset-0 z-20 bg-black", showingPreroll ? "block" : "hidden")}
+              />
+            )}
+            {showingPreroll && <PrerollAd key={prerollKey} slot={adSlot} prepared={preparedAd} onDone={endPreroll} />}
+            {showingPreroll ? null : isPlaying ? (
               <iframe
                 key={embedUrl}
                 src={embedUrl}

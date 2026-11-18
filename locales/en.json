@@ -457,7 +457,9 @@
       "label": "Ad",
       "loading": "Loading ad…",
       "skipIn": "Skip in {s} s",
-      "skip": "Skip ad"
+      "skip": "Skip ad",
+      "unmute": "Sound on",
+      "mute": "Mute"
     }
   },
   "actions": {

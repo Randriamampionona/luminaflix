@@ -457,7 +457,9 @@
       "label": "Publicité",
       "loading": "Chargement de la publicité…",
       "skipIn": "Passer dans {s} s",
-      "skip": "Passer la pub"
+      "skip": "Passer la pub",
+      "unmute": "Activer le son",
+      "mute": "Couper le son"
     }
   },
   "actions": {
