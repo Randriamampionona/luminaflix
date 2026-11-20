@@ -91,7 +91,7 @@ export const PLAYER_CONFIG: Record<PlayerKind, ProviderGroup[]> = {
         { name: "Lumina VIDZY (VF)", id: "vidzy_vf", icon: ICONS.vidzyVf, url: (t) => `${VIDZY}/movie/${t.mediaId}/vf` },
         { name: "Lumina VIDZY (VOSTFR)", id: "vidzy_vostfr", icon: ICONS.vidzyVostfr, url: (t) => `${VIDZY}/movie/${t.mediaId}/vostfr` },
         { name: "Lumina Frembed (TMDB)", id: "frembed_surf_TMBD", icon: ICONS.frembedTmdb, url: (t) => `${FREMBED}/embed/movie/${t.mediaId}` },
-        { name: "Lumina Frembed (IMDb)", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
+        // { name: "Lumina Frembed (IMDb)", id: "frembed_surf_IMDB", icon: ICONS.frembedImdb, url: (t) => `${FREMBED}/embed/movie/${t.imdbId}` },
       ],
     },
     {
