@@ -78,6 +78,8 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
+  /** When the finger was lifted after a long press: the click that follows right away is that lift, not a tap. */
+  const releasedAt = useRef(0);
   const touchOpened = useRef(false);
 
   const close = useCallback(() => {
@@ -167,25 +169,38 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
     [],
   );
 
+  // The box is rendered in a portal, but React still passes its events up to
+  // the card's handlers below: they must ignore anything coming from the box
+  // (on phones, a tap on the box was taken for "the tap that ends the long
+  // press" and swallowed, and touching it re-armed the long press).
+  const fromBox = (e: React.SyntheticEvent) =>
+    !!(e.target as Element | null)?.closest?.("[data-trailer-preview]");
+
   const handlers = {
-    onPointerEnter: (e: React.PointerEvent) => e.pointerType === "mouse" && start(HOVER_DELAY_MS, false),
-    onPointerLeave: (e: React.PointerEvent) => e.pointerType === "mouse" && scheduleClose(),
-    onTouchStart: () => start(LONG_PRESS_MS, true),
-    onTouchMove: () => {
-      if (!box && openTimer.current) close();
+    onPointerEnter: (e: React.PointerEvent) =>
+      e.pointerType === "mouse" && !fromBox(e) && start(HOVER_DELAY_MS, false),
+    onPointerLeave: (e: React.PointerEvent) => e.pointerType === "mouse" && !fromBox(e) && scheduleClose(),
+    onTouchStart: (e: React.TouchEvent) => {
+      if (!fromBox(e)) start(LONG_PRESS_MS, true);
     },
-    onTouchEnd: () => {
+    onTouchMove: (e: React.TouchEvent) => {
+      if (!fromBox(e) && !box && openTimer.current) close();
+    },
+    onTouchEnd: (e: React.TouchEvent) => {
+      if (fromBox(e)) return;
       if (!box && openTimer.current) close();
+      if (box && longPressed.current) releasedAt.current = Date.now();
+      longPressed.current = false;
     },
     onContextMenu: (e: React.MouseEvent) => {
-      if (openTimer.current || box) e.preventDefault();
+      if (!fromBox(e) && (openTimer.current || box)) e.preventDefault();
     },
     /** The tap that ends a long press doesn't open the card. */
     onClickCapture: (e: React.MouseEvent) => {
-      if (longPressed.current && box) {
+      if (fromBox(e)) return;
+      if (box && (longPressed.current || Date.now() - releasedAt.current < 500)) {
         e.stopPropagation();
         e.preventDefault();
-        longPressed.current = false;
       }
     },
   };
@@ -222,7 +237,12 @@ export function useHoverTrailer(id: number, kind: string, info: PreviewInfo) {
             aria-label={info.title}
             onPointerEnter={() => closeTimer.current && clearTimeout(closeTimer.current)}
             onPointerLeave={(e) => e.pointerType === "mouse" && scheduleClose()}
-            onClick={() => {
+            onClick={(e) => {
+              // Not passed on to the card (it would open the details a second time).
+              e.stopPropagation();
+              // Lifting the finger after the long press can "click" the box that just
+              // opened under it: that isn't a tap on the box.
+              if (Date.now() - releasedAt.current < 500) return;
               close();
               info.onOpen();
             }}
