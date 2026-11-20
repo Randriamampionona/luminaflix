@@ -64,7 +64,8 @@
     "collections": "Collections",
     "comingSoon": "Bientôt",
     "userRank": "Top fans",
-    "goBack": "Retour"
+    "goBack": "Retour",
+    "downloadTutorial": "Tutoriel téléchargement"
   },
   "auth": {
     "signIn": "Connexion",
@@ -186,7 +187,8 @@
       "privacy": "Confidentialité",
       "plus": "Lumina Plus",
       "plans": "Comparer les offres",
-      "devices": "Où regarder"
+      "devices": "Où regarder",
+      "downloadTutorial": "Tutoriel téléchargement"
     },
     "social": {
       "facebook": "Facebook",
@@ -506,7 +508,8 @@
       "oneDmWarning": "1DM risque de ne pas fonctionner avec ce serveur. Utilisez le bouton du lecteur pour un téléchargement fiable.",
       "cta": "Télécharger directement",
       "cancel": "Annuler",
-      "oneDm": "1DM quand même"
+      "oneDm": "1DM quand même",
+      "tutorialLink": "Besoin d'aide ? Voir le tutoriel vidéo"
     }
   },
   "guard": {
@@ -1256,5 +1259,138 @@
     "pull": "Tirez pour recharger",
     "release": "Relâchez pour recharger",
     "reloading": "Rechargement…"
+  },
+  "downloadTutorial": {
+    "eyebrow": "Tutoriel vidéo",
+    "title": "Télécharger un film",
+    "accent": "en 10 étapes",
+    "description": "Regardez la vidéo d'une minute ou suivez les étapes illustrées : de la recherche du film jusqu'au fichier enregistré sur votre PC ou votre téléphone.",
+    "watchVideo": "Regarder la vidéo",
+    "watchVideoSub": "1 min · en français",
+    "readSteps": "Lire les étapes",
+    "videoTitle": "Tutoriel : télécharger un film sur LuminaFlix",
+    "chapters": "Chapitres",
+    "adsTitle": "Une pub s'ouvre pendant le téléchargement ?",
+    "adsBody": "C'est normal : une publicité peut ouvrir un nouvel onglet ou vous rediriger vers un autre site. Fermez simplement cet onglet (ou revenez en arrière) et reprenez là où vous en étiez — votre téléchargement n'est pas affecté.",
+    "adsTip": "Ne téléchargez jamais un fichier proposé par une publicité : le vrai bouton se trouve toujours dans le lecteur ou sur la page Vidzy.",
+    "methodsTitle": "2 façons de télécharger",
+    "methods": [
+      {
+        "key": "direct",
+        "badge": "Méthode 1",
+        "title": "Téléchargement direct",
+        "body": "Le plus simple, sur PC comme sur téléphone : le fichier s'enregistre directement depuis le lecteur.",
+        "note": "Disponible uniquement pour les versions VF / VOST, et seulement sur le serveur Vidzy.",
+        "steps": "Étapes 7 à 9"
+      },
+      {
+        "key": "app",
+        "badge": "Méthode 2",
+        "title": "Application mobile 1DM",
+        "body": "Via notre serveur dédié, avec l'application 1DM sur votre téléphone Android. Depuis un PC : 1DM doit déjà être installée sur le téléphone, scannez le QR code, puis touchez le lien — il s'ouvre directement dans 1DM.",
+        "note": "Idéal pour garder le film sur votre téléphone.",
+        "steps": "Étape 10"
+      }
+    ],
+    "stepsTitle": "Le tutoriel étape par étape",
+    "stepLabel": "Étape {n}",
+    "watchStep": "Voir cette étape en vidéo",
+    "steps": [
+      {
+        "n": "1",
+        "time": 3,
+        "image": "01-accueil",
+        "title": "Ouvrez la recherche",
+        "body": "Depuis l'accueil, cliquez en haut à droite sur le bouton « Rechercher » (sur téléphone : l'icône loupe)."
+      },
+      {
+        "n": "2",
+        "time": 7,
+        "image": "02-recherche",
+        "title": "Cliquez dans le champ de recherche",
+        "body": "Cliquez dans le champ au centre de la fenêtre pour taper le nom de votre film."
+      },
+      {
+        "n": "3",
+        "time": 10.8,
+        "image": "03-saisie",
+        "title": "Tapez le titre et choisissez le film",
+        "body": "Tapez votre recherche (par exemple « Spider-Man »). Si le film apparaît dans les suggestions, cliquez dessus. Sinon, cliquez sur le bouton « Rechercher » pour lancer la recherche complète."
+      },
+      {
+        "n": "3 bis",
+        "time": 16,
+        "image": "03b-page-recherche",
+        "title": "Choisissez l'affiche du film",
+        "body": "Sur la page de résultats, cliquez directement sur l'affiche du film recherché."
+      },
+      {
+        "n": "4",
+        "time": 20,
+        "image": "04-fiche-film",
+        "title": "Vérifiez la version",
+        "body": "Vous arrivez sur la page du film : vérifiez la version (VF ou VOST), puis descendez jusqu'au lecteur."
+      },
+      {
+        "n": "5",
+        "time": 23.5,
+        "image": "05-lancer-lecture",
+        "title": "Lancez la lecture",
+        "body": "Cliquez sur le bouton bleu « Lancer la lecture » au centre du lecteur pour charger le film."
+      },
+      {
+        "n": "6",
+        "time": 27.6,
+        "image": "06-bouton-telecharger",
+        "title": "Cliquez sur « Télécharger »",
+        "body": "Une fois la vidéo lancée, cliquez en bas à droite de l'écran sur le bouton « Télécharger · HD hors ligne »."
+      },
+      {
+        "n": "7",
+        "time": 31.5,
+        "image": "07-choix-methode",
+        "method": "direct",
+        "title": "Choisissez la méthode",
+        "body": "Une fenêtre propose 2 options : « Télécharger directement » (VF / VOST, serveur Vidzy uniquement) ou « 1DM quand même » (application mobile). Pour la méthode directe, cliquez sur « Télécharger directement »."
+      },
+      {
+        "n": "8",
+        "time": 38,
+        "image": "08-telecharger-ici",
+        "method": "direct",
+        "title": "Cliquez sur l'icône du lecteur",
+        "body": "Dans la barre du lecteur, cliquez sur l'icône Télécharger indiquée par la bulle « Télécharger ici »."
+      },
+      {
+        "n": "9",
+        "time": 42.5,
+        "image": "09-page-vidzy",
+        "method": "direct",
+        "title": "Lancez le téléchargement sur Vidzy",
+        "body": "La page Vidzy s'ouvre : cliquez sur « Lancer le téléchargement » pour enregistrer le film. C'est terminé !"
+      },
+      {
+        "n": "10",
+        "time": 47,
+        "image": "10-option-1dm",
+        "method": "app",
+        "title": "Ou : téléchargez avec 1DM",
+        "body": "Pour télécharger sur votre téléphone via notre serveur dédié, choisissez « 1DM quand même » dans la fenêtre de l'étape 7. Sur téléphone, le film s'ouvre directement dans 1DM."
+      },
+      {
+        "n": "10 bis",
+        "time": 50.8,
+        "image": "10b-qr-code-1dm",
+        "method": "app",
+        "title": "Depuis un PC : scannez le QR code",
+        "body": "1DM doit déjà être installée sur votre téléphone. Scannez le QR code avec n'importe quelle application de scan, puis touchez le lien obtenu : il s'ouvre automatiquement dans 1DM, où vous lancez le téléchargement."
+      }
+    ],
+    "finalTitle": "Prêt à télécharger ?",
+    "finalBody": "Trouvez votre film, lancez la lecture puis cliquez sur « Télécharger ».",
+    "finalCta": "Trouver un film",
+    "replay": "Revoir la vidéo",
+    "metaTitle": "Tutoriel : télécharger un film",
+    "metaDescription": "Comment télécharger un film sur LuminaFlix en 10 étapes : téléchargement direct (VF/VOST, serveur Vidzy) ou via l'application mobile 1DM. Vidéo et guide illustré."
   }
 }

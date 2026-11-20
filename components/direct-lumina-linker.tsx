@@ -2,20 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import {
-  Apple,
-  ArrowRight,
-  Check,
-  Copy,
-  Download,
-  ExternalLink,
-  Info,
-  Lock,
-  Play,
-  Smartphone,
-  X,
-  Zap,
-} from "lucide-react";
+import { Apple, ArrowRight, Check, Copy, Download, ExternalLink, Info, Lock, Play, Smartphone, X, Zap, PlayCircle } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { useAuthGate } from "@/hooks/use-auth-gate";
@@ -261,6 +248,15 @@ export default function DirectLuminaLinker({
                   {t("direct.caption")}
                 </figcaption>
               </figure>
+              <a
+                href="/download-tutorial"
+                target="_blank"
+                rel="noopener"
+                className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-brand hover:underline"
+              >
+                <PlayCircle className="h-4 w-4" aria-hidden />
+                {t("direct.tutorialLink")}
+              </a>
 
               <div className="mt-4 flex items-start gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" aria-hidden />

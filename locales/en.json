@@ -64,7 +64,8 @@
     "collections": "Collections",
     "comingSoon": "Coming soon",
     "userRank": "Top fans",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "downloadTutorial": "Download tutorial"
   },
   "auth": {
     "signIn": "Sign in",
@@ -186,7 +187,8 @@
       "privacy": "Privacy policy",
       "plus": "Lumina Plus",
       "plans": "Compare plans",
-      "devices": "Ways to watch"
+      "devices": "Ways to watch",
+      "downloadTutorial": "Download tutorial"
     },
     "social": {
       "facebook": "Facebook",
@@ -506,7 +508,8 @@
       "oneDmWarning": "1DM may not work with this server. Use the player's own button for a reliable download.",
       "cta": "Download directly",
       "cancel": "Cancel",
-      "oneDm": "1DM anyway"
+      "oneDm": "1DM anyway",
+      "tutorialLink": "Need help? Watch the video tutorial"
     }
   },
   "guard": {
@@ -1256,5 +1259,138 @@
     "pull": "Pull to reload",
     "release": "Release to reload",
     "reloading": "Reloading…"
+  },
+  "downloadTutorial": {
+    "eyebrow": "Video tutorial",
+    "title": "Download a movie",
+    "accent": "in 10 steps",
+    "description": "Watch the one-minute video or follow the illustrated steps: from finding the movie to the file saved on your computer or phone.",
+    "watchVideo": "Watch the video",
+    "watchVideoSub": "1 min · in French",
+    "readSteps": "Read the steps",
+    "videoTitle": "Tutorial: download a movie on LuminaFlix",
+    "chapters": "Chapters",
+    "adsTitle": "An ad opens during the download?",
+    "adsBody": "That's normal: an ad may open a new tab or redirect you to another site. Just close that tab (or go back) and carry on where you were — your download isn't affected.",
+    "adsTip": "Never download a file offered by an ad: the real button is always in the player or on the Vidzy page.",
+    "methodsTitle": "2 ways to download",
+    "methods": [
+      {
+        "key": "direct",
+        "badge": "Method 1",
+        "title": "Direct download",
+        "body": "The easiest, on computer and phone: the file is saved straight from the player.",
+        "note": "Only available for VF / VOST versions, and only on the Vidzy server.",
+        "steps": "Steps 7 to 9"
+      },
+      {
+        "key": "app",
+        "badge": "Method 2",
+        "title": "1DM mobile app",
+        "body": "Through our dedicated server, with the 1DM app on your Android phone. From a computer: 1DM must already be installed on the phone, scan the QR code, then tap the link — it opens right in 1DM.",
+        "note": "Great for keeping the movie on your phone.",
+        "steps": "Step 10"
+      }
+    ],
+    "stepsTitle": "Step-by-step tutorial",
+    "stepLabel": "Step {n}",
+    "watchStep": "Watch this step in the video",
+    "steps": [
+      {
+        "n": "1",
+        "time": 3,
+        "image": "01-accueil",
+        "title": "Open the search",
+        "body": "From the home page, click the \"Search\" button at the top right (on a phone: the magnifier icon)."
+      },
+      {
+        "n": "2",
+        "time": 7,
+        "image": "02-recherche",
+        "title": "Click the search field",
+        "body": "Click the field in the middle of the window to type the name of your movie."
+      },
+      {
+        "n": "3",
+        "time": 10.8,
+        "image": "03-saisie",
+        "title": "Type the title and pick the movie",
+        "body": "Type your search (for example \"Spider-Man\"). If the movie shows up in the suggestions, click it. Otherwise, click the \"Search\" button for a full search."
+      },
+      {
+        "n": "3b",
+        "time": 16,
+        "image": "03b-page-recherche",
+        "title": "Pick the movie's poster",
+        "body": "On the results page, click the poster of the movie you're looking for."
+      },
+      {
+        "n": "4",
+        "time": 20,
+        "image": "04-fiche-film",
+        "title": "Check the version",
+        "body": "You land on the movie's page: check the version (VF or VOST), then scroll down to the player."
+      },
+      {
+        "n": "5",
+        "time": 23.5,
+        "image": "05-lancer-lecture",
+        "title": "Start playback",
+        "body": "Click the blue \"Start playback\" button in the middle of the player to load the movie."
+      },
+      {
+        "n": "6",
+        "time": 27.6,
+        "image": "06-bouton-telecharger",
+        "title": "Click \"Download\"",
+        "body": "Once the video is playing, click the \"Download · HD offline\" button at the bottom right of the screen."
+      },
+      {
+        "n": "7",
+        "time": 31.5,
+        "image": "07-choix-methode",
+        "method": "direct",
+        "title": "Choose the method",
+        "body": "A window offers 2 options: \"Download directly\" (VF / VOST, Vidzy server only) or \"1DM anyway\" (mobile app). For the direct method, click \"Download directly\"."
+      },
+      {
+        "n": "8",
+        "time": 38,
+        "image": "08-telecharger-ici",
+        "method": "direct",
+        "title": "Click the player's icon",
+        "body": "In the player's bar, click the Download icon pointed out by the \"Download here\" bubble."
+      },
+      {
+        "n": "9",
+        "time": 42.5,
+        "image": "09-page-vidzy",
+        "method": "direct",
+        "title": "Start the download on Vidzy",
+        "body": "The Vidzy page opens: click \"Start download\" to save the movie. Done!"
+      },
+      {
+        "n": "10",
+        "time": 47,
+        "image": "10-option-1dm",
+        "method": "app",
+        "title": "Or: download with 1DM",
+        "body": "To download to your phone through our dedicated server, choose \"1DM anyway\" in the window from step 7. On a phone, the movie opens right in 1DM."
+      },
+      {
+        "n": "10b",
+        "time": 50.8,
+        "image": "10b-qr-code-1dm",
+        "method": "app",
+        "title": "From a computer: scan the QR code",
+        "body": "1DM must already be installed on your phone. Scan the QR code with any scanner app, then tap the link: it opens automatically in 1DM, where you start the download."
+      }
+    ],
+    "finalTitle": "Ready to download?",
+    "finalBody": "Find your movie, start playback, then click \"Download\".",
+    "finalCta": "Find a movie",
+    "replay": "Watch the video again",
+    "metaTitle": "Tutorial: download a movie",
+    "metaDescription": "How to download a movie on LuminaFlix in 10 steps: direct download (VF/VOST, Vidzy server) or with the 1DM mobile app. Video and illustrated guide."
   }
 }

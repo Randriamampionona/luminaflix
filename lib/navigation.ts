@@ -11,6 +11,7 @@ export const NAV_ITEMS = [
   { key: "comingSoon", href: "/coming-soon" },
   { key: "userRank", href: "/user-rank" },
   { key: "favorites", href: "/favorites" },
+  { key: "downloadTutorial", href: "/download-tutorial" },
   { key: "downloadApp", href: "/download_app" },
 ] as const;
 
@@ -32,6 +33,7 @@ export const FOOTER_SECTIONS = [
     key: "support",
     links: [
       { key: "help", href: "/help" },
+      { key: "downloadTutorial", href: "/download-tutorial" },
       { key: "faq", href: "/help#faq" },
       { key: "contact", href: "/contact" },
       { key: "terms", href: "/terms" },
