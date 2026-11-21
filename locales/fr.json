@@ -257,7 +257,8 @@
     "similarTo": "Similaire à « {query} »",
     "noSimilar": "Aucun titre similaire trouvé.",
     "backHome": "Retour à l'accueil",
-    "seasons": "{count, plural, one {# saison} other {# saisons}}"
+    "seasons": "{count, plural, one {# saison} other {# saisons}}",
+    "fullDetails": "Voir la fiche complète"
   },
   "filters": {
     "button": "Filtres",
@@ -1392,5 +1393,46 @@
     "replay": "Revoir la vidéo",
     "metaTitle": "Tutoriel : télécharger un film",
     "metaDescription": "Comment télécharger un film sur LuminaFlix en 10 étapes : téléchargement direct (VF/VOST, serveur Vidzy) ou via l'application mobile 1DM. Vidéo et guide illustré."
+  },
+  "titlePage": {
+    "watchNow": "Regarder maintenant",
+    "episodes": "Voir les épisodes",
+    "trailer": "Bande-annonce",
+    "votes": "{count, plural, one {# vote} other {# votes}}",
+    "more": "Voir plus",
+    "less": "Voir moins",
+    "director": "Réalisation",
+    "writers": "Scénario",
+    "createdBy": "Création",
+    "cast": "Distribution",
+    "info": "Informations",
+    "alsoLike": "À voir aussi",
+    "sameGenre": "Dans le même genre",
+    "releaseDate": "Date de sortie",
+    "firstAirDate": "Première diffusion",
+    "lastAirDate": "Dernière diffusion",
+    "runtime": "Durée",
+    "seasons": "Saisons",
+    "episodeCount": "Épisodes",
+    "originalTitle": "Titre original",
+    "originalLanguage": "Langue originale",
+    "countries": "Pays",
+    "networks": "Chaînes",
+    "studios": "Studios",
+    "budget": "Budget",
+    "revenue": "Recettes",
+    "statusLabel": "Statut",
+    "status": {
+      "Released": "Sorti",
+      "ReturningSeries": "En cours",
+      "Ended": "Terminée",
+      "Canceled": "Annulée",
+      "InProduction": "En production",
+      "PostProduction": "Post-production",
+      "Planned": "Prévu",
+      "Rumored": "Annoncé",
+      "Pilot": "Pilote"
+    },
+    "fullDetails": "Fiche complète"
   }
 }

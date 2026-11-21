@@ -257,7 +257,8 @@
     "similarTo": "Similar to “{query}”",
     "noSimilar": "No similar titles found.",
     "backHome": "Back to home",
-    "seasons": "{count, plural, one {# season} other {# seasons}}"
+    "seasons": "{count, plural, one {# season} other {# seasons}}",
+    "fullDetails": "Show full details"
   },
   "filters": {
     "button": "Filters",
@@ -1392,5 +1393,46 @@
     "replay": "Watch the video again",
     "metaTitle": "Tutorial: download a movie",
     "metaDescription": "How to download a movie on LuminaFlix in 10 steps: direct download (VF/VOST, Vidzy server) or with the 1DM mobile app. Video and illustrated guide."
+  },
+  "titlePage": {
+    "watchNow": "Watch now",
+    "episodes": "Browse episodes",
+    "trailer": "Trailer",
+    "votes": "{count, plural, one {# vote} other {# votes}}",
+    "more": "Show more",
+    "less": "Show less",
+    "director": "Director",
+    "writers": "Writers",
+    "createdBy": "Created by",
+    "cast": "Cast",
+    "info": "Details",
+    "alsoLike": "You may also like",
+    "sameGenre": "In the same genre",
+    "releaseDate": "Release date",
+    "firstAirDate": "First aired",
+    "lastAirDate": "Last aired",
+    "runtime": "Runtime",
+    "seasons": "Seasons",
+    "episodeCount": "Episodes",
+    "originalTitle": "Original title",
+    "originalLanguage": "Original language",
+    "countries": "Countries",
+    "networks": "Networks",
+    "studios": "Studios",
+    "budget": "Budget",
+    "revenue": "Box office",
+    "statusLabel": "Status",
+    "status": {
+      "Released": "Released",
+      "ReturningSeries": "Returning",
+      "Ended": "Ended",
+      "Canceled": "Canceled",
+      "InProduction": "In production",
+      "PostProduction": "Post-production",
+      "Planned": "Planned",
+      "Rumored": "Rumored",
+      "Pilot": "Pilot"
+    },
+    "fullDetails": "Full details"
   }
 }

@@ -38,6 +38,11 @@ export function getWatchHref(id: number | string, kind: MediaKind, title?: strin
   return `${BASE_ROUTE[kind]}/${id}${fallback}`;
 }
 
+/** Full details page of a title (/details/movie/… or /details/tv/… for every kind of series). */
+export function getDetailsHref(id: number | string, kind: MediaKind) {
+  return `/details/${kind === "movie" ? "movie" : "tv"}/${id}`;
+}
+
 export function getTrailerHref(id: number | string, kind: MediaKind, title?: string) {
   // Trailer language defaults to the UI locale (see app/trailer/[id]).
   const params = new URLSearchParams({ type: kind });

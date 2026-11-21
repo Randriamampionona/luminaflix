@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Film, Play, Star } from "lucide-react";
+import { ArrowRight, Calendar, Film, Info, Play, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  getDetailsHref,
   getDisplayTitle,
   getReleaseYear,
   getTrailerHref,
@@ -70,10 +71,11 @@ function DetailsContent({
   const year = getReleaseYear(movie);
   const poster = tmdbImage(movie.poster_path);
 
-  const { playHref, trailerHref } = useMemo(
+  const { playHref, trailerHref, detailsHref } = useMemo(
     () => ({
       playHref: getWatchHref(movie.id, kind, title),
       trailerHref: getTrailerHref(movie.id, kind, title),
+      detailsHref: getDetailsHref(movie.id, kind),
     }),
     [movie.id, kind, title],
   );
@@ -137,9 +139,20 @@ function DetailsContent({
               )}
             </div>
 
-            <DialogDescription className="mb-8 max-h-36 overflow-y-auto pr-2 text-sm italic leading-relaxed text-foreground/90 md:text-fg-muted">
+            <DialogDescription className="mb-4 max-h-36 overflow-y-auto pr-2 text-sm italic leading-relaxed text-foreground/90 md:text-fg-muted">
               {movie.overview}
             </DialogDescription>
+
+            {/* Full page of the title: cast, details, suggestions */}
+            <Link
+              href={detailsHref}
+              onClick={onNavigate}
+              className="group mb-6 inline-flex items-center gap-2 text-xs font-black tracking-widest text-brand-bright uppercase hover:underline"
+            >
+              <Info className="h-4 w-4" aria-hidden />
+              {t("fullDetails")}
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
           </div>
 
           <div className="space-y-4">
