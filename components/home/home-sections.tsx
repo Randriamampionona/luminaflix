@@ -17,6 +17,9 @@ import { Container } from "@/components/layout/container";
 import { EmptyState } from "@/components/layout/empty-state";
 import { SectionHeader } from "@/components/layout/page-header";
 import MovieRow from "@/components/movie-row";
+import CommunityRow from "@/components/community/community-row";
+import { getApprovedCommunity } from "@/lib/community/server";
+import { toCardVideo } from "@/lib/community/types";
 import { spacing } from "@/lib/typography";
 
 /*
@@ -48,6 +51,12 @@ export async function TopTvRow() {
   const [t, shows] = await Promise.all([getTranslations("home"), getTrendingTV()]);
   // No fixed type: each series opens in its section (K-Drama, Anime or TV Shows).
   return <MovieRow title={t("topTv")} movies={shows} />;
+}
+
+/** Latest approved community uploads (nothing when there are none yet). */
+export async function CommunitySection() {
+  const [t, videos] = await Promise.all([getTranslations("home"), getApprovedCommunity()]);
+  return <CommunityRow title={t("community")} videos={videos.slice(0, 18).map(toCardVideo)} />;
 }
 
 export async function LatestRow() {

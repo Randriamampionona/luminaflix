@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { getKDramaDetails, getSeasonEpisodes } from "@/action/get-kdrama-details.action";
 import { getMediaInteraction } from "@/action/stream-actions";
 import EpisodePlayView, { parseEpisodeParams } from "@/components/media/episode-play-view";
+import CommunityWatch, { communityMetadata } from "@/components/community/community-watch";
+import { isCommunityId } from "@/lib/community/types";
 
 // Player page: never cached anywhere — rendered fresh on every request, with
 // fresh data (no Next.js data cache), and sent with no-store headers (next.config.ts).
@@ -22,6 +24,8 @@ export async function generateMetadata({
   searchParams: SearchParams;
 }): Promise<Metadata> {
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
+  // Community upload (com_…): its own player page.
+  if (isCommunityId(id)) return communityMetadata(id);
   const { season, episode } = parseEpisodeParams(s, e);
   const [show, t] = await Promise.all([getKDramaDetails(id), getTranslations("player")]);
   if (!show) return {};
@@ -37,6 +41,7 @@ export async function generateMetadata({
 /** /tv-shows/play/[id]?s=&e= — episode player of a TV show. */
 export default async function TVShowPlayPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { s, e }] = await Promise.all([params, searchParams]);
+  if (isCommunityId(id)) return <CommunityWatch id={id} route="tv" />;
   const { season, episode } = parseEpisodeParams(s, e);
   const [show, episodes] = await Promise.all([getKDramaDetails(id), getSeasonEpisodes(id, season)]);
   // Not awaited: streams into the player's action bar.

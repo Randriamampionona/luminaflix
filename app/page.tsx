@@ -7,6 +7,7 @@ import BecauseYouWatched from "@/components/home/because-you-watched";
 import TopFans from "@/components/badges/top-fans";
 import {
   CollectionsSection,
+  CommunitySection,
   FeaturedSection,
   GenresSection,
   HeroSection,
@@ -61,6 +62,11 @@ export default async function HomePage() {
 
         <Suspense fallback={<RowSkeleton />}>
           <TopTvRow />
+        </Suspense>
+
+        {/* Videos shared by members (approved by the admin) */}
+        <Suspense fallback={null}>
+          <CommunitySection />
         </Suspense>
 
         <Suspense fallback={<BannerSkeleton />}>

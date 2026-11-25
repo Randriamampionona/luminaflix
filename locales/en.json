@@ -22,7 +22,11 @@
       "signIn": "Sign in",
       "signUp": "Create account",
       "trailer": "Trailer",
-      "notFound": "Page not found"
+      "notFound": "Page not found",
+      "community": "Community",
+      "communityBrowse": "Community library",
+      "communityUpload": "Share a video",
+      "communityReview": "Community review"
     }
   },
   "common": {
@@ -65,7 +69,9 @@
     "comingSoon": "Coming soon",
     "userRank": "Top fans",
     "goBack": "Go back",
-    "downloadTutorial": "Download tutorial"
+    "downloadTutorial": "Download tutorial",
+    "community": "Community",
+    "communityReview": "Community review"
   },
   "auth": {
     "signIn": "Sign in",
@@ -231,7 +237,8 @@
     "heroRank": "Trending #{rank}",
     "heroMovie": "Movie",
     "watch": "Watch",
-    "trailer": "Trailer"
+    "trailer": "Trailer",
+    "community": "Community"
   },
   "media": {
     "movie": "Movie",
@@ -1434,5 +1441,225 @@
       "Pilot": "Pilot"
     },
     "fullDetails": "Full details"
+  },
+  "community": {
+    "badge": "Community",
+    "adultBadge": "18+",
+    "categories": {
+      "movie": "Movies",
+      "kdrama": "K-Dramas",
+      "anime": "Anime",
+      "tv": "TV Shows"
+    },
+    "category": {
+      "movie": "Movie",
+      "kdrama": "K-Drama",
+      "anime": "Anime",
+      "tv": "TV Show"
+    },
+    "genres": {
+      "action": "Action",
+      "adventure": "Adventure",
+      "animation": "Animation",
+      "comedy": "Comedy",
+      "crime": "Crime",
+      "documentary": "Documentary",
+      "drama": "Drama",
+      "family": "Family",
+      "fantasy": "Fantasy",
+      "history": "History",
+      "horror": "Horror",
+      "music": "Music",
+      "mystery": "Mystery",
+      "romance": "Romance",
+      "scifi": "Sci-Fi",
+      "thriller": "Thriller",
+      "war": "War",
+      "western": "Western"
+    },
+    "languages": {
+      "fr": "French",
+      "mg": "Malagasy",
+      "en": "English",
+      "ko": "Korean",
+      "ja": "Japanese",
+      "zh": "Chinese",
+      "es": "Spanish",
+      "hi": "Hindi",
+      "ar": "Arabic",
+      "other": "Other"
+    },
+    "watch": "Watch {title}",
+    "sharedBy": "Shared by {name}",
+    "episodeTag": "S{season} · E{episode}",
+    "viewAll": "View all",
+    "landing": {
+      "eyebrow": "LuminaFlix Community",
+      "title": "Welcome to the",
+      "accent": "LuminaFlix Community",
+      "description": "Where you can share your local Movies, K-Dramas, Anime, and TV Shows.",
+      "browsePrefix": "View community-shared",
+      "browseSuffix": "",
+      "uploadPrefix": "Upload",
+      "words": [
+        "Movies",
+        "K-Dramas",
+        "Anime",
+        "TV Shows"
+      ],
+      "latest": "Latest shares",
+      "howTitle": "How it works",
+      "steps": [
+        {
+          "title": "Upload your video",
+          "body": "Drop your file: it's hosted on DoodStream, nothing is stored on our side."
+        },
+        {
+          "title": "Describe it",
+          "body": "Title, poster, year, genres… and for a series: name, season and episode."
+        },
+        {
+          "title": "Review",
+          "body": "An admin checks every video before it's published."
+        },
+        {
+          "title": "Shared with everyone",
+          "body": "It shows up in the library, on the home page and in search, with likes and favorites."
+        }
+      ],
+      "empty": "Nothing shared yet: be the first!"
+    },
+    "browse": {
+      "eyebrow": "Community",
+      "title": "Community",
+      "accent": "library",
+      "description": "Every video shared by members and approved by the team.",
+      "all": "All",
+      "searchPlaceholder": "Search the community…",
+      "search": "Search",
+      "clear": "Clear",
+      "count": "{count, plural, =0 {No videos} one {# video} other {# videos}}",
+      "empty": "No videos match.",
+      "emptyCta": "Share a video",
+      "upload": "Share"
+    },
+    "upload": {
+      "eyebrow": "Community",
+      "title": "Share",
+      "accent": "a video",
+      "description": "Description",
+      "signInTitle": "Sign in to share",
+      "signInBody": "Sharing videos is for members only.",
+      "signIn": "Sign in",
+      "notConfigured": "Sharing isn't available yet (video server not configured).",
+      "videoTitle": "1. The video",
+      "dropTitle": "Drag and drop your video here",
+      "dropBody": "or click to pick a file (MP4, MKV, AVI, MOV… up to {max} GB)",
+      "uploading": "Uploading to DoodStream… {percent}%",
+      "uploaded": "Video uploaded to DoodStream",
+      "processing": "DoodStream is processing it (playable in a few minutes).",
+      "ready": "Video ready to play",
+      "cancel": "Cancel",
+      "replace": "Change video",
+      "notVideo": "This file isn't a video.",
+      "tooLarge": "File too large (max {max} GB).",
+      "uploadFailed": "Upload failed. Try again.",
+      "leaveWarning": "An upload is in progress: leaving the page will cancel it.",
+      "infoTitle": "2. The details",
+      "category": "Category",
+      "episodicNote": "For a K-drama, an anime or a TV show, give the series name, the season and the episode — for example \"The Body\", season 1, episode 6.",
+      "seriesTitle": "Series name",
+      "seriesPlaceholder": "E.g. The Body",
+      "season": "Season",
+      "episode": "Episode",
+      "movieTitle": "Movie title",
+      "episodeTitle": "Episode title (optional)",
+      "titlePlaceholder": "Title",
+      "descriptionPlaceholder": "What is this video about? (10 characters minimum)",
+      "year": "Release year",
+      "language": "Language",
+      "genres": "Genres",
+      "cast": "Cast / director (optional)",
+      "castPlaceholder": "E.g. Kim Ji-won, Park Bo-gum",
+      "posterTitle": "Poster",
+      "posterUpload": "Upload an image",
+      "posterUrl": "…or paste a link (https://)",
+      "posterHint": "Without a poster, DoodStream's thumbnail is used.",
+      "posterRemove": "Remove",
+      "optional": "optional",
+      "idLabel": "ID",
+      "idValue": "Assigned on submit (com_1234567 format)",
+      "submit": "Submit for review",
+      "submitting": "Submitting…",
+      "needVideo": "Upload the video first.",
+      "errors": {
+        "UNAUTHORIZED": "Sign in to share.",
+        "CATEGORY": "Pick a category.",
+        "TITLE": "Enter the title (or the series name).",
+        "SEASON": "Invalid season.",
+        "EPISODE": "Invalid episode.",
+        "DESCRIPTION": "The description needs at least 10 characters.",
+        "YEAR": "Invalid year.",
+        "POSTER_URL": "The poster link must start with https://",
+        "POSTER_FILE": "Poster image invalid or too large.",
+        "VIDEO": "Video not found on DoodStream.",
+        "DOOD_UNAVAILABLE": "DoodStream isn't answering, try again.",
+        "FAILED": "Couldn't save, try again."
+      },
+      "successTitle": "Thanks, it's in!",
+      "successBody": "Your video {id} will be published as soon as an admin approves it.",
+      "another": "Share another video",
+      "toLibrary": "See the library",
+      "intro": "Your video goes straight to DoodStream, then an admin reviews it before it's published."
+    },
+    "review": {
+      "eyebrow": "Admin",
+      "title": "Community",
+      "accent": "moderation",
+      "description": "Preview, approve or decline shared videos, and rate them All ages or 18+.",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Declined",
+      "total": "Total",
+      "empty": "Nothing here.",
+      "preview": "Preview",
+      "approve": "Approve",
+      "reject": "Decline",
+      "restore": "Back to pending",
+      "rating": "Rating",
+      "standard": "All ages",
+      "adult": "18+ (adult)",
+      "uploadedBy": "By {name} · {date}",
+      "dood": "DoodStream",
+      "openPlayer": "Open the player",
+      "saved": "Saved",
+      "failed": "Failed, try again",
+      "close": "Close",
+      "checkingVideo": "Checking the video…",
+      "videoReady": "Playable",
+      "videoProcessing": "Processing",
+      "videoMissing": "Not found on DoodStream"
+    },
+    "player": {
+      "ageTitle": "Adults only (18+)",
+      "ageBody": "The team rated this video 18+. Confirm you're at least 18 to watch it.",
+      "ageConfirm": "I'm 18 or older",
+      "ageBack": "Go back",
+      "pendingNotice": "This video is waiting for review: only you (and the team) can see it.",
+      "rejectedNotice": "The team declined this video.",
+      "notFound": "Video not found",
+      "notFoundBody": "This community video doesn't exist or is no longer available.",
+      "more": "More from the community",
+      "details": "Details",
+      "duration": "Duration",
+      "year": "Year",
+      "language": "Language",
+      "genres": "Genres",
+      "cast": "Cast",
+      "server": "Server: DoodStream (community)",
+      "reportHint": "An ad may open in the player: close it and come back."
+    },
+    "searchTitle": "Community",
+    "searchMore": "See all in the community"
   }
 }

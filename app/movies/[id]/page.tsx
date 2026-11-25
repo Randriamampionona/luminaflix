@@ -17,6 +17,8 @@ import { Suspense } from "react";
 import { getReleaseYear, tmdbImage } from "@/lib/media";
 import { type } from "@/lib/typography";
 import { cn } from "@/lib/utils";
+import CommunityWatch, { communityMetadata } from "@/components/community/community-watch";
+import { isCommunityId } from "@/lib/community/types";
 
 // Player page: never cached anywhere — rendered fresh on every request, with
 // fresh data (no Next.js data cache), and sent with no-store headers (next.config.ts).
@@ -29,6 +31,8 @@ type SearchParams = Promise<{ fallback?: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
+  // Community upload (com_…): its own player page.
+  if (isCommunityId(id)) return communityMetadata(id);
   const movie = await getMovieData(id);
   if (!movie) {
     const t = await getTranslations("media");
@@ -40,6 +44,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function WatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ id }, { fallback }] = await Promise.all([params, searchParams]);
+  if (isCommunityId(id)) return <CommunityWatch id={id} route="movie" />;
   const [movie, t, format] = await Promise.all([getMovieData(id), getTranslations("media"), getFormatter()]);
 
   if (!movie) {

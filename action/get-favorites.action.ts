@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { logFirebaseError } from "@/lib/firebase-admin";
 import { readFavorites } from "@/lib/firestore-cache";
+import { getCommunityVideos } from "@/lib/community/server";
+import { communityDisplayTitle, communityPoster, communityWatchHref, isCommunityId } from "@/lib/community/types";
 import { REVALIDATE, tmdb } from "@/lib/tmdb";
 
 export type FavoriteType = "MOVIE" | "K_DRAMA" | "ANIME" | "TV_SHOW";
@@ -25,7 +27,8 @@ interface MediaDetails {
 }
 
 export interface FavoriteItem {
-  id: number;
+  /** TMDB id, or com_… for a community upload. */
+  id: number | string;
   title: string;
   poster_path: string | null;
   backdrop_path: string | null;
@@ -36,6 +39,8 @@ export interface FavoriteItem {
   savedSeason: number | null;
   savedEpisode: number | null;
   created_date: string;
+  /** Community uploads: their own player link. */
+  href?: string;
 }
 
 export interface FavoritesResult {
@@ -56,8 +61,33 @@ export async function getUserFavorites(): Promise<FavoritesResult> {
     // Cached read, expired by toggleFavorite (action/stream-actions.ts) on every change.
     const favorites = await readFavorites<StoredFavorite>(userId);
 
+    // Community uploads come from Firestore, not TMDB (only approved ones are shown).
+    const community = new Map(
+      (await getCommunityVideos(favorites.map((f) => String(f.id)).filter(isCommunityId)).catch(() => []))
+        .filter((v) => v.status === "approved")
+        .map((v) => [v.id, v]),
+    );
+
     const hydrated = await Promise.all(
       favorites.map(async (fav): Promise<FavoriteItem | null> => {
+        if (isCommunityId(String(fav.id))) {
+          const video = community.get(String(fav.id));
+          if (!video) return null;
+          return {
+            id: video.id,
+            title: communityDisplayTitle(video),
+            poster_path: communityPoster(video),
+            backdrop_path: null,
+            vote_average: 0,
+            release_date: video.year ? `${video.year}-01-01` : "",
+            episode_title: null,
+            savedType: fav.type,
+            savedSeason: null,
+            savedEpisode: null,
+            created_date: fav.created_date,
+            href: communityWatchHref(video),
+          };
+        }
         const mediaType = fav.type === "MOVIE" ? "movie" : "tv";
         const isEpisode = fav.type !== "MOVIE" && fav.season && fav.episode;
 

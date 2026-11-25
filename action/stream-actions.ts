@@ -39,7 +39,8 @@ interface StoredFavorite {
 }
 
 function normalize({ mediaId, type, season, episode }: MediaRef) {
-  if (!MEDIA_TYPES.includes(type) || !/^\d+$/.test(String(mediaId))) return null;
+  // TMDB ids, and community uploads (com_1560520 — liked / saved per title, as "MOVIE").
+  if (!MEDIA_TYPES.includes(type) || !/^(\d+|com_\d{5,10})$/.test(String(mediaId))) return null;
   const isMovie = type === "MOVIE";
   // Movies are stored per title, series per episode.
   const s = isMovie ? null : Number(season ?? NaN);

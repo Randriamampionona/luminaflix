@@ -43,6 +43,7 @@ const overflowItems = NAV_ITEMS.slice(NAV_INLINE_COUNT);
 const ADMIN_ITEMS = [
   { key: "analytics", href: "/analytics", icon: BarChart3 },
   { key: "mediaInfos", href: "/media-infos", icon: Clapperboard },
+  { key: "communityReview", href: "/community/review", icon: ShieldCheck },
 ] as const;
 
 export const Logo = memo(function Logo({ size = "md" }: { size?: "sm" | "md" }) {

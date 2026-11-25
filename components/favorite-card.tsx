@@ -20,9 +20,10 @@ function FavoriteCard({ item }: { item: FavoriteItem }) {
   const poster = tmdbImage(item.poster_path);
 
   const href =
-    item.savedType === "MOVIE"
+    item.href ??
+    (item.savedType === "MOVIE"
       ? `/movies/${item.id}`
-      : `/${item.savedType === "K_DRAMA" ? "k-drama" : item.savedType === "TV_SHOW" ? "tv-shows" : "anime"}/play/${item.id}?s=${item.savedSeason}&e=${item.savedEpisode}`;
+      : `/${item.savedType === "K_DRAMA" ? "k-drama" : item.savedType === "TV_SHOW" ? "tv-shows" : "anime"}/play/${item.id}?s=${item.savedSeason}&e=${item.savedEpisode}`);
 
   const handleRemove = (event: React.MouseEvent) => {
     event.preventDefault();

@@ -22,7 +22,11 @@
       "signIn": "Connexion",
       "signUp": "Créer un compte",
       "trailer": "Bande-annonce",
-      "notFound": "Page introuvable"
+      "notFound": "Page introuvable",
+      "community": "Communauté",
+      "communityBrowse": "Bibliothèque communautaire",
+      "communityUpload": "Partager une vidéo",
+      "communityReview": "Modération communauté"
     }
   },
   "common": {
@@ -65,7 +69,9 @@
     "comingSoon": "Bientôt",
     "userRank": "Top fans",
     "goBack": "Retour",
-    "downloadTutorial": "Tutoriel téléchargement"
+    "downloadTutorial": "Tutoriel téléchargement",
+    "community": "Communauté",
+    "communityReview": "Modération communauté"
   },
   "auth": {
     "signIn": "Connexion",
@@ -231,7 +237,8 @@
     "heroRank": "Tendance #{rank}",
     "heroMovie": "Film",
     "watch": "Regarder",
-    "trailer": "Bande-annonce"
+    "trailer": "Bande-annonce",
+    "community": "Communauté"
   },
   "media": {
     "movie": "Film",
@@ -1434,5 +1441,225 @@
       "Pilot": "Pilote"
     },
     "fullDetails": "Fiche complète"
+  },
+  "community": {
+    "badge": "Communauté",
+    "adultBadge": "18+",
+    "categories": {
+      "movie": "Films",
+      "kdrama": "K-Dramas",
+      "anime": "Animes",
+      "tv": "Séries"
+    },
+    "category": {
+      "movie": "Film",
+      "kdrama": "K-Drama",
+      "anime": "Anime",
+      "tv": "Série"
+    },
+    "genres": {
+      "action": "Action",
+      "adventure": "Aventure",
+      "animation": "Animation",
+      "comedy": "Comédie",
+      "crime": "Policier",
+      "documentary": "Documentaire",
+      "drama": "Drame",
+      "family": "Famille",
+      "fantasy": "Fantastique",
+      "history": "Histoire",
+      "horror": "Horreur",
+      "music": "Musique",
+      "mystery": "Mystère",
+      "romance": "Romance",
+      "scifi": "Science-fiction",
+      "thriller": "Thriller",
+      "war": "Guerre",
+      "western": "Western"
+    },
+    "languages": {
+      "fr": "Français",
+      "mg": "Malagasy",
+      "en": "Anglais",
+      "ko": "Coréen",
+      "ja": "Japonais",
+      "zh": "Chinois",
+      "es": "Espagnol",
+      "hi": "Hindi",
+      "ar": "Arabe",
+      "other": "Autre"
+    },
+    "watch": "Regarder {title}",
+    "sharedBy": "Partagé par {name}",
+    "episodeTag": "S{season} · É{episode}",
+    "viewAll": "Voir tout",
+    "landing": {
+      "eyebrow": "LuminaFlix Communauté",
+      "title": "Bienvenue dans la communauté",
+      "accent": "LuminaFlix",
+      "description": "L'endroit où partager vos films, K-dramas, animes et séries locaux.",
+      "browsePrefix": "Voir les",
+      "browseSuffix": "de la communauté",
+      "uploadPrefix": "Partager des",
+      "words": [
+        "Films",
+        "K-Dramas",
+        "Animes",
+        "Séries"
+      ],
+      "latest": "Derniers partages",
+      "howTitle": "Comment ça marche",
+      "steps": [
+        {
+          "title": "Envoyez votre vidéo",
+          "body": "Glissez votre fichier : il est hébergé sur DoodStream, rien n'est stocké chez nous."
+        },
+        {
+          "title": "Décrivez-la",
+          "body": "Titre, affiche, année, genres… et pour une série : nom, saison et épisode."
+        },
+        {
+          "title": "Vérification",
+          "body": "Un administrateur valide chaque vidéo avant sa publication."
+        },
+        {
+          "title": "Partagée avec tous",
+          "body": "Elle apparaît dans la bibliothèque, l'accueil et la recherche, avec likes et favoris."
+        }
+      ],
+      "empty": "Aucun partage pour le moment : soyez le premier !"
+    },
+    "browse": {
+      "eyebrow": "Communauté",
+      "title": "Bibliothèque",
+      "accent": "communautaire",
+      "description": "Toutes les vidéos partagées par les membres et validées par l'équipe.",
+      "all": "Tout",
+      "searchPlaceholder": "Rechercher dans la communauté…",
+      "search": "Rechercher",
+      "clear": "Effacer",
+      "count": "{count, plural, =0 {Aucune vidéo} one {# vidéo} other {# vidéos}}",
+      "empty": "Aucune vidéo ne correspond.",
+      "emptyCta": "Partager une vidéo",
+      "upload": "Partager"
+    },
+    "upload": {
+      "eyebrow": "Communauté",
+      "title": "Partager",
+      "accent": "une vidéo",
+      "description": "Description",
+      "signInTitle": "Connectez-vous pour partager",
+      "signInBody": "Le partage de vidéos est réservé aux membres.",
+      "signIn": "Se connecter",
+      "notConfigured": "Le partage n'est pas encore disponible (serveur vidéo non configuré).",
+      "videoTitle": "1. La vidéo",
+      "dropTitle": "Glissez-déposez votre vidéo ici",
+      "dropBody": "ou cliquez pour choisir un fichier (MP4, MKV, AVI, MOV… jusqu'à {max} Go)",
+      "uploading": "Envoi vers DoodStream… {percent} %",
+      "uploaded": "Vidéo envoyée sur DoodStream",
+      "processing": "Traitement en cours sur DoodStream (la vidéo sera lisible dans quelques minutes).",
+      "ready": "Vidéo prête à la lecture",
+      "cancel": "Annuler",
+      "replace": "Changer de vidéo",
+      "notVideo": "Ce fichier n'est pas une vidéo.",
+      "tooLarge": "Fichier trop lourd (max {max} Go).",
+      "uploadFailed": "L'envoi a échoué. Réessayez.",
+      "leaveWarning": "Un envoi est en cours : quitter la page l'annulera.",
+      "infoTitle": "2. Les informations",
+      "category": "Catégorie",
+      "episodicNote": "Pour un K-drama, un anime ou une série, indiquez le nom de la série, la saison et l'épisode — par exemple « The Body », saison 1, épisode 6.",
+      "seriesTitle": "Nom de la série",
+      "seriesPlaceholder": "Ex. : The Body",
+      "season": "Saison",
+      "episode": "Épisode",
+      "movieTitle": "Titre du film",
+      "episodeTitle": "Titre de l'épisode (facultatif)",
+      "titlePlaceholder": "Titre",
+      "descriptionPlaceholder": "De quoi parle cette vidéo ? (10 caractères minimum)",
+      "year": "Année de sortie",
+      "language": "Langue",
+      "genres": "Genres",
+      "cast": "Acteurs / réalisateur (facultatif)",
+      "castPlaceholder": "Ex. : Kim Ji-won, Park Bo-gum",
+      "posterTitle": "Affiche",
+      "posterUpload": "Importer une image",
+      "posterUrl": "…ou coller un lien (https://)",
+      "posterHint": "Sans affiche, la miniature DoodStream est utilisée.",
+      "posterRemove": "Retirer",
+      "optional": "facultatif",
+      "idLabel": "Identifiant",
+      "idValue": "Attribué à l'envoi (format com_1234567)",
+      "submit": "Envoyer pour vérification",
+      "submitting": "Envoi…",
+      "needVideo": "Envoyez d'abord la vidéo.",
+      "errors": {
+        "UNAUTHORIZED": "Connectez-vous pour partager.",
+        "CATEGORY": "Choisissez une catégorie.",
+        "TITLE": "Indiquez le titre (ou le nom de la série).",
+        "SEASON": "Saison invalide.",
+        "EPISODE": "Épisode invalide.",
+        "DESCRIPTION": "La description doit faire au moins 10 caractères.",
+        "YEAR": "Année invalide.",
+        "POSTER_URL": "Le lien de l'affiche doit commencer par https://",
+        "POSTER_FILE": "Image d'affiche invalide ou trop lourde.",
+        "VIDEO": "Vidéo introuvable sur DoodStream.",
+        "DOOD_UNAVAILABLE": "DoodStream ne répond pas, réessayez.",
+        "FAILED": "Impossible d'enregistrer, réessayez."
+      },
+      "successTitle": "Merci, c'est envoyé !",
+      "successBody": "Votre vidéo {id} sera publiée dès qu'un administrateur l'aura validée.",
+      "another": "Partager une autre vidéo",
+      "toLibrary": "Voir la bibliothèque",
+      "intro": "Votre vidéo est envoyée directement sur DoodStream, puis vérifiée par un administrateur avant publication."
+    },
+    "review": {
+      "eyebrow": "Administration",
+      "title": "Modération",
+      "accent": "communauté",
+      "description": "Prévisualisez, validez ou refusez les vidéos partagées, et classez-les Tout public ou 18+.",
+      "pending": "En attente",
+      "approved": "Validées",
+      "rejected": "Refusées",
+      "total": "Total",
+      "empty": "Rien ici.",
+      "preview": "Prévisualiser",
+      "approve": "Valider",
+      "reject": "Refuser",
+      "restore": "Remettre en attente",
+      "rating": "Classification",
+      "standard": "Tout public",
+      "adult": "18+ (adulte)",
+      "uploadedBy": "Par {name} · {date}",
+      "dood": "DoodStream",
+      "openPlayer": "Ouvrir le lecteur",
+      "saved": "Enregistré",
+      "failed": "Échec, réessayez",
+      "close": "Fermer",
+      "checkingVideo": "Vérification de la vidéo…",
+      "videoReady": "Lisible",
+      "videoProcessing": "En traitement",
+      "videoMissing": "Introuvable sur DoodStream"
+    },
+    "player": {
+      "ageTitle": "Contenu réservé aux adultes (18+)",
+      "ageBody": "Cette vidéo a été classée 18+ par l'équipe. Confirmez que vous avez au moins 18 ans pour la regarder.",
+      "ageConfirm": "J'ai 18 ans ou plus",
+      "ageBack": "Retour",
+      "pendingNotice": "Cette vidéo est en attente de validation : vous seul (et l'équipe) pouvez la voir.",
+      "rejectedNotice": "Cette vidéo a été refusée par l'équipe.",
+      "notFound": "Vidéo introuvable",
+      "notFoundBody": "Cette vidéo de la communauté n'existe pas ou n'est plus disponible.",
+      "more": "Plus de la communauté",
+      "details": "Informations",
+      "duration": "Durée",
+      "year": "Année",
+      "language": "Langue",
+      "genres": "Genres",
+      "cast": "Acteurs",
+      "server": "Serveur : DoodStream (communauté)",
+      "reportHint": "Une publicité peut s'ouvrir dans le lecteur : fermez-la et revenez."
+    },
+    "searchTitle": "Communauté",
+    "searchMore": "Tout voir dans la communauté"
   }
 }

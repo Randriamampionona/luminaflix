@@ -51,7 +51,11 @@ export function getTrailerHref(id: number | string, kind: MediaKind, title?: str
 }
 
 export const tmdbImage = (path?: string | null) =>
-  path ? `https://image.tmdb.org/t/p/original${path}` : null;
+  !path
+    ? null
+    : /^https?:\/\//.test(path) || path.startsWith("/api/")
+      ? path // community posters (our own route or an external URL)
+      : `https://image.tmdb.org/t/p/original${path}`;
 
 /** Route params may or may not be URL-encoded; never throw on stray `%`. */
 export function safeDecode(value: string) {

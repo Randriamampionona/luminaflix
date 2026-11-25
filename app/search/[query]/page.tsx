@@ -1,4 +1,5 @@
 import SearchCollections from "@/components/collections/search-collections";
+import CommunitySearchSection from "@/components/community/community-search-section";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Sparkles } from "lucide-react";
@@ -81,6 +82,12 @@ export default async function SearchPage({ params, searchParams }: { params: Par
           </Link>
         ))}
       </nav>
+      {/* Approved community uploads first */}
+      {page === 1 && (
+        <Suspense key={`community:${decodedQuery}:${scope}`} fallback={null}>
+          <CommunitySearchSection query={decodedQuery} scope={scope} />
+        </Suspense>
+      )}
       {page === 1 && scope === "all" && (
         <Suspense key={`collections:${decodedQuery}`} fallback={null}>
           <SearchCollections query={decodedQuery} />
