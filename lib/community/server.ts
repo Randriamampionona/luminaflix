@@ -114,6 +114,17 @@ export async function getCommunityPoster(id: string) {
   return typeof data === "string" ? data : null;
 }
 
+/** A member's own uploads (any status), newest first — "My shares" on the upload page. */
+export async function getUploaderCommunity(userId: string) {
+  try {
+    const snap = await getDb().collection(VIDEOS).where("uploaderId", "==", userId).limit(100).get();
+    return snap.docs.map((d) => fromDoc(d.data())).sort(byNewest);
+  } catch (error) {
+    logFirebaseError("community", error);
+    return [] as CommunityVideo[];
+  }
+}
+
 /** Admin dashboard: every upload by status + counts. */
 export async function getCommunityReviewData() {
   const [pending, approved, rejected] = await Promise.all([

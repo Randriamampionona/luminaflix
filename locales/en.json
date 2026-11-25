@@ -1554,8 +1554,8 @@
       "notConfigured": "Sharing isn't available yet (video server not configured).",
       "videoTitle": "1. The video",
       "dropTitle": "Drag and drop your video here",
-      "dropBody": "or click to pick a file (MP4, MKV, AVI, MOV… up to {max} GB)",
-      "uploading": "Uploading to DoodStream… {percent}%",
+      "dropBody": "or click to pick a file (MP4, MKV, AVI, MOV… up to {max} GB, sent in pieces)",
+      "uploading": "Uploading the video… {percent}%",
       "uploaded": "Video uploaded to DoodStream",
       "processing": "DoodStream is processing it (playable in a few minutes).",
       "ready": "Video ready to play",
@@ -1607,10 +1607,19 @@
         "FAILED": "Couldn't save, try again."
       },
       "successTitle": "Thanks, it's in!",
-      "successBody": "Your video {id} will be published as soon as an admin approves it.",
+      "successBody": "Your video {id} is waiting for review: it will show up in the community as soon as an admin approves it. Follow it in \"My shares\".",
       "another": "Share another video",
       "toLibrary": "See the library",
-      "intro": "Your video goes straight to DoodStream, then an admin reviews it before it's published."
+      "intro": "Your video goes straight to DoodStream, then an admin reviews it before it's published.",
+      "transferring": "Sending to DoodStream… (a few minutes for a big video, keep this page open)",
+      "transferFailed": "The transfer to DoodStream failed.",
+      "resume": "Resume upload",
+      "resumeHint": "The upload will pick up where it stopped, without sending everything again.",
+      "mineTitle": "My shares",
+      "mineHint": "Your videos show up in the community (home, library, search) as soon as an admin approves them.",
+      "statusPending": "Waiting for review",
+      "statusApproved": "Published",
+      "statusRejected": "Declined"
     },
     "review": {
       "eyebrow": "Admin",

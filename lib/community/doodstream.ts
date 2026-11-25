@@ -40,15 +40,56 @@ async function get<T>(path: string, params: Record<string, string> = {}) {
 }
 
 /** Upload server to post the next file to. */
-export async function getUploadServer() {
+async function getUploadServer() {
   const server = await get<string>("/upload/server");
   if (typeof server !== "string" || !/^https:\/\//.test(server)) throw new Error("DoodStream: no upload server");
   return `${server}${server.includes("?") ? "&" : "?"}key=${encodeURIComponent(KEY)}`;
 }
 
-/** The API key as the first multipart field (DoodStream wants it in the form too). */
-export function apiKeyPart(boundary: string) {
-  return `--${boundary}\r\nContent-Disposition: form-data; name="api_key"\r\n\r\n${KEY}\r\n`;
+/**
+ * Sends a file to DoodStream as one multipart upload (api_key + file), streaming
+ * its bytes from `chunks` (nothing is loaded in memory). Used once a piece-by-piece
+ * upload is complete on our server.
+ */
+export async function uploadToDood({
+  name,
+  type,
+  size,
+  chunks,
+}: {
+  name: string;
+  type: string;
+  size: number;
+  chunks: AsyncIterable<Uint8Array>;
+}): Promise<DoodFile> {
+  const url = await getUploadServer();
+  const boundary = `----luminaflix${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
+  const safeName = name.replace(/["\r\n\\]/g, "_").slice(0, 200) || "video.mp4";
+  const head = new TextEncoder().encode(
+    `--${boundary}\r\nContent-Disposition: form-data; name="api_key"\r\n\r\n${KEY}\r\n` +
+      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${safeName}"\r\n` +
+      `Content-Type: ${/^[\w.+-]+\/[\w.+-]+$/.test(type) ? type : "application/octet-stream"}\r\n\r\n`,
+  );
+  const tail = new TextEncoder().encode(`\r\n--${boundary}--\r\n`);
+  async function* body() {
+    yield head;
+    for await (const chunk of chunks) yield chunk;
+    yield tail;
+  }
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type": `multipart/form-data; boundary=${boundary}`,
+      "content-length": String(head.byteLength + size + tail.byteLength),
+    },
+    body: body() as unknown as BodyInit,
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+  const data = (await res.json().catch(() => null)) as { msg?: string; result?: unknown[] } | null;
+  const raw = Array.isArray(data?.result) ? data.result[0] : null;
+  const file = raw ? toDoodFile(raw as RawFile) : null;
+  if (!file) throw new Error(`DoodStream upload failed (${res.status} ${data?.msg ?? ""})`);
+  return file;
 }
 
 const seconds = (length: unknown) => {
@@ -70,7 +111,7 @@ interface RawFile {
   status?: number | string;
 }
 
-export function toDoodFile(raw: RawFile): DoodFile | null {
+function toDoodFile(raw: RawFile): DoodFile | null {
   const fileCode = raw.filecode || raw.file_code;
   if (!fileCode || !/^[a-z0-9]+$/i.test(fileCode)) return null;
   const embed = raw.protected_embed && /^https:\/\//.test(raw.protected_embed) ? raw.protected_embed : null;

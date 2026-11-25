@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Film, ImagePlus, Info, Loader2, RefreshCw, UploadCloud, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { submitCommunityVideo } from "@/action/community.action";
@@ -26,8 +27,19 @@ interface DoodFile {
 type Upload =
   | { status: "idle" }
   | { status: "uploading"; name: string; size: number; progress: number }
+  | { status: "transferring"; name: string; size: number }
   | { status: "uploaded"; name: string; size: number; file: DoodFile }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; resumable?: boolean };
+
+/** A piece-by-piece upload in progress (see lib/community/chunked-upload.ts). */
+interface Session {
+  ticket: string;
+  chunkSize: number;
+  totalChunks: number;
+  file: File;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const VIDEO_EXT = /\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v|ts|mpg|mpeg|3gp)$/i;
 const SEASONS = Array.from({ length: 30 }, (_, i) => i + 1);
@@ -64,9 +76,12 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
   const t = useTranslations("community.upload");
   const tc = useTranslations("community");
   const fr = useLocale().startsWith("fr");
+  const router = useRouter();
   const [upload, setUpload] = useState<Upload>({ status: "idle" });
   const [dragging, setDragging] = useState(false);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const sessionRef = useRef<Session | null>(null);
+  const cancelledRef = useRef(false);
   /** Title guessed from the file name (cleared if the upload turns out to be an episode). */
   const autoTitle = useRef("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,7 +105,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
 
   // Leaving the page cancels an upload in progress: warn first.
   useEffect(() => {
-    if (upload.status !== "uploading") return;
+    if (upload.status !== "uploading" && upload.status !== "transferring") return;
     const warn = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
@@ -121,17 +136,103 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
     return () => clearInterval(timer);
   }, [uploadedCode]);
 
-  const start = (file: File) => {
+  /** Sends one piece with its own progress; true when the server stored it. */
+  const sendPiece = (session: Session, index: number, onProgress: (loaded: number) => void) =>
+    new Promise<boolean>((resolve) => {
+      const from = index * session.chunkSize;
+      const blob = session.file.slice(from, Math.min(from + session.chunkSize, session.file.size));
+      const xhr = new XMLHttpRequest();
+      xhrRef.current = xhr;
+      xhr.upload.onprogress = (e) => onProgress(e.loaded);
+      xhr.onload = () => {
+        xhrRef.current = null;
+        resolve(xhr.status === 200);
+      };
+      xhr.onerror =
+        xhr.onabort =
+        xhr.ontimeout =
+          () => {
+            xhrRef.current = null;
+            resolve(false);
+          };
+      xhr.open("PUT", `/api/community/upload/chunk?index=${index}`);
+      xhr.setRequestHeader("x-upload-ticket", session.ticket);
+      xhr.setRequestHeader("content-type", "application/octet-stream");
+      xhr.timeout = 10 * 60 * 1000;
+      xhr.send(blob);
+    });
+
+  const api = async (path: string, session: Session, method = "GET") => {
+    try {
+      const res = await fetch(path, { method, headers: { "x-upload-ticket": session.ticket }, cache: "no-store" });
+      return (await res.json()) as {
+        ok: boolean;
+        status?: string;
+        received?: number[];
+        file?: DoodFile;
+        error?: string;
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  /**
+   * Sends the pieces still missing (each retried up to 5 times), then lets the
+   * server reassemble them and send the video to DoodStream, and waits for it.
+   */
+  const run = async (session: Session, received: number[]) => {
+    const { file } = session;
+    const pieceSize = (i: number) => Math.min(session.chunkSize, file.size - i * session.chunkSize);
+    const done = new Set(received);
+    let sent = [...done].reduce((sum, i) => sum + pieceSize(i), 0);
+    const progress = (bytes: number) =>
+      setUpload({
+        status: "uploading",
+        name: file.name,
+        size: file.size,
+        progress: Math.min(100, Math.round((bytes / file.size) * 100)),
+      });
+    const fail = (message: string) => setUpload({ status: "error", message, resumable: true });
+    progress(sent);
+
+    for (let i = 0; i < session.totalChunks; i++) {
+      if (done.has(i)) continue;
+      let ok = false;
+      for (let attempt = 0; attempt < 5 && !ok; attempt++) {
+        if (cancelledRef.current) return;
+        if (attempt) await sleep(2000 * attempt);
+        ok = await sendPiece(session, i, (loaded) => progress(sent + loaded));
+      }
+      if (cancelledRef.current) return;
+      if (!ok) return fail(t("uploadFailed"));
+      sent += pieceSize(i);
+      progress(sent);
+    }
+
+    // Every piece is in: the server reassembles them and sends the video to DoodStream.
+    setUpload({ status: "transferring", name: file.name, size: file.size });
+    const completed = await api("/api/community/upload/complete", session, "POST");
+    if (!completed?.ok) return fail(t("uploadFailed"));
+    for (let tries = 0; tries < 2400; tries++) {
+      await sleep(3000);
+      if (cancelledRef.current) return;
+      const state = await api("/api/community/upload/status", session);
+      if (!state) continue; // network hiccup: ask again
+      if (state.status === "done" && state.file) {
+        sessionRef.current = null;
+        return setUpload({ status: "uploaded", name: file.name, size: file.size, file: state.file });
+      }
+      if (state.error) return fail(t("transferFailed"));
+    }
+    fail(t("uploadFailed"));
+  };
+
+  const start = async (file: File) => {
     if (!file.type.startsWith("video/") && !VIDEO_EXT.test(file.name)) {
       return setUpload({ status: "error", message: t("notVideo") });
     }
     if (file.size > maxGb * 1024 ** 3) return setUpload({ status: "error", message: t("tooLarge", { max: maxGb }) });
-
-    const form = new FormData();
-    form.append("file", file, file.name);
-    const xhr = new XMLHttpRequest();
-    xhrRef.current = xhr;
-    setUpload({ status: "uploading", name: file.name, size: file.size, progress: 0 });
     if (!title && !episodic) {
       autoTitle.current = file.name
         .replace(/\.[^.]+$/, "")
@@ -140,38 +241,53 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
         .slice(0, 140);
       setTitle(autoTitle.current);
     }
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        setUpload((u) => (u.status === "uploading" ? { ...u, progress: Math.round((e.loaded / e.total) * 100) } : u));
+    cancelledRef.current = false;
+    setUpload({ status: "uploading", name: file.name, size: file.size, progress: 0 });
+    try {
+      const res = await fetch("/api/community/upload/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        ticket?: string;
+        chunkSize?: number;
+        totalChunks?: number;
+        error?: string;
+      };
+      if (!data.ok || !data.ticket || !data.chunkSize || !data.totalChunks) {
+        return setUpload({
+          status: "error",
+          message: data.error === "TOO_LARGE" ? t("tooLarge", { max: maxGb }) : t("uploadFailed"),
+        });
       }
-    };
-    xhr.onload = () => {
-      xhrRef.current = null;
-      try {
-        const data = JSON.parse(xhr.responseText) as { ok: boolean; file?: DoodFile; error?: string };
-        if (xhr.status === 200 && data.ok && data.file) {
-          setUpload({ status: "uploaded", name: file.name, size: file.size, file: data.file });
-        } else {
-          setUpload({
-            status: "error",
-            message: data.error === "TOO_LARGE" ? t("tooLarge", { max: maxGb }) : t("uploadFailed"),
-          });
-        }
-      } catch {
-        setUpload({ status: "error", message: t("uploadFailed") });
-      }
-    };
-    xhr.onerror = () => {
-      xhrRef.current = null;
+      const session: Session = { ticket: data.ticket, chunkSize: data.chunkSize, totalChunks: data.totalChunks, file };
+      sessionRef.current = session;
+      await run(session, []);
+    } catch {
       setUpload({ status: "error", message: t("uploadFailed") });
-    };
-    xhr.open("POST", "/api/community/upload");
-    xhr.send(form);
+    }
+  };
+
+  /** "Resume": asks the server what it already has and continues from there. */
+  const resume = async () => {
+    const session = sessionRef.current;
+    if (!session) return setUpload({ status: "idle" });
+    cancelledRef.current = false;
+    setUpload({ status: "uploading", name: session.file.name, size: session.file.size, progress: 0 });
+    const state = await api("/api/community/upload/status", session);
+    if (state?.status === "done" && state.file) {
+      return setUpload({ status: "uploaded", name: session.file.name, size: session.file.size, file: state.file });
+    }
+    await run(session, state?.received ?? []);
   };
 
   const cancel = () => {
+    cancelledRef.current = true;
     xhrRef.current?.abort();
     xhrRef.current = null;
+    sessionRef.current = null;
     setUpload({ status: "idle" });
   };
 
@@ -210,6 +326,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
       });
       if (result.ok) {
         setDoneId(result.id);
+        router.refresh(); // "My shares" lists the new upload
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         setError(
@@ -261,7 +378,30 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
       {/* 1. The video */}
       <section className="space-y-4">
         <h2 className="text-lg font-black text-foreground">{t("videoTitle")}</h2>
-        {upload.status === "idle" || upload.status === "error" ? (
+        {upload.status === "error" && upload.resumable ? (
+          <div className="space-y-3 rounded-3xl border border-red-500/40 bg-red-500/10 p-5">
+            <p className="text-sm font-bold text-red-500">{upload.message}</p>
+            <p className="text-xs text-fg-muted">{t("resumeHint")}</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={resume}
+                className="flex items-center gap-1.5 rounded-xl bg-cyan-500 px-4 py-2 text-[10px] font-black tracking-widest text-black uppercase hover:bg-cyan-400"
+              >
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                {t("resume")}
+              </button>
+              <button
+                type="button"
+                onClick={cancel}
+                className="flex items-center gap-1.5 rounded-xl border border-line-strong px-4 py-2 text-[10px] font-black tracking-widest text-fg-muted uppercase hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden />
+                {t("cancel")}
+              </button>
+            </div>
+          </div>
+        ) : upload.status === "idle" || upload.status === "error" ? (
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -296,7 +436,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 <p className="truncate text-sm font-bold text-foreground">{upload.name}</p>
                 <p className="text-xs text-fg-subtle">{formatSize(upload.size, fr)}</p>
               </div>
-              {upload.status === "uploading" ? (
+              {upload.status === "transferring" ? null : upload.status === "uploading" ? (
                 <button
                   type="button"
                   onClick={cancel}
@@ -327,6 +467,16 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                   {t("uploading", { percent: upload.progress })}
+                </p>
+              </div>
+            ) : upload.status === "transferring" ? (
+              <div className="space-y-2">
+                <div className="h-2.5 overflow-hidden rounded-full bg-tint-strong">
+                  <div className="h-full w-1/3 animate-pulse rounded-full bg-violet-500" />
+                </div>
+                <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                  {t("transferring")}
                 </p>
               </div>
             ) : (

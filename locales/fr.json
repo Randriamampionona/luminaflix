@@ -1554,8 +1554,8 @@
       "notConfigured": "Le partage n'est pas encore disponible (serveur vidéo non configuré).",
       "videoTitle": "1. La vidéo",
       "dropTitle": "Glissez-déposez votre vidéo ici",
-      "dropBody": "ou cliquez pour choisir un fichier (MP4, MKV, AVI, MOV… jusqu'à {max} Go)",
-      "uploading": "Envoi vers DoodStream… {percent} %",
+      "dropBody": "ou cliquez pour choisir un fichier (MP4, MKV, AVI, MOV… jusqu'à {max} Go, envoyé par morceaux)",
+      "uploading": "Envoi de la vidéo… {percent} %",
       "uploaded": "Vidéo envoyée sur DoodStream",
       "processing": "Traitement en cours sur DoodStream (la vidéo sera lisible dans quelques minutes).",
       "ready": "Vidéo prête à la lecture",
@@ -1607,10 +1607,19 @@
         "FAILED": "Impossible d'enregistrer, réessayez."
       },
       "successTitle": "Merci, c'est envoyé !",
-      "successBody": "Votre vidéo {id} sera publiée dès qu'un administrateur l'aura validée.",
+      "successBody": "Votre vidéo {id} est en attente de validation : elle apparaîtra dans la communauté dès qu'un administrateur l'aura validée. Suivez-la dans « Mes partages ».",
       "another": "Partager une autre vidéo",
       "toLibrary": "Voir la bibliothèque",
-      "intro": "Votre vidéo est envoyée directement sur DoodStream, puis vérifiée par un administrateur avant publication."
+      "intro": "Votre vidéo est envoyée directement sur DoodStream, puis vérifiée par un administrateur avant publication.",
+      "transferring": "Transfert vers DoodStream en cours… (quelques minutes pour une grosse vidéo, gardez la page ouverte)",
+      "transferFailed": "Le transfert vers DoodStream a échoué.",
+      "resume": "Reprendre l'envoi",
+      "resumeHint": "L'envoi reprendra là où il s'est arrêté, sans tout renvoyer.",
+      "mineTitle": "Mes partages",
+      "mineHint": "Vos vidéos apparaissent dans la communauté (accueil, bibliothèque, recherche) dès qu'un administrateur les a validées.",
+      "statusPending": "En attente de validation",
+      "statusApproved": "Publiée",
+      "statusRejected": "Refusée"
     },
     "review": {
       "eyebrow": "Administration",

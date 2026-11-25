@@ -3,10 +3,12 @@ import { LogIn, ServerOff } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import SignInLink from "@/components/auth/sign-in-link";
+import MyUploads from "@/components/community/my-uploads";
 import UploadForm from "@/components/community/upload-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { doodConfigured } from "@/lib/community/doodstream";
+import { getUploaderCommunity } from "@/lib/community/server";
 
 const MAX_GB = Math.round(((Number(process.env.COMMUNITY_MAX_UPLOAD_MB) || 4096) / 1024) * 10) / 10;
 
@@ -18,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** /community/upload — signed-in members only. */
 export default async function CommunityUploadPage() {
   const [{ userId }, t] = await Promise.all([auth(), getTranslations("community.upload")]);
+  const mine = userId ? await getUploaderCommunity(userId) : [];
 
   return (
     <PageShell>
@@ -37,7 +40,10 @@ export default async function CommunityUploadPage() {
           {t("notConfigured")}
         </p>
       ) : (
-        <UploadForm maxGb={MAX_GB} />
+        <>
+          <MyUploads videos={mine} />
+          <UploadForm maxGb={MAX_GB} />
+        </>
       )}
     </PageShell>
   );
