@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import PageAd from "@/components/ads/page-ad";
 import CommunityRow from "@/components/community/community-row";
 import WordTicker from "@/components/community/word-ticker";
+import NewBadge from "@/components/whats-new/new-badge";
 import { Container } from "@/components/layout/container";
 import { getApprovedCommunity } from "@/lib/community/server";
 import { toCardVideo } from "@/lib/community/types";
@@ -63,6 +64,7 @@ export default async function CommunityPage() {
                 <span>{t("uploadPrefix")}</span>
                 <WordTicker words={words} interval={2600} />
               </span>
+              <NewBadge feature="communityUpload" />
             </Link>
           </div>
         </Container>

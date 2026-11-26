@@ -1704,5 +1704,26 @@
       "untitled": "Untitled",
       "pending": "Waiting for the team's review"
     }
+  },
+  "whatsNew": {
+    "badge": "NEW",
+    "bell": "What's new",
+    "bellUnread": "{count, plural, one {# unread update} other {# unread updates}}",
+    "title": "What's new",
+    "subtitleUnread": "{count, plural, one {One new feature to discover.} other {# new features to discover.}}",
+    "subtitleRead": "You're all caught up: here are LuminaFlix's latest features.",
+    "discover": "Discover",
+    "markAll": "Mark all as read",
+    "allRead": "All caught up",
+    "items": {
+      "community": {
+        "title": "The LuminaFlix Community",
+        "description": "Local movies, K-dramas, anime and TV shows shared by members, with likes and favorites."
+      },
+      "communityUpload": {
+        "title": "Share your videos",
+        "description": "Upload a movie or an episode: it keeps uploading while you browse, and the team reviews it before it's published."
+      }
+    }
   }
 }

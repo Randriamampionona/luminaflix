@@ -1704,5 +1704,26 @@
       "untitled": "Sans titre",
       "pending": "En attente de validation par l'équipe"
     }
+  },
+  "whatsNew": {
+    "badge": "NOUVEAU",
+    "bell": "Nouveautés",
+    "bellUnread": "{count, plural, one {# nouveauté non lue} other {# nouveautés non lues}}",
+    "title": "Nouveautés",
+    "subtitleUnread": "{count, plural, one {Une nouveauté à découvrir.} other {# nouveautés à découvrir.}}",
+    "subtitleRead": "Vous êtes à jour : voici les dernières nouveautés de LuminaFlix.",
+    "discover": "Découvrir",
+    "markAll": "Tout marquer comme lu",
+    "allRead": "Tout est lu",
+    "items": {
+      "community": {
+        "title": "La communauté LuminaFlix",
+        "description": "Films, K-dramas, animes et séries locaux partagés par les membres, avec likes et favoris."
+      },
+      "communityUpload": {
+        "title": "Partagez vos vidéos",
+        "description": "Envoyez un film ou un épisode : l'envoi continue pendant que vous naviguez, et l'équipe le valide avant publication."
+      }
+    }
   }
 }

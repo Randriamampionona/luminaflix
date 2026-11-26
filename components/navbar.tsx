@@ -36,6 +36,9 @@ import { useScrolled } from "@/hooks/use-scrolled";
 import { NAV_INLINE_COUNT, NAV_ITEMS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import NavbarActions from "./navbar-actions";
+import NewBadge, { NewDot } from "@/components/whats-new/new-badge";
+import WhatsNewBell from "@/components/whats-new/whats-new-bell";
+import { navFeature, useUnseenFeatures } from "@/lib/whats-new";
 
 const inlineItems = NAV_ITEMS.slice(0, NAV_INLINE_COUNT);
 const overflowItems = NAV_ITEMS.slice(NAV_INLINE_COUNT);
@@ -74,6 +77,7 @@ export const Logo = memo(function Logo({ size = "md" }: { size?: "sm" | "md" }) 
 
 /** Hamburger button; shows the user's avatar when signed in. */
 function MenuButton(props: React.ComponentProps<"button">) {
+  const menuHasNew = useUnseenFeatures().some((f) => f.navKey);
   const t = useTranslations("nav");
   const { user } = useUser();
   return (
@@ -84,6 +88,7 @@ function MenuButton(props: React.ComponentProps<"button">) {
       className="relative flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-line-strong bg-elevated/50 px-3 text-foreground transition-colors hover:border-cyan-500/50 hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       <Menu className="h-5 w-5" aria-hidden />
+      <NewDot show={menuHasNew} className="-top-1 -right-1" />
       {user?.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element -- Clerk avatar (the global image loader is TMDB-only)
         <img src={user.imageUrl} alt="" className="h-7 w-7 rounded-full border border-line-strong object-cover" />
@@ -111,6 +116,8 @@ export default function Navbar() {
   // Keep the item highlighted on nested pages (e.g. /movies/123).
   const isActive = useCallback((href: string) => pathname === href || pathname.startsWith(`${href}/`), [pathname]);
   const isMoreActive = overflowItems.some((item) => isActive(item.href));
+  const unseen = useUnseenFeatures();
+  const overflowHasNew = overflowItems.some((item) => unseen.some((f) => f.navKey === item.key));
 
 
   return (
@@ -144,7 +151,10 @@ export default function Navbar() {
                   isActive(item.href) ? "text-brand" : "text-fg-muted",
                 )}
               >
-                {t(`nav.${item.key}`)}
+                <span className="relative inline-flex items-center gap-1.5">
+                  {t(`nav.${item.key}`)}
+                  <NewBadge feature={navFeature(item.key)?.id} />
+                </span>
               </Link>
             ))}
 
@@ -155,7 +165,10 @@ export default function Navbar() {
                   isMoreActive ? "text-brand" : "text-fg-muted",
                 )}
               >
-                {t("nav.more")}
+                <span className="relative">
+                  {t("nav.more")}
+                  <NewDot show={overflowHasNew} className="-top-1.5 -right-2.5" />
+                </span>
                 <ChevronDown className="h-3 w-3 transition-transform duration-300 group-data-[state=open]:rotate-180" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="z-100 min-w-45 rounded-md border border-line-strong bg-surface/95 p-2 backdrop-blur-2xl">
@@ -171,7 +184,10 @@ export default function Navbar() {
                           active ? "bg-tint text-brand" : "text-fg-muted",
                         )}
                       >
-                        {t(`nav.${item.key}`)}
+                        <span className="flex items-center gap-2">
+                          {t(`nav.${item.key}`)}
+                          <NewBadge feature={navFeature(item.key)?.id} />
+                        </span>
                         {item.key === "downloadApp" ? (
                           <Download className="h-3.5 w-3.5 text-brand" aria-hidden />
                         ) : (
@@ -214,6 +230,8 @@ export default function Navbar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
+          {/* What's new: unread count + drawer of recent features */}
+          <WhatsNewBell />
           <NavbarActions />
 
           {/* Phones & tablets: search icon → /search (the bar has the full search box from lg up) */}
@@ -315,8 +333,9 @@ export default function Navbar() {
                               active ? "text-foreground" : "text-fg-subtle hover:text-foreground",
                             )}
                           >
-                            <span className={cn(item.key === "downloadApp" && !active && "text-brand")}>
+                            <span className={cn("flex items-center gap-2", item.key === "downloadApp" && !active && "text-brand")}>
                               {t(`nav.${item.key}`)}
+                              <NewBadge feature={navFeature(item.key)?.id} className="text-[9px]" />
                             </span>
                             {item.key === "downloadApp" ? (
                               <Download className="h-5 w-5 text-brand" aria-hidden />
