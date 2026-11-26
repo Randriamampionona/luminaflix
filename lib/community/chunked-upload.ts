@@ -23,6 +23,8 @@ import { uploadToDood } from "./doodstream";
 const CHUNK_BYTES = 8 * 1024 * 1024;
 const UPLOAD_ROOT = process.env.COMMUNITY_UPLOAD_DIR || path.join(homedir(), ".luminaflix-uploads");
 const TICKET_TTL_MS = 12 * 60 * 60 * 1000;
+/** A transfer with no sign of life for this long died with its server process: it can be restarted. */
+const STALLED_MS = 3 * 60 * 1000;
 const ABANDONED_MS = 24 * 60 * 60 * 1000;
 const SECRET =
   process.env.COMMUNITY_UPLOAD_SECRET || process.env.CLERK_SECRET_KEY || process.env.DOODSTREAM_API_KEY || "";
@@ -41,6 +43,8 @@ interface Meta {
   updatedAt: number;
   file?: unknown;
   error?: string;
+  /** Transfer to DoodStream: bytes sent so far. */
+  transferred?: number;
 }
 
 const isId = (id: string) => /^[a-f0-9]{24}$/.test(id);
@@ -165,10 +169,19 @@ async function receivedChunks(meta: Meta) {
 export async function uploadStatus(id: string) {
   const meta = await readMeta(id);
   if (!meta) return null;
+  // The process doing the transfer stopped (restart, deploy…): say so, so the browser can restart it.
+  if (meta.status === "transferring" && Date.now() - meta.updatedAt > STALLED_MS) {
+    console.error(`[community] transfer ${id} stalled — waiting for a restart`);
+    meta.status = "receiving";
+    meta.error = "TRANSFER_STALLED";
+    await saveMeta(meta);
+  }
   return {
     status: meta.status,
     totalChunks: meta.totalChunks,
     received: meta.status === "receiving" ? await receivedChunks(meta) : [],
+    size: meta.size,
+    transferred: meta.transferred ?? 0,
     file: meta.file ?? null,
     error: meta.error ?? null,
   };
@@ -181,13 +194,16 @@ export async function uploadStatus(id: string) {
 export async function completeUpload(id: string) {
   const meta = await readMeta(id);
   if (!meta) return { ok: false as const, error: "NOT_FOUND", status: 404 };
-  if (meta.status === "transferring" || meta.status === "done") return { ok: true as const };
+  if (meta.status === "done") return { ok: true as const };
+  if (meta.status === "transferring" && Date.now() - meta.updatedAt < STALLED_MS) return { ok: true as const };
   const received = await receivedChunks(meta);
   if (received.length !== meta.totalChunks) return { ok: false as const, error: "MISSING", status: 409 };
 
   meta.status = "transferring";
   meta.error = undefined;
+  meta.transferred = 0;
   await saveMeta(meta);
+  console.log(`[community] transfer ${id} → DoodStream started (${(meta.size / 1024 ** 2).toFixed(0)} MB)`);
 
   async function* pieces() {
     for (let i = 0; i < meta!.totalChunks; i++) {
@@ -199,14 +215,39 @@ export async function completeUpload(id: string) {
 
   // Not awaited: the transfer server → DoodStream can take a few minutes.
   void (async () => {
+    // Sign of life every 20 s (also while DoodStream processes the file after the last byte).
+    let lastSave = 0;
+    let lastLog = 0;
+    const heartbeat = setInterval(() => void saveMeta(meta).catch(() => {}), 20_000);
     try {
-      const file = await uploadToDood({ name: meta.name, type: meta.type, size: meta.size, chunks: pieces() });
+      const file = await uploadToDood({
+        name: meta.name,
+        type: meta.type,
+        size: meta.size,
+        chunks: pieces(),
+        onProgress: (sent) => {
+          meta.transferred = sent;
+          const now = Date.now();
+          if (now - lastSave > 3000) {
+            lastSave = now;
+            void saveMeta(meta).catch(() => {});
+          }
+          const percent = Math.floor((sent / meta.size) * 100);
+          if (percent >= lastLog + 10) {
+            lastLog = percent;
+            console.log(`[community] transfer ${id}: ${percent}%`);
+          }
+        },
+      });
+      clearInterval(heartbeat);
       await Promise.all(Array.from({ length: meta.totalChunks }, (_, i) => rm(partPath(meta.id, i), { force: true })));
       meta.status = "done";
       meta.file = file;
       await saveMeta(meta);
+      console.log(`[community] transfer ${id} done → DoodStream file ${file.fileCode}`);
     } catch (error) {
-      console.error("[community] transfer to DoodStream failed", error);
+      clearInterval(heartbeat);
+      console.error(`[community] transfer ${id} to DoodStream failed`, error);
       // Pieces are kept: "complete" can be called again to retry.
       meta.status = "receiving";
       meta.error = "TRANSFER_FAILED";

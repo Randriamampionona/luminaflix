@@ -1621,7 +1621,10 @@
       "statusApproved": "Published",
       "statusRejected": "Declined",
       "measuring": "measuring speed…",
-      "timeLeft": "≈ {time} left"
+      "timeLeft": "≈ {time} left",
+      "transferringPercent": "Sending to DoodStream… {percent}%",
+      "doodProcessing": "DoodStream received the video, saving it…",
+      "transferHint": "Your part is done: the server is now sending the video to DoodStream. Keep this page open until \"Video uploaded\"."
     },
     "review": {
       "eyebrow": "Admin",

@@ -1621,7 +1621,10 @@
       "statusApproved": "Publiée",
       "statusRejected": "Refusée",
       "measuring": "mesure du débit…",
-      "timeLeft": "≈ {time} restantes"
+      "timeLeft": "≈ {time} restantes",
+      "transferringPercent": "Transfert vers DoodStream… {percent} %",
+      "doodProcessing": "Vidéo reçue par DoodStream, enregistrement en cours…",
+      "transferHint": "Votre part est terminée : c'est maintenant le serveur qui envoie la vidéo à DoodStream. Gardez la page ouverte jusqu'à « Vidéo envoyée »."
     },
     "review": {
       "eyebrow": "Administration",

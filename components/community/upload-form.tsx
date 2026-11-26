@@ -36,7 +36,14 @@ type Upload =
       speed: number | null;
       eta: number | null;
     }
-  | { status: "transferring"; name: string; size: number }
+  | {
+      status: "transferring";
+      name: string;
+      size: number;
+      /** Server → DoodStream: bytes sent and speed (bytes/s), null until known. */
+      transferred: number;
+      speed: number | null;
+    }
   | { status: "uploaded"; name: string; size: number; file: DoodFile }
   | { status: "error"; message: string; resumable?: boolean };
 
@@ -194,6 +201,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
         ok: boolean;
         status?: string;
         received?: number[];
+        transferred?: number;
         file?: DoodFile;
         error?: string;
       };
@@ -271,21 +279,38 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
     progress(true);
 
     // Every piece is in: the server reassembles them and sends the video to DoodStream.
-    setUpload({ status: "transferring", name: file.name, size: file.size });
-    const completed = await api("/api/community/upload/complete", session, "POST");
-    if (!completed?.ok) return fail(t("uploadFailed"));
-    for (let tries = 0; tries < 2400; tries++) {
-      await sleep(3000);
-      if (cancelledRef.current) return;
-      const state = await api("/api/community/upload/status", session);
-      if (!state) continue; // network hiccup: ask again
-      if (state.status === "done" && state.file) {
-        sessionRef.current = null;
-        return setUpload({ status: "uploaded", name: file.name, size: file.size, file: state.file });
+    // It is restarted automatically (up to 3 times) if it fails or its server process stops.
+    let transferSamples: [number, number][] = [];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      setUpload({ status: "transferring", name: file.name, size: file.size, transferred: 0, speed: null });
+      transferSamples = [];
+      const completed = await api("/api/community/upload/complete", session, "POST");
+      if (!completed?.ok) return fail(t("uploadFailed"));
+      for (let tries = 0; tries < 4800; tries++) {
+        await sleep(3000);
+        if (cancelledRef.current) return;
+        const state = await api("/api/community/upload/status", session);
+        if (!state) continue; // network hiccup: ask again
+        if (state.status === "done" && state.file) {
+          sessionRef.current = null;
+          return setUpload({ status: "uploaded", name: file.name, size: file.size, file: state.file });
+        }
+        if (state.error) break; // failed / stalled: start the transfer again
+        const now = Date.now();
+        const bytes = state.transferred ?? 0;
+        transferSamples.push([now, bytes]);
+        while (transferSamples.length > 2 && now - transferSamples[0][0] > 15000) transferSamples.shift();
+        const [t0, b0] = transferSamples[0];
+        setUpload({
+          status: "transferring",
+          name: file.name,
+          size: file.size,
+          transferred: bytes,
+          speed: now - t0 >= 5000 ? ((bytes - b0) * 1000) / (now - t0) : null,
+        });
       }
-      if (state.error) return fail(t("transferFailed"));
     }
-    fail(t("uploadFailed"));
+    fail(t("transferFailed"));
   };
 
   const start = async (file: File) => {
@@ -556,12 +581,43 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
             ) : upload.status === "transferring" ? (
               <div className="space-y-2">
                 <div className="h-2.5 overflow-hidden rounded-full bg-tint-strong">
-                  <div className="h-full w-1/3 animate-pulse rounded-full bg-violet-500" />
+                  {upload.transferred > 0 ? (
+                    <div
+                      className="h-full rounded-full bg-violet-500 transition-all"
+                      style={{ width: `${Math.min(100, (upload.transferred / upload.size) * 100)}%` }}
+                    />
+                  ) : (
+                    <div className="h-full w-1/3 animate-pulse rounded-full bg-violet-500" />
+                  )}
                 </div>
                 <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                  {t("transferring")}
+                  {upload.transferred >= upload.size
+                    ? t("doodProcessing")
+                    : t("transferringPercent", { percent: Math.floor((upload.transferred / upload.size) * 100) })}
                 </p>
+                <p className="flex flex-wrap items-center gap-x-2 font-mono text-[11px] text-fg-subtle">
+                  <span>
+                    {formatBytes(upload.transferred, fr)} / {formatBytes(upload.size, fr)}
+                  </span>
+                  {upload.speed !== null && upload.transferred < upload.size && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span className="font-bold text-violet-500 dark:text-violet-300">
+                        {formatBytes(upload.speed, fr)}/s
+                      </span>
+                      {upload.speed > 0 && (
+                        <>
+                          <span aria-hidden>·</span>
+                          <span>
+                            {t("timeLeft", { time: formatDuration((upload.size - upload.transferred) / upload.speed) })}
+                          </span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </p>
+                <p className="text-[11px] text-fg-muted">{t("transferHint")}</p>
               </div>
             ) : (
               <div className="space-y-1 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs">

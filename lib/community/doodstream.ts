@@ -1,4 +1,6 @@
 import "server-only";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 
 /**
  * DoodStream API (https://doodstream.com/api-docs), server only — the API key
@@ -50,45 +52,77 @@ async function getUploadServer() {
  * Sends a file to DoodStream as one multipart upload (api_key + file), streaming
  * its bytes from `chunks` (nothing is loaded in memory). Used once a piece-by-piece
  * upload is complete on our server.
+ *
+ * Plain node:https rather than fetch: fetch gives up when DoodStream hasn't
+ * answered 5 minutes after the request started — far too short for a big file.
+ * Here the only limit is 10 minutes without any activity.
  */
 export async function uploadToDood({
   name,
   type,
   size,
   chunks,
+  onProgress,
 }: {
   name: string;
   type: string;
   size: number;
   chunks: AsyncIterable<Uint8Array>;
+  /** Bytes of the video sent so far. */
+  onProgress?: (sent: number) => void;
 }): Promise<DoodFile> {
-  const url = await getUploadServer();
+  const url = new URL(await getUploadServer());
   const boundary = `----luminaflix${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
   const safeName = name.replace(/["\r\n\\]/g, "_").slice(0, 200) || "video.mp4";
-  const head = new TextEncoder().encode(
+  const head = Buffer.from(
     `--${boundary}\r\nContent-Disposition: form-data; name="api_key"\r\n\r\n${KEY}\r\n` +
       `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${safeName}"\r\n` +
       `Content-Type: ${/^[\w.+-]+\/[\w.+-]+$/.test(type) ? type : "application/octet-stream"}\r\n\r\n`,
   );
-  const tail = new TextEncoder().encode(`\r\n--${boundary}--\r\n`);
-  async function* body() {
-    yield head;
-    for await (const chunk of chunks) yield chunk;
-    yield tail;
+  const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+
+  const text = await new Promise<string>((resolve, reject) => {
+    const send = url.protocol === "https:" ? httpsRequest : httpRequest;
+    const req = send(url, {
+      method: "POST",
+      headers: {
+        "content-type": `multipart/form-data; boundary=${boundary}`,
+        "content-length": String(head.byteLength + size + tail.byteLength),
+      },
+    });
+    req.setTimeout(10 * 60 * 1000, () => req.destroy(new Error("DoodStream: no activity for 10 minutes")));
+    req.on("error", reject);
+    req.on("response", (res) => {
+      let data = "";
+      res.setEncoding("utf8");
+      res.on("data", (part: string) => (data += part));
+      res.on("end", () => resolve(data));
+      res.on("error", reject);
+    });
+    const write = (buffer: Uint8Array) =>
+      new Promise<void>((done) => (req.write(buffer) ? done() : req.once("drain", done)));
+    void (async () => {
+      await write(head);
+      let sent = 0;
+      for await (const chunk of chunks) {
+        await write(chunk);
+        sent += chunk.byteLength;
+        onProgress?.(sent);
+      }
+      await write(tail);
+      req.end();
+    })().catch((error) => req.destroy(error as Error));
+  });
+
+  let data: { msg?: string; status?: number; result?: unknown[] } | null = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // not JSON: reported below
   }
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "content-type": `multipart/form-data; boundary=${boundary}`,
-      "content-length": String(head.byteLength + size + tail.byteLength),
-    },
-    body: body() as unknown as BodyInit,
-    duplex: "half",
-  } as RequestInit & { duplex: "half" });
-  const data = (await res.json().catch(() => null)) as { msg?: string; result?: unknown[] } | null;
   const raw = Array.isArray(data?.result) ? data.result[0] : null;
   const file = raw ? toDoodFile(raw as RawFile) : null;
-  if (!file) throw new Error(`DoodStream upload failed (${res.status} ${data?.msg ?? ""})`);
+  if (!file) throw new Error(`DoodStream upload failed: ${data?.msg ?? text.slice(0, 200)}`);
   return file;
 }
 
