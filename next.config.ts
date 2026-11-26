@@ -22,7 +22,11 @@ const PLAYER_PAGES = ["/movies/:id", "/k-drama/play/:id", "/tv-shows/play/:id", 
 const nextConfig: NextConfig = {
   // Self-contained server (.next/standalone) for Namecheap's cPanel Node.js App.
   output: "standalone",
-  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
+  env: {
+    NEXT_PUBLIC_BUILD_ID: BUILD_ID,
+    // Community upload size limit, also shown by the floating upload widget.
+    NEXT_PUBLIC_COMMUNITY_MAX_UPLOAD_MB: process.env.COMMUNITY_MAX_UPLOAD_MB || "4096",
+  },
   // Push service worker: always fetch the latest version.
   async headers() {
     return [

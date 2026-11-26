@@ -1,88 +1,34 @@
 "use client";
 
-import { CheckCircle2, Film, ImagePlus, Info, Loader2, RefreshCw, UploadCloud, X } from "lucide-react";
+import { CheckCircle2, Clock, Film, ImagePlus, Info, Loader2, RefreshCw, UploadCloud, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { submitCommunityVideo } from "@/action/community.action";
+import { useEffect, useRef, useState } from "react";
+import UploadProgress from "@/components/community/upload-progress";
+import { useCommunityUpload } from "@/hooks/use-community-upload";
+import { formatBytes } from "@/lib/community/format";
 import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_GENRES,
   COMMUNITY_LANGUAGES,
+  communityWatchHref,
   isEpisodic,
-  type CommunityCategory,
   type CommunityGenre,
 } from "@/lib/community/types";
+import {
+  cancelUpload,
+  resumeUpload,
+  setDraft,
+  startAnother,
+  startUpload,
+  submitForReview,
+  type DraftError,
+} from "@/lib/community/upload-store";
 import { cn } from "@/lib/utils";
 
-interface DoodFile {
-  fileCode: string;
-  embedUrl: string;
-  thumbnail: string | null;
-  durationSec: number | null;
-  canPlay: boolean;
-}
-
-type Upload =
-  | { status: "idle" }
-  | {
-      status: "uploading";
-      name: string;
-      size: number;
-      progress: number;
-      /** Bytes sent, current speed (bytes/s) and time left (s) — null until measurable. */
-      sent: number;
-      speed: number | null;
-      eta: number | null;
-    }
-  | {
-      status: "transferring";
-      name: string;
-      size: number;
-      /** Server → DoodStream: bytes sent and speed (bytes/s), null until known. */
-      transferred: number;
-      speed: number | null;
-    }
-  | { status: "uploaded"; name: string; size: number; file: DoodFile }
-  | { status: "error"; message: string; resumable?: boolean };
-
-/** A piece-by-piece upload in progress (see lib/community/chunked-upload.ts). */
-interface Session {
-  ticket: string;
-  chunkSize: number;
-  totalChunks: number;
-  file: File;
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const VIDEO_EXT = /\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v|ts|mpg|mpeg|3gp)$/i;
 const SEASONS = Array.from({ length: 30 }, (_, i) => i + 1);
 const EPISODES = Array.from({ length: 200 }, (_, i) => i + 1);
-/** 1,36 Go · 474 Ko · 5,2 Mo (FR) / 1.36 GB · 474 KB · 5.2 MB (EN). */
-function formatBytes(bytes: number, fr: boolean) {
-  const units = fr ? ["o", "Ko", "Mo", "Go"] : ["B", "KB", "MB", "GB"];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  const digits = value >= 100 || unit === 0 ? 0 : value >= 10 ? 1 : 2;
-  return `${value.toLocaleString(fr ? "fr-FR" : "en-US", { maximumFractionDigits: digits })} ${units[unit]}`;
-}
-
-/** 1 h 05 min · 12 min · 40 s */
-function formatDuration(seconds: number) {
-  const s = Math.max(1, Math.round(seconds));
-  if (s >= 3600) return `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, "0")} min`;
-  if (s >= 60) return `${Math.round(s / 60)} min`;
-  return `${s} s`;
-}
-
-/** Pieces sent at the same time: no idle gap between pieces, and a slow request doesn't stall the others. */
-const PARALLEL = 3;
 
 /** Poster → 400×600 WebP (JPEG where WebP can't be encoded), cropped to fill. */
 async function resizePoster(file: File): Promise<string> {
@@ -104,421 +50,128 @@ const field =
 const label = "mb-1.5 block text-[10px] font-black tracking-widest text-fg-subtle uppercase";
 
 /**
- * /community/upload: drag-and-drop video → sent to DoodStream through
- * /api/community/upload (with progress), then the details, then "Submit for review".
+ * /community/upload: the video (drag and drop) and its details. The upload itself
+ * lives in the app-wide store (lib/community/upload-store.ts): it continues while
+ * the member browses elsewhere, and "Submit" can be pressed before it ends.
  */
 export default function UploadForm({ maxGb }: { maxGb: number }) {
   const t = useTranslations("community.upload");
   const tc = useTranslations("community");
   const fr = useLocale().startsWith("fr");
   const router = useRouter();
-  const [upload, setUpload] = useState<Upload>({ status: "idle" });
+  const { upload, draft, submission } = useCommunityUpload();
   const [dragging, setDragging] = useState(false);
-  const xhrsRef = useRef(new Set<XMLHttpRequest>());
-  /** (time, bytes sent) over the last seconds, for the speed meter. */
-  const samplesRef = useRef<[number, number][]>([]);
-  const sessionRef = useRef<Session | null>(null);
-  const cancelledRef = useRef(false);
-  /** Title guessed from the file name (cleared if the upload turns out to be an episode). */
-  const autoTitle = useRef("");
+  const [error, setError] = useState<DraftError | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const episodic = isEpisodic(draft.category);
+  const maxBytes = maxGb * 1024 ** 3;
+  const active = upload.status === "uploading" || upload.status === "transferring";
 
-  const [category, setCategory] = useState<CommunityCategory>("movie");
-  const [seriesTitle, setSeriesTitle] = useState("");
-  const [season, setSeason] = useState(1);
-  const [episode, setEpisode] = useState(1);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [year, setYear] = useState("");
-  const [language, setLanguage] = useState("");
-  const [genres, setGenres] = useState<CommunityGenre[]>([]);
-  const [cast, setCast] = useState("");
-  const [posterData, setPosterData] = useState<string | null>(null);
-  const [posterUrl, setPosterUrl] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [doneId, setDoneId] = useState<string | null>(null);
-  const [submitting, startSubmit] = useTransition();
-  const episodic = isEpisodic(category);
-
-  // Leaving the page cancels an upload in progress: warn first.
+  // "My shares" (server-rendered above the form) lists the new upload.
+  const submittedId = submission.status === "submitted" ? submission.id : null;
   useEffect(() => {
-    if (upload.status !== "uploading" && upload.status !== "transferring") return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [upload.status]);
+    if (submittedId) router.refresh();
+  }, [submittedId, router]);
 
-  // DoodStream encodes the video after the upload: check every 15 s until it's playable.
-  const uploadedCode = upload.status === "uploaded" && !upload.file.canPlay ? upload.file.fileCode : null;
-  useEffect(() => {
-    if (!uploadedCode) return;
-    let tries = 0;
-    const timer = setInterval(async () => {
-      tries += 1;
-      if (tries > 60) return clearInterval(timer);
-      try {
-        const res = await fetch(`/api/community/dood/${uploadedCode}`, { cache: "no-store" });
-        const data = (await res.json()) as { ok: boolean; file?: DoodFile };
-        if (data.ok && data.file?.canPlay) {
-          setUpload((u) => (u.status === "uploaded" ? { ...u, file: { ...u.file, ...data.file! } } : u));
-          clearInterval(timer);
-        }
-      } catch {
-        // try again on the next tick
-      }
-    }, 15000);
-    return () => clearInterval(timer);
-  }, [uploadedCode]);
-
-  /** Sends one piece with its own progress; true when the server stored it. */
-  const sendPiece = (session: Session, index: number, onProgress: (loaded: number) => void) =>
-    new Promise<boolean>((resolve) => {
-      const from = index * session.chunkSize;
-      const blob = session.file.slice(from, Math.min(from + session.chunkSize, session.file.size));
-      const xhr = new XMLHttpRequest();
-      xhrsRef.current.add(xhr);
-      const finish = (ok: boolean) => {
-        xhrsRef.current.delete(xhr);
-        resolve(ok);
-      };
-      xhr.upload.onprogress = (e) => onProgress(e.loaded);
-      xhr.onload = () => finish(xhr.status === 200);
-      xhr.onerror = xhr.onabort = xhr.ontimeout = () => finish(false);
-      xhr.open("PUT", `/api/community/upload/chunk?index=${index}`);
-      xhr.setRequestHeader("x-upload-ticket", session.ticket);
-      xhr.setRequestHeader("content-type", "application/octet-stream");
-      xhr.timeout = 10 * 60 * 1000;
-      xhr.send(blob);
-    });
-
-  const api = async (path: string, session: Session, method = "GET") => {
-    try {
-      const res = await fetch(path, { method, headers: { "x-upload-ticket": session.ticket }, cache: "no-store" });
-      return (await res.json()) as {
-        ok: boolean;
-        status?: string;
-        received?: number[];
-        transferred?: number;
-        file?: DoodFile;
-        error?: string;
-      };
-    } catch {
-      return null;
-    }
-  };
-
-  /**
-   * Sends the pieces still missing (each retried up to 5 times), then lets the
-   * server reassemble them and send the video to DoodStream, and waits for it.
-   */
-  const run = async (session: Session, received: number[]) => {
-    const { file } = session;
-    const pieceSize = (i: number) => Math.min(session.chunkSize, file.size - i * session.chunkSize);
-    const done = new Set(received);
-    let sent = [...done].reduce((sum, i) => sum + pieceSize(i), 0);
-    /** Bytes of the pieces in flight. */
-    const inFlight = new Map<number, number>();
-    let lastPaint = 0;
-    samplesRef.current = [];
-
-    const progress = (force = false) => {
-      const now = Date.now();
-      const bytes = sent + [...inFlight.values()].reduce((a, b) => a + b, 0);
-      const samples = samplesRef.current;
-      samples.push([now, bytes]);
-      while (samples.length > 2 && now - samples[0][0] > 6000) samples.shift();
-      if (!force && now - lastPaint < 300) return;
-      lastPaint = now;
-      const [t0, b0] = samples[0];
-      const speed = now - t0 >= 1500 ? ((bytes - b0) * 1000) / (now - t0) : null;
-      setUpload({
-        status: "uploading",
-        name: file.name,
-        size: file.size,
-        progress: Math.min(100, Math.floor((bytes / file.size) * 100)),
-        sent: bytes,
-        speed,
-        eta: speed && speed > 0 ? (file.size - bytes) / speed : null,
-      });
-    };
-    const fail = (message: string) => setUpload({ status: "error", message, resumable: true });
-    progress(true);
-
-    const queue = Array.from({ length: session.totalChunks }, (_, i) => i).filter((i) => !done.has(i));
-    let failed = false;
-    const worker = async () => {
-      while (queue.length && !failed && !cancelledRef.current) {
-        const index = queue.shift()!;
-        let ok = false;
-        for (let attempt = 0; attempt < 5 && !ok && !cancelledRef.current; attempt++) {
-          if (attempt) await sleep(2000 * attempt);
-          inFlight.set(index, 0);
-          ok = await sendPiece(session, index, (loaded) => {
-            inFlight.set(index, loaded);
-            progress();
-          });
-        }
-        inFlight.delete(index);
-        if (!ok) {
-          failed = true;
-          break;
-        }
-        sent += pieceSize(index);
-        progress();
-      }
-    };
-    await Promise.all(Array.from({ length: Math.min(PARALLEL, queue.length || 1) }, worker));
-    if (cancelledRef.current) return;
-    if (failed) {
-      xhrsRef.current.forEach((xhr) => xhr.abort());
-      return fail(t("uploadFailed"));
-    }
-    progress(true);
-
-    // Every piece is in: the server reassembles them and sends the video to DoodStream.
-    // It is restarted automatically (up to 3 times) if it fails or its server process stops.
-    let transferSamples: [number, number][] = [];
-    for (let attempt = 0; attempt < 3; attempt++) {
-      setUpload({ status: "transferring", name: file.name, size: file.size, transferred: 0, speed: null });
-      transferSamples = [];
-      const completed = await api("/api/community/upload/complete", session, "POST");
-      if (!completed?.ok) return fail(t("uploadFailed"));
-      for (let tries = 0; tries < 4800; tries++) {
-        await sleep(3000);
-        if (cancelledRef.current) return;
-        const state = await api("/api/community/upload/status", session);
-        if (!state) continue; // network hiccup: ask again
-        if (state.status === "done" && state.file) {
-          sessionRef.current = null;
-          return setUpload({ status: "uploaded", name: file.name, size: file.size, file: state.file });
-        }
-        if (state.error) break; // failed / stalled: start the transfer again
-        const now = Date.now();
-        const bytes = state.transferred ?? 0;
-        transferSamples.push([now, bytes]);
-        while (transferSamples.length > 2 && now - transferSamples[0][0] > 15000) transferSamples.shift();
-        const [t0, b0] = transferSamples[0];
-        setUpload({
-          status: "transferring",
-          name: file.name,
-          size: file.size,
-          transferred: bytes,
-          speed: now - t0 >= 5000 ? ((bytes - b0) * 1000) / (now - t0) : null,
-        });
-      }
-    }
-    fail(t("transferFailed"));
-  };
-
-  const start = async (file: File) => {
-    if (!file.type.startsWith("video/") && !VIDEO_EXT.test(file.name)) {
-      return setUpload({ status: "error", message: t("notVideo") });
-    }
-    if (file.size > maxGb * 1024 ** 3) return setUpload({ status: "error", message: t("tooLarge", { max: maxGb }) });
-    if (!title && !episodic) {
-      autoTitle.current = file.name
-        .replace(/\.[^.]+$/, "")
-        .replace(/[._]+/g, " ")
-        .trim()
-        .slice(0, 140);
-      setTitle(autoTitle.current);
-    }
-    cancelledRef.current = false;
-    setUpload({ status: "uploading", name: file.name, size: file.size, progress: 0, sent: 0, speed: null, eta: null });
-    try {
-      const res = await fetch("/api/community/upload/start", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
-      });
-      const data = (await res.json()) as {
-        ok: boolean;
-        ticket?: string;
-        chunkSize?: number;
-        totalChunks?: number;
-        error?: string;
-      };
-      if (!data.ok || !data.ticket || !data.chunkSize || !data.totalChunks) {
-        return setUpload({
-          status: "error",
-          message: data.error === "TOO_LARGE" ? t("tooLarge", { max: maxGb }) : t("uploadFailed"),
-        });
-      }
-      const session: Session = { ticket: data.ticket, chunkSize: data.chunkSize, totalChunks: data.totalChunks, file };
-      sessionRef.current = session;
-      await run(session, []);
-    } catch {
-      setUpload({ status: "error", message: t("uploadFailed") });
-    }
-  };
-
-  /** "Resume": asks the server what it already has and continues from there. */
-  const resume = async () => {
-    const session = sessionRef.current;
-    if (!session) return setUpload({ status: "idle" });
-    cancelledRef.current = false;
-    setUpload({
-      status: "uploading",
-      name: session.file.name,
-      size: session.file.size,
-      progress: 0,
-      sent: 0,
-      speed: null,
-      eta: null,
-    });
-    const state = await api("/api/community/upload/status", session);
-    if (state?.status === "done" && state.file) {
-      return setUpload({ status: "uploaded", name: session.file.name, size: session.file.size, file: state.file });
-    }
-    await run(session, state?.received ?? []);
-  };
-
-  const cancel = () => {
-    cancelledRef.current = true;
-    xhrsRef.current.forEach((xhr) => xhr.abort());
-    xhrsRef.current.clear();
-    sessionRef.current = null;
-    setUpload({ status: "idle" });
+  const pick = (file: File | undefined) => {
+    if (file) void startUpload(file, maxBytes);
   };
 
   const onPoster = async (file: File | undefined) => {
     if (!file || !file.type.startsWith("image/")) return;
     try {
-      setPosterData(await resizePoster(file));
-      setPosterUrl("");
+      setDraft({ posterData: await resizePoster(file), posterUrl: "" });
     } catch {
-      setError(t("errors.POSTER_FILE"));
+      // unreadable image: ignore
     }
   };
 
   const toggleGenre = (g: CommunityGenre) =>
-    setGenres((list) => (list.includes(g) ? list.filter((x) => x !== g) : list.length < 4 ? [...list, g] : list));
-
-  const ready = upload.status === "uploaded";
-  const submit = () => {
-    setError(null);
-    if (!ready) return setError(t("needVideo"));
-    startSubmit(async () => {
-      const result = await submitCommunityVideo({
-        category,
-        title,
-        seriesTitle,
-        season,
-        episode,
-        description,
-        year: year ? Number(year) : null,
-        genres,
-        language: language || null,
-        cast: cast || null,
-        posterUrl: posterUrl || null,
-        posterData,
-        doodFileCode: upload.file.fileCode,
-      });
-      if (result.ok) {
-        setDoneId(result.id);
-        router.refresh(); // "My shares" lists the new upload
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        setError(
-          t.has(`errors.${result.error}` as "errors.FAILED")
-            ? t(`errors.${result.error}` as "errors.FAILED")
-            : t("errors.FAILED"),
-        );
-      }
+    setDraft({
+      genres: draft.genres.includes(g)
+        ? draft.genres.filter((x) => x !== g)
+        : draft.genres.length < 4
+          ? [...draft.genres, g]
+          : draft.genres,
     });
+
+  const submit = () => {
+    setError(submitForReview());
   };
 
-  const reset = () => {
-    setDoneId(null);
-    setUpload({ status: "idle" });
-    setTitle("");
-    setDescription("");
-    setPosterData(null);
-    setPosterUrl("");
-    setEpisode((e) => Math.min(e + 1, 200));
-  };
-
-  if (doneId) {
+  if (submission.status === "submitted" && submission.id) {
     return (
       <div className="mx-auto max-w-xl space-y-5 rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-8 text-center">
         <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" aria-hidden />
         <h2 className="text-2xl font-black text-foreground">{t("successTitle")}</h2>
-        <p className="text-sm text-fg-muted">{t("successBody", { id: doneId })}</p>
+        <p className="text-sm text-fg-muted">{t("successBody", { id: submission.id })}</p>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <button
             type="button"
-            onClick={reset}
+            onClick={startAnother}
             className="rounded-2xl bg-cyan-500 px-5 py-3 text-xs font-black tracking-widest text-black uppercase hover:bg-cyan-400"
           >
             {t("another")}
           </button>
           <Link
-            href="/community/browse"
+            href={communityWatchHref({ id: submission.id, category: submission.category ?? "movie" })}
             className="rounded-2xl border border-line-strong bg-tint px-5 py-3 text-xs font-black tracking-widest text-fg-soft uppercase hover:text-foreground"
           >
-            {t("toLibrary")}
+            {tc("widget.watch")}
           </Link>
         </div>
       </div>
     );
   }
 
+  const queued = submission.status === "queued" || submission.status === "submitting";
+  const errorText = (code: DraftError | string) =>
+    t.has(`errors.${code}` as "errors.FAILED") ? t(`errors.${code}` as "errors.FAILED") : t("errors.FAILED");
+
   return (
     <div data-no-smartlink className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       {/* 1. The video */}
       <section className="space-y-4">
         <h2 className="text-lg font-black text-foreground">{t("videoTitle")}</h2>
-        {upload.status === "error" && upload.resumable ? (
-          <div className="space-y-3 rounded-3xl border border-red-500/40 bg-red-500/10 p-5">
-            <p className="text-sm font-bold text-red-500">{upload.message}</p>
-            <p className="text-xs text-fg-muted">{t("resumeHint")}</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={resume}
-                className="flex items-center gap-1.5 rounded-xl bg-cyan-500 px-4 py-2 text-[10px] font-black tracking-widest text-black uppercase hover:bg-cyan-400"
-              >
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-                {t("resume")}
-              </button>
-              <button
-                type="button"
-                onClick={cancel}
-                className="flex items-center gap-1.5 rounded-xl border border-line-strong px-4 py-2 text-[10px] font-black tracking-widest text-fg-muted uppercase hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" aria-hidden />
-                {t("cancel")}
-              </button>
-            </div>
-          </div>
-        ) : upload.status === "idle" || upload.status === "error" ? (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragging(false);
-              const file = e.dataTransfer.files?.[0];
-              if (file) start(file);
-            }}
-            className={cn(
-              "flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-6 text-center transition-colors",
-              dragging ? "border-cyan-500 bg-cyan-500/10" : "border-line-strong bg-tint hover:border-cyan-500/60",
+
+        {upload.status === "idle" ||
+        upload.status === "interrupted" ||
+        (upload.status === "error" && !upload.resumable) ? (
+          <>
+            {upload.status !== "idle" && (
+              <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4">
+                <UploadProgress upload={upload} maxGb={maxGb} />
+              </div>
             )}
-          >
-            <UploadCloud className={cn("h-12 w-12", dragging ? "text-brand" : "text-fg-faint")} aria-hidden />
-            <span className="text-base font-black text-foreground">{t("dropTitle")}</span>
-            <span className="max-w-sm text-xs text-fg-muted">{t("dropBody", { max: maxGb })}</span>
-            {upload.status === "error" && <span className="text-xs font-bold text-red-500">{upload.message}</span>}
-          </button>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                pick(e.dataTransfer.files?.[0]);
+              }}
+              className={cn(
+                "flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-6 text-center transition-colors",
+                dragging ? "border-cyan-500 bg-cyan-500/10" : "border-line-strong bg-tint hover:border-cyan-500/60",
+              )}
+            >
+              <UploadCloud className={cn("h-12 w-12", dragging ? "text-brand" : "text-fg-faint")} aria-hidden />
+              <span className="text-base font-black text-foreground">
+                {upload.status === "interrupted" ? t("pickAgain") : t("dropTitle")}
+              </span>
+              <span className="max-w-sm text-xs text-fg-muted">
+                {upload.status === "interrupted"
+                  ? `${upload.name} · ${formatBytes(upload.size, fr)}`
+                  : t("dropBody", { max: maxGb })}
+              </span>
+            </button>
+          </>
         ) : (
           <div className="space-y-4 rounded-3xl border border-line-strong bg-surface p-5">
             <div className="flex items-center gap-3">
@@ -526,22 +179,25 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 <Film className="h-5 w-5" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-foreground">{upload.name}</p>
-                <p className="text-xs text-fg-subtle">{formatBytes(upload.size, fr)}</p>
+                <p className="truncate text-sm font-bold text-foreground">{"name" in upload ? upload.name : ""}</p>
+                <p className="text-xs text-fg-subtle">
+                  {"size" in upload && upload.size ? formatBytes(upload.size, fr) : ""}
+                </p>
               </div>
-              {upload.status === "transferring" ? null : upload.status === "uploading" ? (
+              {upload.status === "uploading" && (
                 <button
                   type="button"
-                  onClick={cancel}
+                  onClick={cancelUpload}
                   className="flex items-center gap-1.5 rounded-xl border border-line-strong px-3 py-2 text-[10px] font-black tracking-widest text-fg-muted uppercase hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden />
                   {t("cancel")}
                 </button>
-              ) : (
+              )}
+              {(upload.status === "uploaded" || upload.status === "error") && (
                 <button
                   type="button"
-                  onClick={() => setUpload({ status: "idle" })}
+                  onClick={cancelUpload}
                   className="flex items-center gap-1.5 rounded-xl border border-line-strong px-3 py-2 text-[10px] font-black tracking-widest text-fg-muted uppercase hover:text-foreground"
                 >
                   <RefreshCw className="h-3.5 w-3.5" aria-hidden />
@@ -549,84 +205,21 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 </button>
               )}
             </div>
-            {upload.status === "uploading" ? (
+            <UploadProgress upload={upload} maxGb={maxGb} />
+            {upload.status === "uploaded" && !upload.file.canPlay && (
+              <p className="text-xs text-fg-muted">{t("processing")}</p>
+            )}
+            {upload.status === "error" && upload.resumable && (
               <div className="space-y-2">
-                <div className="h-2.5 overflow-hidden rounded-full bg-tint-strong">
-                  <div
-                    className="h-full rounded-full bg-cyan-500 transition-all"
-                    style={{ width: `${upload.progress}%` }}
-                  />
-                </div>
-                <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                  {t("uploading", { percent: upload.progress })}
-                </p>
-                {/* Connection meter: sent / total · speed · time left */}
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] text-fg-subtle">
-                  <span>
-                    {formatBytes(upload.sent, fr)} / {formatBytes(upload.size, fr)}
-                  </span>
-                  <span aria-hidden>·</span>
-                  <span className="font-bold text-brand">
-                    {upload.speed !== null ? `${formatBytes(upload.speed, fr)}/s` : t("measuring")}
-                  </span>
-                  {upload.eta !== null && (
-                    <>
-                      <span aria-hidden>·</span>
-                      <span>{t("timeLeft", { time: formatDuration(upload.eta) })}</span>
-                    </>
-                  )}
-                </p>
-              </div>
-            ) : upload.status === "transferring" ? (
-              <div className="space-y-2">
-                <div className="h-2.5 overflow-hidden rounded-full bg-tint-strong">
-                  {upload.transferred > 0 ? (
-                    <div
-                      className="h-full rounded-full bg-violet-500 transition-all"
-                      style={{ width: `${Math.min(100, (upload.transferred / upload.size) * 100)}%` }}
-                    />
-                  ) : (
-                    <div className="h-full w-1/3 animate-pulse rounded-full bg-violet-500" />
-                  )}
-                </div>
-                <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                  {upload.transferred >= upload.size
-                    ? t("doodProcessing")
-                    : t("transferringPercent", { percent: Math.floor((upload.transferred / upload.size) * 100) })}
-                </p>
-                <p className="flex flex-wrap items-center gap-x-2 font-mono text-[11px] text-fg-subtle">
-                  <span>
-                    {formatBytes(upload.transferred, fr)} / {formatBytes(upload.size, fr)}
-                  </span>
-                  {upload.speed !== null && upload.transferred < upload.size && (
-                    <>
-                      <span aria-hidden>·</span>
-                      <span className="font-bold text-violet-500 dark:text-violet-300">
-                        {formatBytes(upload.speed, fr)}/s
-                      </span>
-                      {upload.speed > 0 && (
-                        <>
-                          <span aria-hidden>·</span>
-                          <span>
-                            {t("timeLeft", { time: formatDuration((upload.size - upload.transferred) / upload.speed) })}
-                          </span>
-                        </>
-                      )}
-                    </>
-                  )}
-                </p>
-                <p className="text-[11px] text-fg-muted">{t("transferHint")}</p>
-              </div>
-            ) : (
-              <div className="space-y-1 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs">
-                <p className="flex items-center gap-2 font-black text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" aria-hidden />
-                  {upload.file.canPlay ? t("ready") : t("uploaded")}
-                </p>
-                {!upload.file.canPlay && <p className="text-fg-muted">{t("processing")}</p>}
-                <p className="font-mono text-[10px] text-fg-subtle">DoodStream · {upload.file.fileCode}</p>
+                <p className="text-xs text-fg-muted">{t("resumeHint")}</p>
+                <button
+                  type="button"
+                  onClick={() => void resumeUpload()}
+                  className="flex items-center gap-1.5 rounded-xl bg-cyan-500 px-4 py-2 text-[10px] font-black tracking-widest text-black uppercase hover:bg-cyan-400"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                  {t("resume")}
+                </button>
               </div>
             )}
           </div>
@@ -639,7 +232,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
           onChange={(e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
-            if (file) start(file);
+            pick(file);
           }}
         />
 
@@ -650,9 +243,9 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
           </p>
           <div className="flex gap-4">
             <div className="relative aspect-2/3 w-24 shrink-0 overflow-hidden rounded-xl border border-line-strong bg-tint">
-              {posterData || /^https:\/\//.test(posterUrl) ? (
+              {draft.posterData || /^https:\/\//.test(draft.posterUrl) ? (
                 // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen poster
-                <img src={posterData ?? posterUrl} alt="" className="h-full w-full object-cover" />
+                <img src={draft.posterData ?? draft.posterUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <ImagePlus className="absolute inset-0 m-auto h-6 w-6 text-fg-faint" aria-hidden />
               )}
@@ -670,21 +263,17 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               </label>
               <input
                 type="url"
-                value={posterUrl}
-                onChange={(e) => {
-                  setPosterUrl(e.target.value.trim());
-                  if (e.target.value) setPosterData(null);
-                }}
+                value={draft.posterUrl}
+                onChange={(e) =>
+                  setDraft({ posterUrl: e.target.value.trim(), ...(e.target.value ? { posterData: null } : {}) })
+                }
                 placeholder={t("posterUrl")}
                 className={field}
               />
-              {(posterData || posterUrl) && (
+              {(draft.posterData || draft.posterUrl) && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setPosterData(null);
-                    setPosterUrl("");
-                  }}
+                  onClick={() => setDraft({ posterData: null, posterUrl: "" })}
                   className="text-[10px] font-bold text-fg-subtle hover:text-foreground"
                 >
                   {t("posterRemove")}
@@ -707,15 +296,11 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               <button
                 key={key}
                 type="button"
-                onClick={() => {
-                  setCategory(key);
-                  // An episode's title is optional: drop the one guessed from the file name.
-                  if (isEpisodic(key) && autoTitle.current && title === autoTitle.current) setTitle("");
-                }}
-                aria-pressed={category === key}
+                onClick={() => setDraft({ category: key })}
+                aria-pressed={draft.category === key}
                 className={cn(
                   "rounded-full border px-4 py-2 text-[10px] font-black tracking-widest uppercase transition-colors",
-                  category === key
+                  draft.category === key
                     ? "border-cyan-500 bg-cyan-500 text-black"
                     : "border-line-strong bg-tint text-fg-muted hover:text-foreground",
                 )}
@@ -736,8 +321,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               <label>
                 <span className={label}>{t("seriesTitle")} *</span>
                 <input
-                  value={seriesTitle}
-                  onChange={(e) => setSeriesTitle(e.target.value)}
+                  value={draft.seriesTitle}
+                  onChange={(e) => setDraft({ seriesTitle: e.target.value })}
                   placeholder={t("seriesPlaceholder")}
                   maxLength={140}
                   className={field}
@@ -745,7 +330,11 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               </label>
               <label>
                 <span className={label}>{t("season")} *</span>
-                <select value={season} onChange={(e) => setSeason(Number(e.target.value))} className={field}>
+                <select
+                  value={draft.season}
+                  onChange={(e) => setDraft({ season: Number(e.target.value) })}
+                  className={field}
+                >
                   {SEASONS.map((n) => (
                     <option key={n} value={n}>
                       S{n}
@@ -755,7 +344,11 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               </label>
               <label>
                 <span className={label}>{t("episode")} *</span>
-                <select value={episode} onChange={(e) => setEpisode(Number(e.target.value))} className={field}>
+                <select
+                  value={draft.episode}
+                  onChange={(e) => setDraft({ episode: Number(e.target.value) })}
+                  className={field}
+                >
                   {EPISODES.map((n) => (
                     <option key={n} value={n}>
                       E{n}
@@ -770,8 +363,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
         <label className="block">
           <span className={label}>{episodic ? t("episodeTitle") : `${t("movieTitle")} *`}</span>
           <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={draft.title}
+            onChange={(e) => setDraft({ title: e.target.value })}
             placeholder={t("titlePlaceholder")}
             maxLength={140}
             className={field}
@@ -781,8 +374,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
         <label className="block">
           <span className={label}>{t("description")} *</span>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={draft.description}
+            onChange={(e) => setDraft({ description: e.target.value })}
             placeholder={t("descriptionPlaceholder")}
             rows={4}
             maxLength={2000}
@@ -800,8 +393,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               inputMode="numeric"
               min={1900}
               max={new Date().getFullYear() + 1}
-              value={year}
-              onChange={(e) => setYear(e.target.value.slice(0, 4))}
+              value={draft.year}
+              onChange={(e) => setDraft({ year: e.target.value.slice(0, 4) })}
               placeholder="2026"
               className={field}
             />
@@ -810,7 +403,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
             <span className={label}>
               {t("language")} <span className="normal-case">({t("optional")})</span>
             </span>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className={field}>
+            <select value={draft.language} onChange={(e) => setDraft({ language: e.target.value })} className={field}>
               <option value="">—</option>
               {COMMUNITY_LANGUAGES.map((code) => (
                 <option key={code} value={code}>
@@ -831,10 +424,10 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 key={g}
                 type="button"
                 onClick={() => toggleGenre(g)}
-                aria-pressed={genres.includes(g)}
+                aria-pressed={draft.genres.includes(g)}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                  genres.includes(g)
+                  draft.genres.includes(g)
                     ? "border-violet-500 bg-violet-500/20 text-foreground"
                     : "border-line-strong bg-tint text-fg-muted hover:text-foreground",
                 )}
@@ -848,8 +441,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
         <label className="block">
           <span className={label}>{t("cast")}</span>
           <input
-            value={cast}
-            onChange={(e) => setCast(e.target.value)}
+            value={draft.cast}
+            onChange={(e) => setDraft({ cast: e.target.value })}
             placeholder={t("castPlaceholder")}
             maxLength={300}
             className={field}
@@ -866,23 +459,46 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
             role="alert"
             className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500"
           >
-            {error}
+            {errorText(error)}
+          </p>
+        )}
+        {submission.status === "failed" && (
+          <p
+            role="alert"
+            className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500"
+          >
+            {t("submitFailed")} {errorText(submission.error ?? "FAILED")}
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={submit}
-          disabled={submitting || !ready}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-500 py-4 text-sm font-black tracking-widest text-black uppercase shadow-[0_14px_40px_-12px_rgba(6,182,212,0.8)] transition-colors hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
+        {queued ? (
+          <div className="space-y-3 rounded-2xl border border-cyan-500/40 bg-cyan-500/10 p-4">
+            <p className="flex gap-2 text-sm font-semibold text-fg-soft">
+              {submission.status === "submitting" ? (
+                <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-brand" aria-hidden />
+              ) : (
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
+              )}
+              {t("queuedNote")}
+            </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={submit}
+            disabled={upload.status === "idle" || upload.status === "interrupted" || upload.status === "error"}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-500 py-4 text-sm font-black tracking-widest text-black uppercase shadow-[0_14px_40px_-12px_rgba(6,182,212,0.8)] transition-colors hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <UploadCloud className="h-4 w-4" aria-hidden />
-          )}
-          {submitting ? t("submitting") : ready ? t("submit") : t("needVideo")}
-        </button>
+            {upload.status === "uploaded"
+              ? submission.status === "failed"
+                ? t("retrySubmit")
+                : t("submit")
+              : active
+                ? t("submitQueued")
+                : t("needVideo")}
+          </button>
+        )}
       </section>
     </div>
   );

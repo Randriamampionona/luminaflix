@@ -1512,7 +1512,7 @@
       "steps": [
         {
           "title": "Envoyez votre vidéo",
-          "body": "Glissez votre fichier : il est hébergé sur DoodStream, rien n'est stocké chez nous."
+          "body": "Glissez votre fichier : il est envoyé sur notre serveur vidéo, par morceaux, avec reprise automatique."
         },
         {
           "title": "Décrivez-la",
@@ -1556,8 +1556,8 @@
       "dropTitle": "Glissez-déposez votre vidéo ici",
       "dropBody": "ou cliquez pour choisir un fichier (MP4, MKV, AVI, MOV… jusqu'à {max} Go, envoyé par morceaux)",
       "uploading": "Envoi de la vidéo… {percent} %",
-      "uploaded": "Vidéo envoyée sur DoodStream",
-      "processing": "Traitement en cours sur DoodStream (la vidéo sera lisible dans quelques minutes).",
+      "uploaded": "Vidéo envoyée sur le serveur",
+      "processing": "Traitement en cours sur le serveur (la vidéo sera lisible dans quelques minutes).",
       "ready": "Vidéo prête à la lecture",
       "cancel": "Annuler",
       "replace": "Changer de vidéo",
@@ -1584,7 +1584,7 @@
       "posterTitle": "Affiche",
       "posterUpload": "Importer une image",
       "posterUrl": "…ou coller un lien (https://)",
-      "posterHint": "Sans affiche, la miniature DoodStream est utilisée.",
+      "posterHint": "Sans affiche, une image de la vidéo est utilisée.",
       "posterRemove": "Retirer",
       "optional": "facultatif",
       "idLabel": "Identifiant",
@@ -1602,17 +1602,17 @@
         "YEAR": "Année invalide.",
         "POSTER_URL": "Le lien de l'affiche doit commencer par https://",
         "POSTER_FILE": "Image d'affiche invalide ou trop lourde.",
-        "VIDEO": "Vidéo introuvable sur DoodStream.",
-        "DOOD_UNAVAILABLE": "DoodStream ne répond pas, réessayez.",
+        "VIDEO": "Vidéo introuvable sur le serveur d'envoi.",
+        "DOOD_UNAVAILABLE": "Le serveur d'envoi ne répond pas, réessayez.",
         "FAILED": "Impossible d'enregistrer, réessayez."
       },
       "successTitle": "Merci, c'est envoyé !",
       "successBody": "Votre vidéo {id} est en attente de validation : elle apparaîtra dans la communauté dès qu'un administrateur l'aura validée. Suivez-la dans « Mes partages ».",
       "another": "Partager une autre vidéo",
       "toLibrary": "Voir la bibliothèque",
-      "intro": "Votre vidéo est envoyée directement sur DoodStream, puis vérifiée par un administrateur avant publication.",
-      "transferring": "Transfert vers DoodStream en cours… (quelques minutes pour une grosse vidéo, gardez la page ouverte)",
-      "transferFailed": "Le transfert vers DoodStream a échoué.",
+      "intro": "Envoyez votre vidéo puis décrivez-la : un administrateur la vérifie avant publication. Vous pouvez naviguer ailleurs pendant l'envoi.",
+      "transferring": "Transfert vers le serveur d'envoi…",
+      "transferFailed": "Le transfert vers le serveur d'envoi a échoué.",
       "resume": "Reprendre l'envoi",
       "resumeHint": "L'envoi reprendra là où il s'est arrêté, sans tout renvoyer.",
       "mineTitle": "Mes partages",
@@ -1622,9 +1622,18 @@
       "statusRejected": "Refusée",
       "measuring": "mesure du débit…",
       "timeLeft": "≈ {time} restantes",
-      "transferringPercent": "Transfert vers DoodStream… {percent} %",
-      "doodProcessing": "Vidéo reçue par DoodStream, enregistrement en cours…",
-      "transferHint": "Votre part est terminée : c'est maintenant le serveur qui envoie la vidéo à DoodStream. Gardez la page ouverte jusqu'à « Vidéo envoyée »."
+      "transferringPercent": "Transfert vers le serveur d'envoi… {percent} %",
+      "doodProcessing": "Vidéo reçue par le serveur, enregistrement en cours…",
+      "transferHint": "Votre part est terminée : notre serveur transmet maintenant la vidéo au serveur d'envoi. Vous pouvez fermer cette page, ce transfert continue sans vous.",
+      "interruptedTitle": "Envoi interrompu",
+      "interruptedBody": "L'onglet a été fermé pendant l'envoi. Choisissez à nouveau le même fichier : l'envoi reprendra là où il s'était arrêté.",
+      "pickAgain": "Choisir le fichier à nouveau",
+      "rateLimited": "Trop d'envois aujourd'hui, réessayez demain.",
+      "serverSaving": "Vidéo reçue, enregistrement sur le serveur…",
+      "submitQueued": "Envoyer pour vérification (dès la fin de l'envoi)",
+      "queuedNote": "C'est noté : la vidéo sera envoyée pour vérification automatiquement dès la fin de l'envoi. Vous pouvez parcourir l'application en attendant.",
+      "submitFailed": "L'envoi pour vérification a échoué :",
+      "retrySubmit": "Réessayer"
     },
     "review": {
       "eyebrow": "Administration",
@@ -1644,7 +1653,7 @@
       "standard": "Tout public",
       "adult": "18+ (adulte)",
       "uploadedBy": "Par {name} · {date}",
-      "dood": "DoodStream",
+      "dood": "Serveur",
       "openPlayer": "Ouvrir le lecteur",
       "saved": "Enregistré",
       "failed": "Échec, réessayez",
@@ -1652,7 +1661,7 @@
       "checkingVideo": "Vérification de la vidéo…",
       "videoReady": "Lisible",
       "videoProcessing": "En traitement",
-      "videoMissing": "Introuvable sur DoodStream"
+      "videoMissing": "Introuvable sur le serveur"
     },
     "player": {
       "ageTitle": "Contenu réservé aux adultes (18+)",
@@ -1670,10 +1679,30 @@
       "language": "Langue",
       "genres": "Genres",
       "cast": "Acteurs",
-      "server": "Serveur : DoodStream (communauté)",
+      "server": "Serveur : communauté",
       "reportHint": "Une publicité peut s'ouvrir dans le lecteur : fermez-la et revenez."
     },
     "searchTitle": "Communauté",
-    "searchMore": "Tout voir dans la communauté"
+    "searchMore": "Tout voir dans la communauté",
+    "widget": {
+      "uploading": "Envoi en cours",
+      "transferring": "Transfert en cours",
+      "uploaded": "Vidéo envoyée",
+      "queued": "Envoi pour vérification…",
+      "submitted": "Envoyée pour vérification",
+      "error": "Envoi en échec",
+      "interrupted": "Envoi interrompu",
+      "failed": "Envoi pour vérification en échec",
+      "open": "Afficher l'envoi",
+      "collapse": "Réduire",
+      "close": "Fermer",
+      "toUpload": "Retour à l'envoi",
+      "finish": "Terminer la publication",
+      "watch": "Voir la vidéo",
+      "cancel": "Annuler l'envoi",
+      "waiting": "Sera envoyée pour vérification à la fin",
+      "untitled": "Sans titre",
+      "pending": "En attente de validation par l'équipe"
+    }
   }
 }

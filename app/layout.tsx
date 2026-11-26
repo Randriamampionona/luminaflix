@@ -24,6 +24,7 @@ import AppVersionGuard from "@/components/app-version-guard";
 import PullToReload from "@/components/nav/pull-to-reload";
 import AnalyticsTracker from "@/components/analytics/analytics-tracker";
 import OfflineGuard from "@/components/offline-guard";
+import UploadWidget from "@/components/community/upload-widget";
 import PWAInstallModal from "@/components/pwa/pwa-install-modal";
 import ServiceWorkerRegistrar from "@/components/pwa/service-worker-registrar";
 import { PWA_CAPTURE_SCRIPT } from "@/hooks/use-pwa-install";
@@ -173,6 +174,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <ServiceWorkerRegistrar />
               <PWAInstallModal />
               <OfflineGuard />
+              {/* Community uploads keep going while browsing: floating progress (hidden on /community/upload) */}
+              <UploadWidget />
             </NextIntlClientProvider>
           </ThemeProvider>
           {/* Adsterra Social Bar — last element of <body>, loaded once for the whole site */}

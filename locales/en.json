@@ -1512,7 +1512,7 @@
       "steps": [
         {
           "title": "Upload your video",
-          "body": "Drop your file: it's hosted on DoodStream, nothing is stored on our side."
+          "body": "Drop your file: it goes to our video server in pieces, with automatic resume."
         },
         {
           "title": "Describe it",
@@ -1556,8 +1556,8 @@
       "dropTitle": "Drag and drop your video here",
       "dropBody": "or click to pick a file (MP4, MKV, AVI, MOV… up to {max} GB, sent in pieces)",
       "uploading": "Uploading the video… {percent}%",
-      "uploaded": "Video uploaded to DoodStream",
-      "processing": "DoodStream is processing it (playable in a few minutes).",
+      "uploaded": "Video uploaded to the server",
+      "processing": "The server is processing it (playable in a few minutes).",
       "ready": "Video ready to play",
       "cancel": "Cancel",
       "replace": "Change video",
@@ -1584,7 +1584,7 @@
       "posterTitle": "Poster",
       "posterUpload": "Upload an image",
       "posterUrl": "…or paste a link (https://)",
-      "posterHint": "Without a poster, DoodStream's thumbnail is used.",
+      "posterHint": "Without a poster, a frame of the video is used.",
       "posterRemove": "Remove",
       "optional": "optional",
       "idLabel": "ID",
@@ -1602,17 +1602,17 @@
         "YEAR": "Invalid year.",
         "POSTER_URL": "The poster link must start with https://",
         "POSTER_FILE": "Poster image invalid or too large.",
-        "VIDEO": "Video not found on DoodStream.",
-        "DOOD_UNAVAILABLE": "DoodStream isn't answering, try again.",
+        "VIDEO": "Video not found on the upload server.",
+        "DOOD_UNAVAILABLE": "The upload server isn't answering, try again.",
         "FAILED": "Couldn't save, try again."
       },
       "successTitle": "Thanks, it's in!",
       "successBody": "Your video {id} is waiting for review: it will show up in the community as soon as an admin approves it. Follow it in \"My shares\".",
       "another": "Share another video",
       "toLibrary": "See the library",
-      "intro": "Your video goes straight to DoodStream, then an admin reviews it before it's published.",
-      "transferring": "Sending to DoodStream… (a few minutes for a big video, keep this page open)",
-      "transferFailed": "The transfer to DoodStream failed.",
+      "intro": "Upload your video, then describe it: an admin reviews it before it's published. You can browse elsewhere while it uploads.",
+      "transferring": "Sending to the upload server…",
+      "transferFailed": "The transfer to the upload server failed.",
       "resume": "Resume upload",
       "resumeHint": "The upload will pick up where it stopped, without sending everything again.",
       "mineTitle": "My shares",
@@ -1622,9 +1622,18 @@
       "statusRejected": "Declined",
       "measuring": "measuring speed…",
       "timeLeft": "≈ {time} left",
-      "transferringPercent": "Sending to DoodStream… {percent}%",
-      "doodProcessing": "DoodStream received the video, saving it…",
-      "transferHint": "Your part is done: the server is now sending the video to DoodStream. Keep this page open until \"Video uploaded\"."
+      "transferringPercent": "Sending to the upload server… {percent}%",
+      "doodProcessing": "The server received the video, saving it…",
+      "transferHint": "Your part is done: our server is now passing the video on to the upload server. You can close this page, this step continues without you.",
+      "interruptedTitle": "Upload interrupted",
+      "interruptedBody": "The tab was closed during the upload. Pick the same file again: the upload will resume where it stopped.",
+      "pickAgain": "Pick the file again",
+      "rateLimited": "Too many uploads today, try again tomorrow.",
+      "serverSaving": "Video received, saving it on the server…",
+      "submitQueued": "Submit for review (as soon as the upload ends)",
+      "queuedNote": "Got it: the video will be submitted for review automatically as soon as the upload ends. Feel free to browse the app meanwhile.",
+      "submitFailed": "Submitting for review failed:",
+      "retrySubmit": "Try again"
     },
     "review": {
       "eyebrow": "Admin",
@@ -1644,7 +1653,7 @@
       "standard": "All ages",
       "adult": "18+ (adult)",
       "uploadedBy": "By {name} · {date}",
-      "dood": "DoodStream",
+      "dood": "Server",
       "openPlayer": "Open the player",
       "saved": "Saved",
       "failed": "Failed, try again",
@@ -1652,7 +1661,7 @@
       "checkingVideo": "Checking the video…",
       "videoReady": "Playable",
       "videoProcessing": "Processing",
-      "videoMissing": "Not found on DoodStream"
+      "videoMissing": "Not found on the server"
     },
     "player": {
       "ageTitle": "Adults only (18+)",
@@ -1670,10 +1679,30 @@
       "language": "Language",
       "genres": "Genres",
       "cast": "Cast",
-      "server": "Server: DoodStream (community)",
+      "server": "Server: community",
       "reportHint": "An ad may open in the player: close it and come back."
     },
     "searchTitle": "Community",
-    "searchMore": "See all in the community"
+    "searchMore": "See all in the community",
+    "widget": {
+      "uploading": "Uploading",
+      "transferring": "Transferring",
+      "uploaded": "Video uploaded",
+      "queued": "Submitting for review…",
+      "submitted": "Submitted for review",
+      "error": "Upload failed",
+      "interrupted": "Upload interrupted",
+      "failed": "Submission failed",
+      "open": "Show the upload",
+      "collapse": "Collapse",
+      "close": "Close",
+      "toUpload": "Back to the upload",
+      "finish": "Finish publishing",
+      "watch": "Watch the video",
+      "cancel": "Cancel upload",
+      "waiting": "Will be submitted for review when done",
+      "untitled": "Untitled",
+      "pending": "Waiting for the team's review"
+    }
   }
 }
