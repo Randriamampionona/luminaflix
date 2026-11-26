@@ -1619,7 +1619,9 @@
       "mineHint": "Vos vidéos apparaissent dans la communauté (accueil, bibliothèque, recherche) dès qu'un administrateur les a validées.",
       "statusPending": "En attente de validation",
       "statusApproved": "Publiée",
-      "statusRejected": "Refusée"
+      "statusRejected": "Refusée",
+      "measuring": "mesure du débit…",
+      "timeLeft": "≈ {time} restantes"
     },
     "review": {
       "eyebrow": "Administration",

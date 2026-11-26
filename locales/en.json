@@ -1619,7 +1619,9 @@
       "mineHint": "Your videos show up in the community (home, library, search) as soon as an admin approves them.",
       "statusPending": "Waiting for review",
       "statusApproved": "Published",
-      "statusRejected": "Declined"
+      "statusRejected": "Declined",
+      "measuring": "measuring speed…",
+      "timeLeft": "≈ {time} left"
     },
     "review": {
       "eyebrow": "Admin",

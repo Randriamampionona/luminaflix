@@ -26,7 +26,16 @@ interface DoodFile {
 
 type Upload =
   | { status: "idle" }
-  | { status: "uploading"; name: string; size: number; progress: number }
+  | {
+      status: "uploading";
+      name: string;
+      size: number;
+      progress: number;
+      /** Bytes sent, current speed (bytes/s) and time left (s) — null until measurable. */
+      sent: number;
+      speed: number | null;
+      eta: number | null;
+    }
   | { status: "transferring"; name: string; size: number }
   | { status: "uploaded"; name: string; size: number; file: DoodFile }
   | { status: "error"; message: string; resumable?: boolean };
@@ -44,10 +53,29 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const VIDEO_EXT = /\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v|ts|mpg|mpeg|3gp)$/i;
 const SEASONS = Array.from({ length: 30 }, (_, i) => i + 1);
 const EPISODES = Array.from({ length: 200 }, (_, i) => i + 1);
-const formatSize = (bytes: number, fr: boolean) =>
-  bytes >= 1024 ** 3
-    ? `${(bytes / 1024 ** 3).toFixed(2)} ${fr ? "Go" : "GB"}`
-    : `${Math.round(bytes / 1024 ** 2)} ${fr ? "Mo" : "MB"}`;
+/** 1,36 Go · 474 Ko · 5,2 Mo (FR) / 1.36 GB · 474 KB · 5.2 MB (EN). */
+function formatBytes(bytes: number, fr: boolean) {
+  const units = fr ? ["o", "Ko", "Mo", "Go"] : ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const digits = value >= 100 || unit === 0 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toLocaleString(fr ? "fr-FR" : "en-US", { maximumFractionDigits: digits })} ${units[unit]}`;
+}
+
+/** 1 h 05 min · 12 min · 40 s */
+function formatDuration(seconds: number) {
+  const s = Math.max(1, Math.round(seconds));
+  if (s >= 3600) return `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, "0")} min`;
+  if (s >= 60) return `${Math.round(s / 60)} min`;
+  return `${s} s`;
+}
+
+/** Pieces sent at the same time: no idle gap between pieces, and a slow request doesn't stall the others. */
+const PARALLEL = 3;
 
 /** Poster → 400×600 WebP (JPEG where WebP can't be encoded), cropped to fill. */
 async function resizePoster(file: File): Promise<string> {
@@ -79,7 +107,9 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
   const router = useRouter();
   const [upload, setUpload] = useState<Upload>({ status: "idle" });
   const [dragging, setDragging] = useState(false);
-  const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const xhrsRef = useRef(new Set<XMLHttpRequest>());
+  /** (time, bytes sent) over the last seconds, for the speed meter. */
+  const samplesRef = useRef<[number, number][]>([]);
   const sessionRef = useRef<Session | null>(null);
   const cancelledRef = useRef(false);
   /** Title guessed from the file name (cleared if the upload turns out to be an episode). */
@@ -142,19 +172,14 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
       const from = index * session.chunkSize;
       const blob = session.file.slice(from, Math.min(from + session.chunkSize, session.file.size));
       const xhr = new XMLHttpRequest();
-      xhrRef.current = xhr;
-      xhr.upload.onprogress = (e) => onProgress(e.loaded);
-      xhr.onload = () => {
-        xhrRef.current = null;
-        resolve(xhr.status === 200);
+      xhrsRef.current.add(xhr);
+      const finish = (ok: boolean) => {
+        xhrsRef.current.delete(xhr);
+        resolve(ok);
       };
-      xhr.onerror =
-        xhr.onabort =
-        xhr.ontimeout =
-          () => {
-            xhrRef.current = null;
-            resolve(false);
-          };
+      xhr.upload.onprogress = (e) => onProgress(e.loaded);
+      xhr.onload = () => finish(xhr.status === 200);
+      xhr.onerror = xhr.onabort = xhr.ontimeout = () => finish(false);
       xhr.open("PUT", `/api/community/upload/chunk?index=${index}`);
       xhr.setRequestHeader("x-upload-ticket", session.ticket);
       xhr.setRequestHeader("content-type", "application/octet-stream");
@@ -186,29 +211,64 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
     const pieceSize = (i: number) => Math.min(session.chunkSize, file.size - i * session.chunkSize);
     const done = new Set(received);
     let sent = [...done].reduce((sum, i) => sum + pieceSize(i), 0);
-    const progress = (bytes: number) =>
+    /** Bytes of the pieces in flight. */
+    const inFlight = new Map<number, number>();
+    let lastPaint = 0;
+    samplesRef.current = [];
+
+    const progress = (force = false) => {
+      const now = Date.now();
+      const bytes = sent + [...inFlight.values()].reduce((a, b) => a + b, 0);
+      const samples = samplesRef.current;
+      samples.push([now, bytes]);
+      while (samples.length > 2 && now - samples[0][0] > 6000) samples.shift();
+      if (!force && now - lastPaint < 300) return;
+      lastPaint = now;
+      const [t0, b0] = samples[0];
+      const speed = now - t0 >= 1500 ? ((bytes - b0) * 1000) / (now - t0) : null;
       setUpload({
         status: "uploading",
         name: file.name,
         size: file.size,
-        progress: Math.min(100, Math.round((bytes / file.size) * 100)),
+        progress: Math.min(100, Math.floor((bytes / file.size) * 100)),
+        sent: bytes,
+        speed,
+        eta: speed && speed > 0 ? (file.size - bytes) / speed : null,
       });
+    };
     const fail = (message: string) => setUpload({ status: "error", message, resumable: true });
-    progress(sent);
+    progress(true);
 
-    for (let i = 0; i < session.totalChunks; i++) {
-      if (done.has(i)) continue;
-      let ok = false;
-      for (let attempt = 0; attempt < 5 && !ok; attempt++) {
-        if (cancelledRef.current) return;
-        if (attempt) await sleep(2000 * attempt);
-        ok = await sendPiece(session, i, (loaded) => progress(sent + loaded));
+    const queue = Array.from({ length: session.totalChunks }, (_, i) => i).filter((i) => !done.has(i));
+    let failed = false;
+    const worker = async () => {
+      while (queue.length && !failed && !cancelledRef.current) {
+        const index = queue.shift()!;
+        let ok = false;
+        for (let attempt = 0; attempt < 5 && !ok && !cancelledRef.current; attempt++) {
+          if (attempt) await sleep(2000 * attempt);
+          inFlight.set(index, 0);
+          ok = await sendPiece(session, index, (loaded) => {
+            inFlight.set(index, loaded);
+            progress();
+          });
+        }
+        inFlight.delete(index);
+        if (!ok) {
+          failed = true;
+          break;
+        }
+        sent += pieceSize(index);
+        progress();
       }
-      if (cancelledRef.current) return;
-      if (!ok) return fail(t("uploadFailed"));
-      sent += pieceSize(i);
-      progress(sent);
+    };
+    await Promise.all(Array.from({ length: Math.min(PARALLEL, queue.length || 1) }, worker));
+    if (cancelledRef.current) return;
+    if (failed) {
+      xhrsRef.current.forEach((xhr) => xhr.abort());
+      return fail(t("uploadFailed"));
     }
+    progress(true);
 
     // Every piece is in: the server reassembles them and sends the video to DoodStream.
     setUpload({ status: "transferring", name: file.name, size: file.size });
@@ -242,7 +302,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
       setTitle(autoTitle.current);
     }
     cancelledRef.current = false;
-    setUpload({ status: "uploading", name: file.name, size: file.size, progress: 0 });
+    setUpload({ status: "uploading", name: file.name, size: file.size, progress: 0, sent: 0, speed: null, eta: null });
     try {
       const res = await fetch("/api/community/upload/start", {
         method: "POST",
@@ -275,7 +335,15 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
     const session = sessionRef.current;
     if (!session) return setUpload({ status: "idle" });
     cancelledRef.current = false;
-    setUpload({ status: "uploading", name: session.file.name, size: session.file.size, progress: 0 });
+    setUpload({
+      status: "uploading",
+      name: session.file.name,
+      size: session.file.size,
+      progress: 0,
+      sent: 0,
+      speed: null,
+      eta: null,
+    });
     const state = await api("/api/community/upload/status", session);
     if (state?.status === "done" && state.file) {
       return setUpload({ status: "uploaded", name: session.file.name, size: session.file.size, file: state.file });
@@ -285,8 +353,8 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
 
   const cancel = () => {
     cancelledRef.current = true;
-    xhrRef.current?.abort();
-    xhrRef.current = null;
+    xhrsRef.current.forEach((xhr) => xhr.abort());
+    xhrsRef.current.clear();
     sessionRef.current = null;
     setUpload({ status: "idle" });
   };
@@ -434,7 +502,7 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-foreground">{upload.name}</p>
-                <p className="text-xs text-fg-subtle">{formatSize(upload.size, fr)}</p>
+                <p className="text-xs text-fg-subtle">{formatBytes(upload.size, fr)}</p>
               </div>
               {upload.status === "transferring" ? null : upload.status === "uploading" ? (
                 <button
@@ -467,6 +535,22 @@ export default function UploadForm({ maxGb }: { maxGb: number }) {
                 <p className="flex items-center gap-2 text-xs font-bold text-fg-soft">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                   {t("uploading", { percent: upload.progress })}
+                </p>
+                {/* Connection meter: sent / total · speed · time left */}
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] text-fg-subtle">
+                  <span>
+                    {formatBytes(upload.sent, fr)} / {formatBytes(upload.size, fr)}
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span className="font-bold text-brand">
+                    {upload.speed !== null ? `${formatBytes(upload.speed, fr)}/s` : t("measuring")}
+                  </span>
+                  {upload.eta !== null && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>{t("timeLeft", { time: formatDuration(upload.eta) })}</span>
+                    </>
+                  )}
                 </p>
               </div>
             ) : upload.status === "transferring" ? (

@@ -11,8 +11,8 @@ import { uploadToDood } from "./doodstream";
 /**
  * Piece-by-piece upload of community videos.
  *
- * The browser sends the video in pieces of CHUNK_BYTES (each request lasts a few
- * seconds: under the hosting's request-size limit and Clerk's 60 s session token).
+ * The browser sends the video in pieces of CHUNK_BYTES, several at a time (each
+ * request stays under the hosting's request-size limit and needs no Clerk session).
  * Pieces are written to UPLOAD_ROOT/<id>/<n>.part. When the last one is in, the
  * server streams them, in order, to DoodStream as one upload, then deletes them.
  * Each upload has a signed ticket (valid 12 h) instead of the Clerk session, and
@@ -78,9 +78,12 @@ async function readMeta(id: string): Promise<Meta | null> {
   }
 }
 
+/** Atomic write (temp file + rename): pieces arrive in parallel, readers never see half a file. */
 async function saveMeta(meta: Meta) {
   meta.updatedAt = Date.now();
-  await writeFile(metaPath(meta.id), JSON.stringify(meta));
+  const tmp = `${metaPath(meta.id)}.${randomBytes(4).toString("hex")}.tmp`;
+  await writeFile(tmp, JSON.stringify(meta));
+  await rename(tmp, metaPath(meta.id));
 }
 
 /** Deletes uploads untouched for 24 h (run when a new upload starts). */
