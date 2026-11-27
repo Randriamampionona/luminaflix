@@ -26,7 +26,8 @@
       "community": "Community",
       "communityBrowse": "Community library",
       "communityUpload": "Share a video",
-      "communityReview": "Community review"
+      "communityReview": "Community review",
+      "feeds": "Facebook news"
     }
   },
   "common": {
@@ -71,7 +72,8 @@
     "goBack": "Go back",
     "downloadTutorial": "Download tutorial",
     "community": "Community",
-    "communityReview": "Community review"
+    "communityReview": "Community review",
+    "feeds": "News"
   },
   "auth": {
     "signIn": "Sign in",
@@ -1723,7 +1725,41 @@
       "communityUpload": {
         "title": "Share your videos",
         "description": "Upload a movie or an episode: it keeps uploading while you browse, and the team reviews it before it's published."
+      },
+      "feeds": {
+        "title": "LuminaFlix news",
+        "description": "Our Facebook Page's posts right in the app: photos, videos and Reels."
       }
     }
+  },
+  "feeds": {
+    "eyebrow": "Facebook",
+    "title": "LuminaFlix",
+    "accent": "news",
+    "description": "Every post from our Facebook Page: releases, new features and behind the scenes.",
+    "followers": "{count, plural, one {# follower} other {# followers}}",
+    "follow": "Follow the Page",
+    "likes": "{count, plural, one {# like} other {# likes}}",
+    "comments": "{count, plural, one {# comment} other {# comments}}",
+    "shares": "{count, plural, one {# share} other {# shares}}",
+    "readMore": "See more",
+    "openPost": "Open the post",
+    "details": "Details",
+    "viewOnFacebook": "View on Facebook",
+    "viewOnFacebookLong": "View the post on Facebook",
+    "loadMore": "Older posts",
+    "backToFeed": "All posts",
+    "moreTitle": "More posts",
+    "soundOn": "Turn sound on",
+    "soundOff": "Mute",
+    "previous": "Previous",
+    "next": "Next",
+    "goTo": "Image {n}",
+    "empty": "No posts yet.",
+    "notConfigured": "The Facebook feed isn't set up yet.",
+    "unavailable": "Couldn't load the posts right now. Try again in a few minutes.",
+    "notFound": "Post not found",
+    "notFoundBody": "This post doesn't exist or is no longer available.",
+    "postTitle": "Post of {date}"
   }
 }

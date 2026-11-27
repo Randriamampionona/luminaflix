@@ -17,12 +17,13 @@ export interface Feature {
   since: string;
   /** No longer "new" after this date, even if never opened (optional). */
   newUntil?: string;
-  icon: "community" | "upload";
+  icon: "community" | "upload" | "news";
   /** Menu entry (lib/navigation.ts key) that gets the NEW badge. */
   navKey?: string;
 }
 
 export const FEATURES: Feature[] = [
+  { id: "feeds", href: "/feeds", since: "2026-11-27", newUntil: "2027-01-31", icon: "news", navKey: "feeds" },
   {
     id: "community",
     href: "/community",

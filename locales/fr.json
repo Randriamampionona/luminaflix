@@ -26,7 +26,8 @@
       "community": "Communauté",
       "communityBrowse": "Bibliothèque communautaire",
       "communityUpload": "Partager une vidéo",
-      "communityReview": "Modération communauté"
+      "communityReview": "Modération communauté",
+      "feeds": "Actus Facebook"
     }
   },
   "common": {
@@ -71,7 +72,8 @@
     "goBack": "Retour",
     "downloadTutorial": "Tutoriel téléchargement",
     "community": "Communauté",
-    "communityReview": "Modération communauté"
+    "communityReview": "Modération communauté",
+    "feeds": "Actus"
   },
   "auth": {
     "signIn": "Connexion",
@@ -1723,7 +1725,41 @@
       "communityUpload": {
         "title": "Partagez vos vidéos",
         "description": "Envoyez un film ou un épisode : l'envoi continue pendant que vous naviguez, et l'équipe le valide avant publication."
+      },
+      "feeds": {
+        "title": "Les actus LuminaFlix",
+        "description": "Les publications de notre page Facebook directement dans l'app : photos, vidéos et Reels."
       }
     }
+  },
+  "feeds": {
+    "eyebrow": "Facebook",
+    "title": "Les actus",
+    "accent": "LuminaFlix",
+    "description": "Toutes les publications de notre page Facebook : sorties, nouveautés et coulisses.",
+    "followers": "{count, plural, one {# abonné} other {# abonnés}}",
+    "follow": "Suivre la page",
+    "likes": "{count, plural, one {# j'aime} other {# j'aime}}",
+    "comments": "{count, plural, one {# commentaire} other {# commentaires}}",
+    "shares": "{count, plural, one {# partage} other {# partages}}",
+    "readMore": "Voir plus",
+    "openPost": "Ouvrir la publication",
+    "details": "Détails",
+    "viewOnFacebook": "Voir sur Facebook",
+    "viewOnFacebookLong": "Voir la publication sur Facebook",
+    "loadMore": "Publications plus anciennes",
+    "backToFeed": "Toutes les publications",
+    "moreTitle": "Autres publications",
+    "soundOn": "Activer le son",
+    "soundOff": "Couper le son",
+    "previous": "Précédente",
+    "next": "Suivante",
+    "goTo": "Image {n}",
+    "empty": "Aucune publication pour le moment.",
+    "notConfigured": "Le fil Facebook n'est pas encore configuré.",
+    "unavailable": "Impossible de charger les publications pour le moment. Réessayez dans quelques minutes.",
+    "notFound": "Publication introuvable",
+    "notFoundBody": "Cette publication n'existe pas ou n'est plus disponible.",
+    "postTitle": "Publication du {date}"
   }
 }

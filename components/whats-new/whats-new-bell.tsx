@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Bell, CheckCheck, Sparkles, UploadCloud, Users } from "lucide-react";
+import { ArrowRight, Bell, CheckCheck, Newspaper, Sparkles, UploadCloud, Users } from "lucide-react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import NewBadge from "./new-badge";
 
-const ICONS: Record<Feature["icon"], typeof Users> = { community: Users, upload: UploadCloud };
+const ICONS: Record<Feature["icon"], typeof Users> = { community: Users, upload: UploadCloud, news: Newspaper };
 
 /**
  * Bell in the top bar: unread count, and a drawer listing the recent features
